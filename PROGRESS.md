@@ -61,9 +61,21 @@ Do not start Phase 2+ work until Phase 1's acceptance criteria (see
   `components/shared/*` (SearchInput, IconButton, EmptyState, ErrorState,
   LoadingState, ConfirmDialog, StatusBadge, KpiCard, ChartContainer,
   Combobox, DataTable, Form field primitives for React Hook Form + Zod).
-- Not yet done: application shell/navigation, Supabase client code,
-  database migrations. These are the remaining steps in the approved plan
-  (see below).
+- Application shell built: fixed dark sidebar (desktop ≥1024px) /
+  Sheet-based drawer (<1024px), header with page title + disabled search
+  placeholder, account menu in sidebar footer (shows neutral "Account"
+  placeholder + person icon until Step 5 wires real session data — no
+  fabricated user name/email). `(app)/` route group renders every
+  business-feature route as `<PlaceholderPage phase={N}>` (no auth guard
+  yet — that's wired in Step 5 alongside Supabase). `/dashboard` is the one
+  fleshed-out foundation page: KPI cards, chart container, activity list,
+  all showing "—"/empty states rather than fabricated numbers. `/` redirects
+  to `/dashboard`. Visually verified via Playwright screenshots at
+  1440/1024/390px — matches the premium-industrial-SaaS direction, mobile
+  drawer collapses correctly. Also fixed `next.config.ts` `devIndicators`
+  position (default bottom-left collided with the sidebar's account menu).
+- Not yet done: Supabase client code, database migrations. These are the
+  remaining steps in the approved plan (see below).
 - No Supabase project exists yet — user chose to be walked through creating
   one (dashboard, not CLI) once local scaffolding is finished.
 - Claude Code plugins installed: `ui-ux-pro-max` (UI/UX design skill set),

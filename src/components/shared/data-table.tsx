@@ -49,6 +49,25 @@ type DataTableProps<TData> = {
   onRowSelectionChange?: (selection: RowSelectionState) => void;
   pageSize?: number;
   className?: string;
+  /**
+   * Server-driven pagination/sorting (phase3.md's inventory list): when
+   * `manualPagination`/`manualSorting` is true, `data` is assumed to
+   * already be the current page in the current sort order, and
+   * `onPaginationChange`/`onSortingChange` are the only way the state
+   * changes - the table never paginates/sorts client-side. Every one of
+   * these is optional and off by default, so every existing caller
+   * (LowStockTable, etc.) is unaffected.
+   */
+  manualPagination?: boolean;
+  pageCount?: number;
+  pagination?: { pageIndex: number; pageSize: number };
+  onPaginationChange?: (pagination: {
+    pageIndex: number;
+    pageSize: number;
+  }) => void;
+  manualSorting?: boolean;
+  sorting?: SortingState;
+  onSortingChange?: (sorting: SortingState) => void;
 };
 
 /**
@@ -69,8 +88,44 @@ function DataTable<TData>({
   onRowSelectionChange,
   pageSize = 20,
   className,
+  manualPagination = false,
+  pageCount: manualPageCount,
+  pagination: controlledPagination,
+  onPaginationChange,
+  manualSorting = false,
+  sorting: controlledSorting,
+  onSortingChange,
 }: DataTableProps<TData>) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [internalSorting, setInternalSorting] = React.useState<SortingState>(
+    [],
+  );
+  const sorting = controlledSorting ?? internalSorting;
+  const setSorting = (
+    updater: SortingState | ((old: SortingState) => SortingState),
+  ) => {
+    const next = typeof updater === "function" ? updater(sorting) : updater;
+    onSortingChange?.(next);
+    if (!controlledSorting) setInternalSorting(next);
+  };
+
+  const [internalPagination, setInternalPagination] = React.useState({
+    pageIndex: 0,
+    pageSize,
+  });
+  const pagination = controlledPagination ?? internalPagination;
+  const setPagination = (
+    updater:
+      | { pageIndex: number; pageSize: number }
+      | ((old: { pageIndex: number; pageSize: number }) => {
+          pageIndex: number;
+          pageSize: number;
+        }),
+  ) => {
+    const next = typeof updater === "function" ? updater(pagination) : updater;
+    onPaginationChange?.(next);
+    if (!controlledPagination) setInternalPagination(next);
+  };
+
   const [internalSelection, setInternalSelection] =
     React.useState<RowSelectionState>({});
 
@@ -115,14 +170,17 @@ function DataTable<TData>({
   const table = useReactTable({
     data,
     columns: tableColumns,
-    state: { sorting, rowSelection: effectiveSelection },
+    state: { sorting, rowSelection: effectiveSelection, pagination },
     onSortingChange: setSorting,
     onRowSelectionChange: setSelection,
+    onPaginationChange: setPagination,
     getRowId,
     getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    initialState: { pagination: { pageSize } },
+    getSortedRowModel: manualSorting ? undefined : getSortedRowModel(),
+    getPaginationRowModel: manualPagination ? undefined : getPaginationRowModel(),
+    manualPagination,
+    manualSorting,
+    pageCount: manualPagination ? (manualPageCount ?? -1) : undefined,
   });
 
   if (error) {
@@ -148,7 +206,9 @@ function DataTable<TData>({
     );
   }
 
-  const pageCount = table.getPageCount();
+  const pageCount = manualPagination
+    ? (manualPageCount ?? 0)
+    : table.getPageCount();
 
   return (
     <div className={cn("space-y-3", className)}>

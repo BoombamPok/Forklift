@@ -71,7 +71,8 @@ function PartForm({
     null,
   );
   const duplicateCheckRef = React.useRef(0);
-  const duplicateTimerRef = React.useRef<ReturnType<typeof setTimeout>>(undefined);
+  const duplicateTimerRef =
+    React.useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const form = useForm<PartFormValues>({
     // zod's own inferred input type for a z.preprocess-wrapped field
@@ -125,7 +126,14 @@ function PartForm({
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={(event) => {
+          // Cancel any pending debounced duplicate check so a slow
+          // response can't land after submit and flag the record just
+          // created/saved as a duplicate of itself.
+          clearTimeout(duplicateTimerRef.current);
+          duplicateCheckRef.current++;
+          return form.handleSubmit(onSubmit)(event);
+        }}
         className="max-w-2xl space-y-6"
       >
         {formError ? (
@@ -141,7 +149,8 @@ function PartForm({
             <AlertTitle>A part with this number already exists</AlertTitle>
             <AlertDescription>
               <Link href={`/inventory/${duplicate.id}`}>
-                {duplicate.name} — quantity {duplicate.quantity}, {duplicate.status}
+                {duplicate.name} — quantity {duplicate.quantity},{" "}
+                {duplicate.status}
               </Link>
               . You can still save this as a separate part, or go edit the
               existing one instead.

@@ -23,8 +23,16 @@ re-deriving context.
 ## Current phase
 
 **Phase 1 of 7 — Architecture + UX Foundation: COMPLETE.**
-**Phase 2 of 7 — Core UI + Dashboard: COMPLETE.** The user split it into
-five sub-phases; each read the previous ones' output:
+**Phase 2 of 7 — Core UI + Dashboard: COMPLETE.**
+**Phase 3 of 7 — Inventory + Parts: COMPLETE, with one follow-up**: the
+new migration (`20260905110000_part_images_delete_and_storage_path.sql`)
+needs applying to the live Supabase project via `psql` — blocked on the
+user pasting the DB password. See the Phase 3 section below for full
+detail; the next session should apply that migration first if it hasn't
+happened yet, then verify part-image removal live.
+
+The user split Phase 2 into five sub-phases; each read the previous
+ones' output:
 
 - **2a — Schema + Data Foundation: COMPLETE** (spec: `phase2a.md`). No UI.
 - **2b — Dashboard KPI Cards: COMPLETE** (spec: `phase2b.md`).
@@ -33,10 +41,8 @@ five sub-phases; each read the previous ones' output:
 - **2d — Low-Stock Table: COMPLETE** (spec: `phase2c.md` §"2d").
 - **2e — Global Search: COMPLETE** (spec: `phase2c.md` §"2e").
 
-**Phase 2 as a whole is done — the next session should read `CLAUDE.md`
-§19's phase list and start Phase 3 (Inventory + Parts), asking the user
-for a `phase3.md` spec first** (same one-spec-file-per-phase pattern
-used throughout Phase 2).
+**Phase 2 as a whole is done.** Phase 3 (Inventory + Parts) is also
+done — see the dedicated section below.
 
 **A premium visual-polish design pass also happened after Phase 2**,
 user-requested directly (not from a phase spec) — see the "Design
@@ -545,3 +551,139 @@ recreating via the Admin Auth API if lost — see
 `e2e/auth.spec.ts`/`E2E_SUPABASE_TEST_EMAIL`/`_PASSWORD` in
 `.env.example`; pick a fresh password for it, it doesn't need to match
 any prior one.
+
+## Phase 3 — Inventory + Parts (done, one migration not yet applied)
+
+Spec: `phase3.md` (saved to the repo root, matching the phase1/2a/2b/2c
+pattern). Delivered the real inventory module the dashboard/search
+layer had already been pointing at since Phase 2: a filterable/
+sortable/paginated list, a real detail page, create/edit forms with
+duplicate-part-number detection, all six stock movement workflows, part
+images, and soft-delete — all resting on Phase 1/2a's existing schema,
+triggers, and RLS without reinterpreting them.
+
+- **Schema**: one small additive migration,
+  `supabase/migrations/20260905110000_part_images_delete_and_storage_path.sql`
+  — adds a DELETE policy on `part_images` and on `storage.objects` for
+  the `part-images` bucket (same admin/manager/staff role check as the
+  existing insert policy). Phase 1 only ever granted SELECT+INSERT
+  since no upload UI existed yet; this phase's spec requires upload
+  **and remove**. This is a deliberate, documented exception to ADR
+  0007's "no table gets a DELETE policy, soft-delete only" rule —
+  `part_images` isn't audit/history data the way `stock_movements` is,
+  and CLAUDE.md never asks for permanent image history. Recorded as
+  **ADR 0011** (`docs/decisions/0011-part-images-storage-path-and-delete.md`),
+  which also fixes the storage path convention
+  (`{inventory_part_id}/{uuid}.{ext}`).
+  **This migration has NOT yet been applied to the live Supabase
+  project** — applying migrations here requires `psql` with the DB
+  password (no Docker/CLI login available), and the password wasn't
+  provided this session. Part image upload/view work fine against the
+  live project today (the existing SELECT/INSERT policies cover them);
+  only image **removal** is blocked live until this migration is
+  applied. **Next session: ask the user for the DB password, apply this
+  migration via `psql`, then confirm image removal works against the
+  live project** (component tests already cover the client-side logic;
+  see below).
+- **Movement-type semantics**, resolved during planning since phase3.md
+  described them loosely: Stock In (positive `quantity`, optional box —
+  defaults to the part's current box, updates `box_id` if changed),
+  Stock Out (positive `quantity`, ceiling-checked against current
+  stock), Transfer (`quantity_change` is always `0` — this schema
+  models one location per part, so a transfer relocates the entire
+  current stock rather than moving a sub-quantity; updates `box_id`),
+  Adjust (a signed `quantity_change` entered directly, required
+  `reason`, floor-checked so the result can't go negative), Damaged
+  (positive `quantity`, ceiling-checked, no box field), Returned
+  (positive `quantity`, back into the part's current box, not
+  user-selectable). One Zod discriminated union
+  (`src/features/inventory/schema.ts`) expresses all six shapes so
+  validation lives in one typed place; `recordStockMovement`
+  (`src/features/inventory/actions.ts`) is the one Server Action for
+  all six, switching on `movementType` — every path inserts into
+  `stock_movements` only, never writes `inventory_parts.quantity`
+  directly (the DB trigger applies it).
+- **Duplicate-part-number handling** (§5): exact match only (no fuzzy
+  matching), a non-blocking warning banner on the create/edit form
+  linking to the existing part — the form can still be submitted as a
+  separate part. Decision taken as the spec's own recommendation, not
+  overridden.
+- **New feature module** `src/features/inventory/` (schema/queries/
+  actions), following the exact Phase 2 pattern: Server Components read
+  via `queries.ts` (fetch-flat-join-in-JS, no PostgREST embeds), writes
+  go through `actions.ts` Server Actions returning `ActionResult<T>`.
+  `getInventoryList` uses real server-side pagination (`.range()` +
+  `count: "exact"`) for the common case; the stock-level filter
+  (low/critical/out-of-stock) falls back to a documented JS-computed
+  path since PostgREST can't compare two columns (`quantity` vs
+  `min_stock`) in a filter.
+- **Routes**: `/inventory` (real list, replacing the Phase 1
+  placeholder — now also correctly returns `<ErrorState>` if the query
+  throws, a gap fixed during review since it was the one screen not yet
+  following CLAUDE.md §16's loading/empty/error/success rule that every
+  other screen already followed), `/inventory/new` and
+  `/inventory/[id]/edit` (dedicated pages for the ~9-field form, not a
+  modal), `/inventory/[id]` (real detail page — quantity/location card,
+  catalogue-link card, image gallery, movement history, and the
+  Edit/Record-movement/Delete action row, each gated on
+  `inventory.edit`/`inventory.adjust`/`inventory.transfer`/
+  `inventory.delete` per §10 — absent, not disabled, matching the
+  existing dashboard precedent). Every new part starts at `quantity =
+  0` (trigger-enforced), so create redirects straight to the detail
+  page with `?openMovement=in`, which auto-opens the Stock In dialog
+  rather than leaving the user at zero with no next step.
+- **Extracted `src/lib/stock-movements.ts`** (`classifyMovement`,
+  `describeMovement`) out of `features/dashboard/activity.ts` so the
+  part detail page's movement history and the dashboard's activity feed
+  share one phrasing convention instead of duplicating it — the reuse
+  phase3.md §6 explicitly asked for.
+- **A real bug caught and fixed via the e2e test, not by inspection**:
+  `PartForm`'s debounced (400ms) duplicate-number check could resolve
+  *after* a successful create/save and flag the record just
+  created/saved as a duplicate of itself, because the debounce wasn't
+  cancelled on submit. Fixed by moving the `clearTimeout`/counter-bump
+  into the form's `onSubmit` handler wrapper (had to be structured as a
+  wrapping arrow function rather than inline in `onSubmit` itself — the
+  React Compiler's `react-hooks/refs` lint rule flags a ref read inside
+  a function passed directly to `form.handleSubmit(...)`, which is
+  itself invoked at render time).
+- **Testing**: 30 new unit/component tests this phase (schema, queries,
+  `InventoryTable`, `PartForm` incl. the duplicate banner, `PartActions`
+  incl. role-gating and the delete-confirm flow, `StockMovementDialog`
+  covering all six movement types' valid/invalid submission and confirm
+  flow, `PartImagesGallery` incl. upload/remove and role-gating) — **152
+  total unit/component tests, all green**. Two jsdom gaps had no
+  existing polyfill in this repo (no test had exercised a Radix
+  Select/Combobox with real pointer interaction yet) — added
+  `hasPointerCapture`/`setPointerCapture`/`releasePointerCapture`/
+  `scrollIntoView` no-op stubs and a `ResizeObserver` stub to
+  `vitest.setup.ts`, which any future test using these primitives now
+  gets for free.
+  - **E2E** (`e2e/inventory.spec.ts`, live Supabase project): creates a
+    part numbered `E2E-TEST-<timestamp>`, performs a real Stock In and
+    Stock Out through the actual UI, confirms quantity/history update
+    correctly, and confirms the Delete action is absent for the `staff`
+    fixture role. **This test does not soft-delete the part it
+    creates**, unlike the original plan's assumption — the `staff`
+    fixture account (per `lib/permissions`) has `inventory.edit`/
+    `adjust`/`transfer` but not `inventory.delete`, so it genuinely
+    can't perform that step; the plan's assumption that it could was
+    wrong, caught while writing the test. The part is left active,
+    permanently, in the live project (same accepted tradeoff as the two
+    permanent `stock_movements` rows it also leaves — see ADR 0002).
+    Soft-deleting it would require the admin account, whose password
+    isn't stored.
+  - **No live/manual admin-role check happened this session** — testing
+    admin-only behavior (Delete visibility, and confirming the new
+    image-delete RLS policy once applied) needs the
+    `pingatravi@gmail.com` password, which wasn't available. The
+    permission-boundary *logic* itself (role → allowed actions) is
+    fully covered by `PartActions`' component tests and by RLS policies
+    already reviewed in Phase 1/2a; what's unverified is only the live,
+    end-to-end admin path.
+- Typecheck, lint, format, build, and all unit/component/e2e tests pass.
+
+**Out of scope, confirmed against phase3.md §4/§15 and left alone**:
+warehouse/rack/shelf/box management UI, catalogue management UI, full
+reporting, QR/barcode, bulk import/export, any Sales/Purchases/
+Suppliers/Customers/Invoicing concept.

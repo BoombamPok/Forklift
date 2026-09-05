@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
@@ -16,8 +17,12 @@ export type CurrentUser = {
  * or if Supabase isn't configured yet (no .env.local). That last case
  * only matters before Phase 1 step 9/10; once real credentials exist it's
  * never hit, so callers don't need to special-case it.
+ *
+ * Wrapped in `cache()` so a layout + a page's own `requireRole()` call in
+ * the same request share one Supabase Auth + profiles round trip instead
+ * of each re-fetching it.
  */
-export async function getCurrentUser(): Promise<CurrentUser | null> {
+export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   try {
     const supabase = await createClient();
     const {
@@ -42,7 +47,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     console.warn("getCurrentUser: unable to resolve session", error);
     return null;
   }
-}
+});
 
 export async function requireUser(): Promise<CurrentUser> {
   const user = await getCurrentUser();

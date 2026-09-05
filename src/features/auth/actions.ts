@@ -34,7 +34,11 @@ export async function login(values: LoginValues): Promise<ActionResult<null>> {
 }
 
 export async function signOut(): Promise<void> {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
+  try {
+    const supabase = await createClient();
+    await supabase.auth.signOut();
+  } catch {
+    // Supabase isn't configured yet - there's no session to sign out of.
+  }
   redirect("/login");
 }

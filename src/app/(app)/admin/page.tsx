@@ -1,6 +1,9 @@
+import { requireRole } from "@/lib/auth/require-role";
 import { PlaceholderPage } from "@/components/shared/placeholder-page";
 
-export default function AdminPage() {
+export default async function AdminPage() {
+  await requireRole("users.manage");
+
   return (
     <PlaceholderPage
       phase={7}

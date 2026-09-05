@@ -25,9 +25,10 @@ re-deriving context.
 **Phase 1 of 7 — Architecture + UX Foundation**
 Spec: `phase1.md`
 
-Status: **In progress.** Approved implementation plan:
-`/root/.claude/plans/splendid-conjuring-pony.md`. Executing per that plan's
-checkpoint order — see "Repo state" below for what's actually landed.
+Status: **Complete**, including a full code review pass (see "Repo state"
+below). Approved implementation plan:
+`/root/.claude/plans/splendid-conjuring-pony.md`. Phase 2 (Core UI +
+Dashboard) has not started yet.
 
 Phases: 1) Architecture + UX Foundation → 2) Core UI + Dashboard →
 3) Inventory + Parts → 4) Warehouse Management →
@@ -80,6 +81,26 @@ Do not start Phase 2+ work until Phase 1's acceptance criteria (see
     and the unauthenticated-redirect-to-/login case, against the live
     project. All 3 e2e tests + 11 unit tests + typecheck/lint/format/build
     pass.
+- **Code review before Phase 2** (`/code-review high`, from the initial
+  commit to HEAD) found 10 issues, all fixed and re-verified live:
+  `for all` RLS policies included DELETE (contradicted the soft-delete
+  design — split into INSERT/UPDATE-only policies); the quantity guard
+  trigger only fired on UPDATE, so INSERT could set an arbitrary starting
+  quantity (now rejects any non-zero INSERT quantity); staff could
+  soft-delete inventory via UPDATE despite the permission model
+  withholding that (now trigger-blocked for non-admin/manager);
+  stock_movements/part_images attribution columns were client-spoofable
+  (now forced server-side via a BEFORE INSERT trigger — verified a
+  spoofed `created_by` was silently corrected); `log_audit_event()` was
+  callable by read_only (now rejected); missing indexes on ledger FK
+  columns (added); `requireRole()` had zero callers (wired into `/admin`,
+  verified staff→redirected/admin→allowed); `signOut()` lacked the same
+  graceful-degradation try/catch `login()` has (added); `getCurrentUser()`
+  wasn't wrapped in React's `cache()` (added); all 25 `components/ui/*`
+  files imported `cn` from the npm package directly instead of through
+  `@/lib/utils` (standardized — the package itself is shadcn-ui's own
+  official one, this was purely an import-path consistency fix). See
+  `docs/decisions/0007` and the two "fix:" commits after the docs commit.
 - Claude Code plugins installed: `ui-ux-pro-max`, `mattpocock-skills`.
 - Reference catalogue data (the old Hook Locator consolidation report
   mentioned in `phase1.md` §5) is not present in this repo. Proceeding
@@ -112,9 +133,11 @@ here — a real project elsewhere could use either of those instead.
 
 ## Next steps
 
-Done: tooling, design system + primitives, application shell, Supabase
-client code + migrations, and live auth/RLS verification against a real
-project (see `git log` for the checkpoint commits).
+Phase 1 is done: tooling, design system + primitives, application shell,
+Supabase client code + migrations, live auth/RLS verification, docs
+(README + 7 ADRs), and a full code-review hardening pass — all committed
+(14 commits, see `git log`), all local + live verification passing.
 
-Remaining: docs (README, ADRs) → final Phase 1 validation report against
-`phase1.md` §59/§60, then stop at the phase boundary — no Phase 2 work.
+Next: Phase 2 (Core UI + Dashboard) per `CLAUDE.md` §19's phase list —
+not started. Read `CLAUDE.md` + the Phase 2 spec (once provided) before
+beginning, per the Phase Workflow in `CLAUDE.md` §20.

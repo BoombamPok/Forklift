@@ -10,3 +10,4 @@ overview.
 - [0004 — Server Components + Server Actions, no separate API layer](0004-server-components-and-actions-only.md)
 - [0005 — Use Supabase's publishable/secret keys, not legacy anon/service_role](0005-supabase-publishable-secret-keys.md)
 - [0006 — No self-signup — accounts are admin-provisioned](0006-no-self-signup.md)
+- [0007 — Server-enforced attribution, and no `for all` RLS policies](0007-server-enforced-attribution-and-no-for-all-policies.md)

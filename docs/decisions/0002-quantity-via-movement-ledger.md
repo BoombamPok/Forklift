@@ -17,10 +17,19 @@ history on every page load doesn't scale.
   thing allowed to change it is the `apply_stock_movement()` trigger,
   which fires `AFTER INSERT` on `stock_movements` and applies
   `quantity_change` to the matching row.
-- A second trigger, `guard_inventory_quantity()` (`BEFORE UPDATE` on
-  `inventory_parts`), rejects any update that changes `quantity` unless
-  it's nested inside another trigger (`pg_trigger_depth() > 1` — i.e.
-  called from `apply_stock_movement()`, not directly by a client).
+- A second trigger, `guard_inventory_quantity()` (`BEFORE INSERT OR
+  UPDATE` on `inventory_parts`), rejects any `INSERT` with a non-zero
+  `quantity` (opening stock must go through `stock_movements` too) and
+  any `UPDATE` that changes `quantity` unless it's nested inside another
+  trigger (`pg_trigger_depth() > 1` — i.e. called from
+  `apply_stock_movement()`, not directly by a client). A code review
+  before Phase 2 caught that the original version only guarded `UPDATE`,
+  leaving `INSERT` able to create a row with an arbitrary starting
+  quantity and zero ledger history — see the "harden RLS and triggers"
+  commit.
+- The same trigger also rejects a `deleted_at` change from anyone but
+  `admin`/`manager`, matching `lib/permissions`' capability model (the
+  same review found the RLS `UPDATE` policy alone didn't enforce this).
 - `stock_movements` has RLS policies for `SELECT` and `INSERT` only — no
   `UPDATE`/`DELETE` policy exists, so the ledger is append-only from the
   API's perspective regardless of role.

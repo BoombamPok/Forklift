@@ -23,7 +23,15 @@ re-deriving context.
 ## Current phase
 
 **Phase 1 of 7 — Architecture + UX Foundation: COMPLETE.**
-**Phase 2 of 7 — Core UI + Dashboard: NOT STARTED — this is where the next session picks up.**
+**Phase 2 of 7 — Core UI + Dashboard: IN PROGRESS.** The user split it
+into five sub-phases; each reads the previous ones' output:
+
+- **2a — Schema + Data Foundation: COMPLETE** (spec: `phase2a.md`). No UI.
+- 2b — Dashboard KPI Cards: NOT STARTED — **this is where the next
+  session picks up.**
+- 2c — Stock Movement Chart + Recent Activity: NOT STARTED.
+- 2d — Low-Stock Table: NOT STARTED.
+- 2e — Global Search: NOT STARTED (saved for last, self-contained).
 
 Phases: 1) Architecture + UX Foundation → 2) Core UI + Dashboard →
 3) Inventory + Parts → 4) Warehouse Management →
@@ -32,16 +40,12 @@ Phases: 1) Architecture + UX Foundation → 2) Core UI + Dashboard →
 
 Phase 1 spec: `phase1.md` (done, verified, code-reviewed). Phase 1's
 implementation plan (historical reference, not needed to continue):
-`/root/.claude/plans/splendid-conjuring-pony.md`.
-
-**⚠ OPEN QUESTION before starting Phase 2**: there is no `phase2.md` in
-the repo. For Phase 1 the user supplied a detailed spec file the same
-way `phase1.md` exists; ask whether they have an equivalent for Phase 2,
-or whether to plan it from `CLAUDE.md` §19's one-line description ("Core
-UI + Dashboard") plus the dashboard mockup discussed below. Follow
-`CLAUDE.md` §20's Phase Workflow (read CLAUDE.md → read phase2.md →
-inspect repo → plan → implement → verify → document → stop at boundary)
-once that's resolved.
+`/root/.claude/plans/splendid-conjuring-pony.md`. There is no combined
+`phase2.md` — the user is providing one spec file per sub-phase
+(`phase2a.md` done; `phase2b.md` etc. expected as each sub-phase starts).
+Design skills (`ui-ux-pro-max`, `frontend-design`, `dataviz`,
+`artifact-design`) are relevant from 2b onward, once there's UI to build
+— 2a was schema/query-only.
 
 ---
 
@@ -156,23 +160,61 @@ here — a real project elsewhere could use either of those instead.
 
 ---
 
+## Phase 2a — Schema + Data Foundation (done)
+
+Spec: `phase2a.md`. Delivered, all locally + live verified:
+
+- Migration `supabase/migrations/20260905100000_inventory_min_stock.sql`
+  adds `inventory_parts.min_stock integer`, nullable, no default, with
+  `check (min_stock is null or min_stock >= 0)` — applied live via
+  `psql` and confirmed both existing seed rows kept `min_stock = null`
+  (not defaulted to 0), and `\d inventory_parts` shows the column +
+  constraint. `types/database.ts` updated to match (Row/Insert).
+- ADR `docs/decisions/0009-inventory-min-stock-threshold.md` (threshold
+  column) and `0010-inventory-valuation-cost-basis.md` (cost-basis
+  valuation) — the spec's suggested numbers (0007/0008) were already
+  taken by Phase 1's hardening/import ADRs, so these continue at
+  0009/0010 instead.
+- `src/features/dashboard/queries.ts`: `getInventoryItemCount()`,
+  `getInventoryValue()` (returns `{ value, excludedCount }`, cost basis,
+  excludes null/negative `purchase_cost` rows from the sum and logs +
+  counts them), `getLowStockCount()` (only counts rows with a configured
+  `min_stock`, quantity > 0), `getOutOfStockCount()`. All four share one
+  query shape (`select quantity, min_stock, purchase_cost` filtered to
+  `deleted_at is null`), each independently server-side and
+  independently callable — not combined into one cached call, since
+  splitting keeps each trivially unit-testable and the row count doesn't
+  yet justify the extra complexity of sharing one request-scoped fetch.
+  A query failure throws the raw Postgrest/Auth error rather than
+  resolving to zero, so a network failure can't be mistaken for "no
+  inventory."
+- `src/features/dashboard/queries.test.ts`: 12 unit tests covering
+  normal/empty/null-`min_stock`/null-and-negative-`purchase_cost`/
+  zero-quantity cases, that the query filters on `deleted_at is null`,
+  and that a Postgrest error propagates instead of resolving to 0.
+- Needed one test-infra fix along the way: Vitest doesn't understand
+  Next.js's `react-server` export condition, so importing `"server-only"`
+  (which `queries.ts` does, per ADR 0004) threw outside of the Next.js
+  build. Fixed by aliasing `"server-only"` to a no-op shim
+  (`vitest.server-only-mock.ts`) in `vitest.config.mts` — the standard
+  fix for this, not a workaround specific to this file; any future
+  server-only module hits the same issue and is already covered.
+- No UI touched. Typecheck/lint/format/build/unit tests all green (22
+  total unit tests now, up from 11).
+
 ## Next steps
 
-Phase 1 is done: tooling, design system + primitives, application shell,
-Supabase client code + migrations, live auth/RLS verification, docs
-(README + 8 ADRs), a full code-review hardening pass, and a real
-catalogue data import — all committed (15 commits, see `git log`), all
-local + live verification passing (typecheck/lint/format/build/unit
-tests/e2e all green as of the last commit).
-
-1. Resolve the phase2.md question above.
-2. For the Phase 2 dashboard specifically: KPI cards will still show
-   empty/"—" states honestly, since Phase 2 doesn't add real inventory
-   records — only the "Popular Forklift Models" style widget can use
-   real data today (the imported catalogue). Don't fabricate inventory
-   numbers to make the mockup's look "work" before Phase 3 adds real
-   stock.
-3. Follow `CLAUDE.md` §20's Phase Workflow from there.
+1. **2b — Dashboard KPI Cards** is next: wire the 4 cards to 2a's query
+   functions. Ask the user for `phase2b.md` before starting (same
+   pattern as 2a — each sub-phase gets its own spec file). This is where
+   the installed design skills (`ui-ux-pro-max`, `frontend-design`,
+   `dataviz`, etc.) actually apply, since 2a had no UI.
+2. KPI cards will still show empty/"—" states honestly where there's no
+   real inventory yet — only a "Popular Forklift Models" style widget
+   could use real data today (the imported catalogue). Don't fabricate
+   inventory numbers to make a mockup "look" populated before Phase 3
+   adds real stock.
+3. Follow `CLAUDE.md` §20's Phase Workflow for each sub-phase.
 
 ### If `.env.local` is missing in a new environment
 

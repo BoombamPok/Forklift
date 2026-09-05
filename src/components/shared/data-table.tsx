@@ -31,8 +31,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EmptyState } from "@/components/shared/empty-state";
-import { ErrorState, type ErrorKind } from "@/components/shared/error-state";
+import { ErrorState } from "@/components/shared/error-state";
 import { LoadingState } from "@/components/shared/loading-state";
+import type { ErrorKind } from "@/lib/errors";
 
 const SELECTION_COLUMN_ID = "__select__";
 

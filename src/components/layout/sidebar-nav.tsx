@@ -12,7 +12,11 @@ import {
   isNavItemActive,
   type NavItem,
 } from "@/lib/nav";
-import { AccountMenu } from "@/components/layout/account-menu";
+import {
+  AccountMenu,
+  type AccountUser,
+} from "@/components/layout/account-menu";
+import { signOut } from "@/features/auth/actions";
 
 function NavLink({
   item,
@@ -53,7 +57,12 @@ function NavLink({
  * The nav content shared by the fixed desktop sidebar and the mobile
  * drawer (see app-shell.tsx) - one definition, two presentations.
  */
-function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
+type SidebarNavProps = {
+  user?: AccountUser | null;
+  onNavigate?: () => void;
+};
+
+function SidebarNav({ user, onNavigate }: SidebarNavProps) {
   return (
     <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
       <div className="flex h-14 items-center gap-2 border-b border-sidebar-border px-4">
@@ -80,7 +89,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         </div>
       </nav>
 
-      <AccountMenu />
+      <AccountMenu user={user} onSignOut={() => signOut()} />
     </div>
   );
 }

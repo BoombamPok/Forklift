@@ -9,12 +9,7 @@ import {
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-
-/**
- * The distinct error shapes CLAUDE.md requires screens to tell apart -
- * never collapse these into one generic "something went wrong" message.
- */
-type ErrorKind = "permission" | "not-found" | "network" | "unexpected";
+import type { ErrorKind } from "@/lib/errors";
 
 const ERROR_PRESETS: Record<
   ErrorKind,
@@ -92,4 +87,4 @@ function ErrorState({
   );
 }
 
-export { ErrorState, type ErrorKind };
+export { ErrorState };

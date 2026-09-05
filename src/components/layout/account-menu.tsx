@@ -19,9 +19,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+type AccountUser = { name: string; email: string };
+
 type AccountMenuProps = {
-  /** Real session data lands here once Supabase auth is wired (Phase 1 step 5). */
-  user?: { name: string; email: string } | null;
+  user?: AccountUser | null;
   onSignOut?: () => void;
 };
 
@@ -71,4 +72,4 @@ function AccountMenu({ user, onSignOut }: AccountMenuProps) {
   );
 }
 
-export { AccountMenu };
+export { AccountMenu, type AccountUser };

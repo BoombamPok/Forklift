@@ -74,10 +74,35 @@ Do not start Phase 2+ work until Phase 1's acceptance criteria (see
   1440/1024/390px — matches the premium-industrial-SaaS direction, mobile
   drawer collapses correctly. Also fixed `next.config.ts` `devIndicators`
   position (default bottom-left collided with the sidebar's account menu).
-- Not yet done: Supabase client code, database migrations. These are the
-  remaining steps in the approved plan (see below).
-- No Supabase project exists yet — user chose to be walked through creating
-  one (dashboard, not CLI) once local scaffolding is finished.
+- Supabase client architecture done: `lib/supabase/{client,server,admin}.ts`,
+  `src/proxy.ts` (renamed from `middleware.ts` — Next.js 16 deprecated that
+  file convention), `lib/auth/{get-current-user,require-role}.ts`,
+  `lib/permissions/` (role/permission model + tests), `lib/errors.ts`
+  (safe error classification + tests). Login route is fully built (real
+  form, Server Action) and the `(app)` layout fetches the real user
+  server-side — but none of it can be exercised end-to-end without a live
+  project. Everything degrades gracefully without credentials (middleware
+  passes through, `getCurrentUser()` returns null) — verified by screenshot
+  that the shell/login still render correctly with no `.env.local` present.
+  `(app)/layout.tsx` is `force-dynamic` (was getting statically prerendered
+  with a baked-in "signed out" shell otherwise).
+- Full database schema written as ordered SQL migrations in
+  `supabase/migrations/` + `supabase/seed.sql` (clearly-fictional dev data)
+  — **not yet applied to any project**, since none exists yet. Includes the
+  trigger-maintained `inventory_parts.quantity` + guard trigger blocking
+  direct writes to it, `current_user_role()` backing all RLS policies, and
+  `log_audit_event()` for the audit log. `types/database.ts` is hand-authored
+  to match these migrations until `supabase gen types` can generate it for
+  real against a live project.
+- All local verification passing: typecheck, lint (one benign React
+  Compiler warning on TanStack Table, not a real issue), Prettier, 11 unit
+  tests, Playwright e2e smoke test, production build, and every route
+  (including dynamic `[id]` routes) manually checked at 200.
+- **Blocked on the user creating a Supabase project** — next step is
+  walking them through the dashboard (their choice earlier this session)
+  to get `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and
+  `SUPABASE_SERVICE_ROLE_KEY` into `.env.local`, then apply the migrations,
+  regenerate `types/database.ts` for real, and verify auth/RLS live.
 - Claude Code plugins installed: `ui-ux-pro-max` (UI/UX design skill set),
   `mattpocock-skills` (TDD, code review, domain modeling, etc.).
 - Reference catalogue data (the old Hook Locator consolidation report
@@ -104,9 +129,11 @@ package manager; git commits at each build checkpoint.
 
 ## Next steps
 
-Per the approved plan, in order: tooling (Vitest/Playwright) → shadcn/ui +
-design tokens + UI primitives → application shell/navigation → Supabase
-client code (no live project yet) → database migration files + seed →
-local verification → pause for user to create a Supabase project → wire
-+ verify auth/RLS live → testing pass → docs (README, ADRs) → final
-Phase 1 validation report.
+Done: tooling, shadcn/ui + design tokens + UI primitives, application
+shell/navigation, Supabase client code, database migrations + seed, local
+verification (all 6 checkpoint commits landed, see `git log`).
+
+Remaining, in order: **user creates a Supabase project (blocked here)** →
+apply migrations to it + regenerate `types/database.ts` for real → wire
+and verify auth/RLS live → testing pass → docs (README, ADRs) → final
+Phase 1 validation report against `phase1.md` §59/§60.

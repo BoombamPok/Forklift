@@ -26,7 +26,7 @@ function Header({ title, onOpenMobileNav }: HeaderProps) {
         <MenuIcon />
       </Button>
 
-      <h1 className="min-w-0 truncate text-sm font-semibold text-foreground">
+      <h1 className="min-w-0 truncate font-heading text-sm font-semibold tracking-tight text-foreground">
         {title}
       </h1>
 

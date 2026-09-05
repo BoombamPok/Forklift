@@ -8,27 +8,43 @@ const INVENTORY_STATUSES: [InventoryStatus, ...InventoryStatus[]] = [
   "damaged",
 ];
 
-/** Empty string from an optional text input reads as "not set", not "". */
+/**
+ * Empty string from an optional text input reads as "not set", not "".
+ * The trailing `.optional()` (after the transform, not just before it)
+ * is what makes the object *key* itself optional in the inferred type -
+ * a transform alone always produces a value (even `undefined`), which
+ * would otherwise force every caller to write `reason: undefined`
+ * explicitly instead of omitting the field.
+ */
 const optionalText = (max: number) =>
   z
     .string()
     .max(max)
     .optional()
-    .transform((value) => (value && value.trim().length > 0 ? value.trim() : undefined));
+    .transform((value) => (value && value.trim().length > 0 ? value.trim() : undefined))
+    .optional();
 
 const optionalUuid = z
   .union([z.string().uuid(), z.literal("")])
   .optional()
-  .transform((value) => (value ? value : undefined));
+  .transform((value) => (value ? value : undefined))
+  .optional();
 
-const optionalNonNegativeNumber = z
-  .union([z.coerce.number().nonnegative(), z.nan(), z.literal("")])
-  .optional()
-  .transform((value) =>
-    value === undefined || value === "" || Number.isNaN(value)
-      ? undefined
-      : value,
-  );
+/**
+ * `z.coerce.number()` turns `""` into `0` (JS's own `Number("") === 0`),
+ * not `NaN` - so a plain `union([coerce.number(), literal("")])` can
+ * never actually reach the `""` branch, and an empty form field would
+ * silently become 0 instead of "not set". Preprocessing the raw value
+ * first (before any coercion runs) is what actually distinguishes them.
+ */
+function optionalNumber<T extends z.ZodTypeAny>(inner: T) {
+  return z
+    .preprocess((value) => {
+      if (value === "" || value === undefined || value === null) return undefined;
+      return value;
+    }, inner.optional())
+    .optional();
+}
 
 /**
  * Create/edit form (phase3.md §4) - part_number/name are the only
@@ -41,18 +57,11 @@ export const partFormSchema = z.object({
   name: z.string().min(1, "Name is required").max(200),
   boxId: optionalUuid,
   catalogueId: optionalUuid,
-  purchaseCost: optionalNonNegativeNumber,
-  sellingPrice: optionalNonNegativeNumber,
+  purchaseCost: optionalNumber(z.coerce.number().nonnegative()),
+  sellingPrice: optionalNumber(z.coerce.number().nonnegative()),
   status: z.enum(INVENTORY_STATUSES).default("active"),
   notes: optionalText(2000),
-  minStock: z
-    .union([z.coerce.number().int().nonnegative(), z.nan(), z.literal("")])
-    .optional()
-    .transform((value) =>
-      value === undefined || value === "" || Number.isNaN(value)
-        ? undefined
-        : value,
-    ),
+  minStock: optionalNumber(z.coerce.number().int().nonnegative()),
 });
 
 export type PartFormValues = z.input<typeof partFormSchema>;

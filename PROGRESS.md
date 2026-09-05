@@ -394,6 +394,61 @@ Spec: `phase2c.md` §"2e" (same combined doc). Delivered:
 stock movement chart, recent activity, low-stock table, and global
 search are all wired to live data on `/dashboard` and in the header.
 
+## Design pass — premium visual polish (post-Phase 2, done)
+
+The user asked, out of band from the phase specs, to make the app "look
+like a premium inventory SaaS" using whatever design resources needed
+(`/ui-ux-pro-max:design` → `redesign-existing-projects` skill). Audited
+the existing UI and applied targeted upgrades, keeping the established
+brand direction (light workspace, dark navy sidebar, warm orange
+accent) rather than introducing a new one — CLAUDE.md's own definition
+of "premium industrial SaaS" for this project. Not a numbered phase;
+purely visual, no new functionality:
+
+- **Fixed two real bugs found during the audit**: site metadata was
+  still the literal Next.js starter default ("Create Next App"); and
+  `globals.css`'s `--font-sans` token self-referenced instead of
+  pointing at the actual Geist variable, so the app had been rendering
+  in the browser's default system font the whole time, not Geist.
+- Added Space Grotesk as `--font-heading` (previously just aliased to
+  the body font) — cascades to every existing `font-heading` usage
+  (card titles, dialog/sheet titles, sidebar wordmark, KPI numbers) from
+  one token change.
+- New branded `icon.svg` favicon (stacked-boxes mark, navy/orange)
+  replacing the default Next.js one.
+- **Established a semantic icon-chip pattern**: KPI card icons and
+  search-result icons sit in a small tinted chip whose color matches
+  what the item means (warning for low stock, destructive for out of
+  stock, info/success/etc.) — reuse this for any new card/list icon in
+  Phase 3+ rather than a flat muted icon color.
+- Sidebar logo is now a gradient icon chip (reused on the new login
+  page); active nav items get a left accent bar; recent-activity rows
+  get a colored dot for inbound/outbound/neutral.
+- Chart got a custom-styled tooltip (matching the app's popover, not
+  Recharts' default box), gradient bar fills, larger rounded caps.
+- New reusable `MotionStagger`/`MotionStaggerItem` (cascading entrance
+  for grids/lists of uniform cards) — used for the KPI row so far.
+- **Login page redesigned as a branded split-screen layout** (hidden
+  below `lg`, since this is desktop-first per CLAUDE.md #8): a dark
+  navy panel with the logo, a headline pulled from CLAUDE.md's own
+  North Star line, three real feature bullets, and a subtle CSS grid
+  pattern + corner glow (no external image assets, no new
+  dependencies) — replacing what was a completely generic centered
+  card. Kept exactly one `<h1>ForkStock</h1>` regardless of viewport
+  width, since `e2e/smoke.spec.ts` asserts on that heading by name at
+  the default 1280px test viewport - the desktop/mobile copy differs
+  elsewhere on the page instead.
+- **Deliberately did not touch**: the Inventory/Catalogue/Warehouse/
+  Operations/Reports/Admin `PlaceholderPage` stubs — CLAUDE.md values
+  honesty over decoration, and over-designing a "nothing here yet"
+  page would misrepresent unbuilt work as more finished than it is.
+- Live-verified visually (staff fixture, screenshots) at 1600px, 390px
+  mobile, and the mobile nav drawer. 91 unit/component tests, 8 e2e
+  tests, all still green after every change; typecheck/lint/format/
+  build all pass. 8 commits, each scoped to one visual concern
+  (metadata/font, sidebar, motion primitive, KPI cards, activity feed,
+  chart, search, login page).
+
 ## Next steps
 
 1. **Phase 3 (Inventory + Parts) is next.** Ask the user for a

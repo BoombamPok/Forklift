@@ -471,6 +471,47 @@ export async function getCatalogueOptions(): Promise<SelectOption[]> {
   }));
 }
 
+const SIGNED_URL_TTL_SECONDS = 60 * 60;
+
+export type PartImage = {
+  id: string;
+  url: string;
+};
+
+/**
+ * The `part-images` bucket is private (Phase 1's storage migration:
+ * `public: false`), so the gallery can't just build a public URL - each
+ * image needs a short-lived signed URL generated server-side.
+ * `createSignedUrls` (plural) is one storage call for every path in the
+ * batch rather than N round trips.
+ */
+export async function getPartImages(partId: string): Promise<PartImage[]> {
+  const supabase = await createClient();
+
+  const { data: rows, error } = await supabase
+    .from("part_images")
+    .select("id, storage_path")
+    .eq("inventory_part_id", partId)
+    .order("created_at", { ascending: true });
+
+  if (error) throw error;
+  if (!rows || rows.length === 0) return [];
+
+  const { data: signed, error: signError } = await supabase.storage
+    .from("part-images")
+    .createSignedUrls(
+      rows.map((row) => row.storage_path),
+      SIGNED_URL_TTL_SECONDS,
+    );
+
+  if (signError) throw signError;
+
+  return rows.map((row, index) => ({
+    id: row.id,
+    url: signed[index]?.signedUrl ?? "",
+  }));
+}
+
 export type DuplicatePartMatch = {
   id: string;
   name: string;

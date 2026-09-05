@@ -64,7 +64,25 @@ export const partFormSchema = z.object({
   minStock: optionalNumber(z.coerce.number().int().nonnegative()),
 });
 
-export type PartFormValues = z.input<typeof partFormSchema>;
+/**
+ * The RHF-facing shape, defined explicitly rather than via `z.input`:
+ * zod can't cleanly infer an input type for a `z.preprocess`-wrapped
+ * field (it widens to an unusable `{}`), which is exactly what
+ * `optionalNumber`'s fields are. This is what raw HTML inputs actually
+ * produce (numbers arrive as strings) - `partFormSchema.parse`/
+ * `safeParse` is what turns this into `PartFormParsed`.
+ */
+export type PartFormValues = {
+  partNumber: string;
+  name: string;
+  boxId?: string;
+  catalogueId?: string;
+  purchaseCost?: string | number;
+  sellingPrice?: string | number;
+  status: InventoryStatus;
+  notes?: string;
+  minStock?: string | number;
+};
 export type PartFormParsed = z.output<typeof partFormSchema>;
 
 const MOVEMENT_TYPES: [MovementType, ...MovementType[]] = [

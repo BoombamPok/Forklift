@@ -23,16 +23,20 @@ re-deriving context.
 ## Current phase
 
 **Phase 1 of 7 — Architecture + UX Foundation: COMPLETE.**
-**Phase 2 of 7 — Core UI + Dashboard: IN PROGRESS.** The user split it
-into five sub-phases; each reads the previous ones' output:
+**Phase 2 of 7 — Core UI + Dashboard: COMPLETE.** The user split it into
+five sub-phases; each read the previous ones' output:
 
 - **2a — Schema + Data Foundation: COMPLETE** (spec: `phase2a.md`). No UI.
 - **2b — Dashboard KPI Cards: COMPLETE** (spec: `phase2b.md`).
 - **2c — Stock Movement Chart + Recent Activity: COMPLETE** (spec:
   `phase2c.md`, combined with 2d/2e in one doc - implemented in order).
 - **2d — Low-Stock Table: COMPLETE** (spec: `phase2c.md` §"2d").
-- 2e — Global Search: NOT STARTED (saved for last, self-contained) —
-  **this is where the next session picks up.**
+- **2e — Global Search: COMPLETE** (spec: `phase2c.md` §"2e").
+
+**Phase 2 as a whole is done — the next session should read `CLAUDE.md`
+§19's phase list and start Phase 3 (Inventory + Parts), asking the user
+for a `phase3.md` spec first** (same one-spec-file-per-phase pattern
+used throughout Phase 2).
 
 Phases: 1) Architecture + UX Foundation → 2) Core UI + Dashboard →
 3) Inventory + Parts → 4) Warehouse Management →
@@ -338,22 +342,80 @@ Spec: `phase2c.md` §"2d" (same combined doc). Delivered:
   total unit/component tests, 6 e2e tests, all green;
   typecheck/lint/format/build all pass.
 
+## Phase 2e — Global Header Search (done) — Phase 2 complete
+
+Spec: `phase2c.md` §"2e" (same combined doc). Delivered:
+
+- `src/features/search/actions.ts`: `searchGlobal()`, a Server Action
+  (not a route handler — ADR 0004) searching `inventory_parts`
+  (part_number/name), `catalogue_parts` (part_number/name/
+  oem_reference), `cross_refs` (cross_reference_number), `brands.name`,
+  and `catalogue_models.name`. Plain `ilike` per phase2c.md's
+  "PostgreSQL only" direction — one `ilike` call per column merged in
+  JS, deliberately **not** a single `.or(...)` filter string: `.or()`
+  interpolates the raw query into a filter-DSL string PostgREST parses,
+  and a user typing `,`/`(`/`)` shouldn't influence how that parses.
+  A catalogue part already linked to an inventory row is suppressed
+  from the catalogue-only result set (CLAUDE.md #6: inventory-backed vs
+  catalogue-only must be visually distinguishable, and the same
+  physical part should never appear twice under two different tags).
+  Brand/model matches route to the nearest existing placeholder route
+  (`/catalogue`, `/catalogue/models/:id`) since Phase 3/5 detail pages
+  don't exist yet — no early detail-page building. Results capped at 8.
+- `src/components/layout/global-search.tsx`: replaces the disabled
+  Phase 1 search input with a working, debounced (250ms) dropdown.
+  Hand-rolled ARIA combobox/listbox (not the existing `Combobox`, which
+  filters a fixed local option list rather than a debounced server
+  call with per-result badges) — full keyboard support (arrows, Enter,
+  Escape), `aria-expanded`/`-controls`/`-activedescendant`. Empty query
+  shows no dropdown; no-results and error states are distinct copy.
+- **Notable implementation detail**: uses React 19's async
+  `useTransition` for the loading state rather than a manually-set
+  "loading" flag - this repo's eslint config (react-hooks compiler
+  rules) flags a synchronous `setState` call inside a `useEffect` body,
+  and `isPending` from `useTransition` is the idiomatic replacement.
+  Worth knowing about for any future debounced-async-UI work.
+- **Live-verified visually** (staff fixture, screenshots): searching
+  "sample" correctly showed two In-Stock parts, one Catalogue-Only
+  part, two Brand matches, and one Model match, all tagged and
+  distinguished correctly; a no-match query showed the distinct
+  no-results copy.
+- Testing: 10 unit tests (`actions.test.ts`) + 6 component tests
+  (`global-search.test.tsx`, fake timers + `act()` to flush the
+  debounce/transition) + 2 e2e tests. **Search needed no non-destructive
+  testing workaround** (unlike 2c/2d) since it's read-only — the e2e
+  tests search a real seeded part number (`SAMPLE-0001`) and assert on
+  the real, live result. Added `recharts`chart/`motion`/
+  `@testing-library/user-event` carried over from 2b–2d. **91 total
+  unit/component tests, 8 e2e tests, all green;
+  typecheck/lint/format/build all pass.**
+
+**Phase 2 (Core UI + Dashboard) is now fully complete**: KPI cards,
+stock movement chart, recent activity, low-stock table, and global
+search are all wired to live data on `/dashboard` and in the header.
+
 ## Next steps
 
-1. **2e — Global Header Search** is next (spec: `phase2c.md` §"2e",
-   same combined doc — saved for last, self-contained, no new spec file
-   needed). This is the largest remaining piece of Phase 2.
-2. Follow `CLAUDE.md` §20's Phase Workflow for each sub-phase.
-3. Commit hygiene: split every sub-phase's changes into multiple
+1. **Phase 3 (Inventory + Parts) is next.** Ask the user for a
+   `phase3.md` spec before starting — same one-spec-file-per-phase
+   pattern used throughout Phase 2 (no combined `phase3.md` exists yet).
+2. Follow `CLAUDE.md` §20's Phase Workflow for each phase/sub-phase.
+3. Commit hygiene: split every phase's changes into multiple
    logically-scoped commits (schema/infra/feature/tests/docs) as they're
    made, rather than one large checkpoint commit at the end — standing
-   instruction from the user as of Phase 2a's wrap-up.
+   instruction from the user as of Phase 2a's wrap-up. Held throughout
+   all of 2a–2e (dozens of small commits, not five giant ones).
 4. **Live-data judgment call, applied consistently in 2c/2d**: don't
    write synthetic or temporary rows/config into this project's live
    Supabase data for test purposes without asking first — even
    reversible config edits — and say so plainly in PROGRESS.md/commits
    when a spec's literal testing ask is skipped for that reason, with a
-   non-destructive equivalent test in its place.
+   non-destructive equivalent test in its place. (2e's search tests
+   didn't need this — read-only queries are always safe to test live.)
+5. Phase 3 will likely want the `/inventory/[id]` and `/inventory`
+   placeholder routes fleshed out for real — 2e's search already links
+   to `/inventory/:id` for in-stock parts, so that route existing and
+   working is now user-facing, not just a stub.
 
 ### If `.env.local` is missing in a new environment
 

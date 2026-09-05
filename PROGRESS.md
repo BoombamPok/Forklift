@@ -22,21 +22,26 @@ re-deriving context.
 
 ## Current phase
 
-**Phase 1 of 7 — Architecture + UX Foundation**
-Spec: `phase1.md`
-
-Status: **Complete**, including a full code review pass (see "Repo state"
-below). Approved implementation plan:
-`/root/.claude/plans/splendid-conjuring-pony.md`. Phase 2 (Core UI +
-Dashboard) has not started yet.
+**Phase 1 of 7 — Architecture + UX Foundation: COMPLETE.**
+**Phase 2 of 7 — Core UI + Dashboard: NOT STARTED — this is where the next session picks up.**
 
 Phases: 1) Architecture + UX Foundation → 2) Core UI + Dashboard →
 3) Inventory + Parts → 4) Warehouse Management →
 5) Catalogue + Vehicle Compatibility → 6) Operations + BI →
 7) Security + Testing + Hardening + Launch.
 
-Do not start Phase 2+ work until Phase 1's acceptance criteria (see
-`phase1.md`) are met and confirmed.
+Phase 1 spec: `phase1.md` (done, verified, code-reviewed). Phase 1's
+implementation plan (historical reference, not needed to continue):
+`/root/.claude/plans/splendid-conjuring-pony.md`.
+
+**⚠ OPEN QUESTION before starting Phase 2**: there is no `phase2.md` in
+the repo. For Phase 1 the user supplied a detailed spec file the same
+way `phase1.md` exists; ask whether they have an equivalent for Phase 2,
+or whether to plan it from `CLAUDE.md` §19's one-line description ("Core
+UI + Dashboard") plus the dashboard mockup discussed below. Follow
+`CLAUDE.md` §20's Phase Workflow (read CLAUDE.md → read phase2.md →
+inspect repo → plan → implement → verify → document → stop at boundary)
+once that's resolved.
 
 ---
 
@@ -155,9 +160,31 @@ here — a real project elsewhere could use either of those instead.
 
 Phase 1 is done: tooling, design system + primitives, application shell,
 Supabase client code + migrations, live auth/RLS verification, docs
-(README + 7 ADRs), and a full code-review hardening pass — all committed
-(14 commits, see `git log`), all local + live verification passing.
+(README + 8 ADRs), a full code-review hardening pass, and a real
+catalogue data import — all committed (15 commits, see `git log`), all
+local + live verification passing (typecheck/lint/format/build/unit
+tests/e2e all green as of the last commit).
 
-Next: Phase 2 (Core UI + Dashboard) per `CLAUDE.md` §19's phase list —
-not started. Read `CLAUDE.md` + the Phase 2 spec (once provided) before
-beginning, per the Phase Workflow in `CLAUDE.md` §20.
+1. Resolve the phase2.md question above.
+2. For the Phase 2 dashboard specifically: KPI cards will still show
+   empty/"—" states honestly, since Phase 2 doesn't add real inventory
+   records — only the "Popular Forklift Models" style widget can use
+   real data today (the imported catalogue). Don't fabricate inventory
+   numbers to make the mockup's look "work" before Phase 3 adds real
+   stock.
+3. Follow `CLAUDE.md` §20's Phase Workflow from there.
+
+### If `.env.local` is missing in a new environment
+
+It's gitignored (never committed, and deliberately not reproduced here)
+and won't exist if this repo is cloned fresh. Re-create it from
+`.env.example` using the same live Supabase project
+(`https://jjxvcwsrdeynssrccccx.supabase.co` — ask the user for the
+publishable/secret keys again, or find them in the Supabase dashboard
+under Project Settings → API Keys). The admin account is
+`pingatravi@gmail.com` (ask the user for the password, don't guess it).
+The `e2e-tests@forkstock.dev` fixture user (role `staff`) also needs
+recreating via the Admin Auth API if lost — see
+`e2e/auth.spec.ts`/`E2E_SUPABASE_TEST_EMAIL`/`_PASSWORD` in
+`.env.example`; pick a fresh password for it, it doesn't need to match
+any prior one.

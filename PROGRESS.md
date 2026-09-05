@@ -27,9 +27,9 @@ re-deriving context.
 into five sub-phases; each reads the previous ones' output:
 
 - **2a — Schema + Data Foundation: COMPLETE** (spec: `phase2a.md`). No UI.
-- 2b — Dashboard KPI Cards: NOT STARTED — **this is where the next
-  session picks up.**
-- 2c — Stock Movement Chart + Recent Activity: NOT STARTED.
+- **2b — Dashboard KPI Cards: COMPLETE** (spec: `phase2b.md`).
+- 2c — Stock Movement Chart + Recent Activity: NOT STARTED — **this is
+  where the next session picks up.**
 - 2d — Low-Stock Table: NOT STARTED.
 - 2e — Global Search: NOT STARTED (saved for last, self-contained).
 
@@ -42,10 +42,10 @@ Phase 1 spec: `phase1.md` (done, verified, code-reviewed). Phase 1's
 implementation plan (historical reference, not needed to continue):
 `/root/.claude/plans/splendid-conjuring-pony.md`. There is no combined
 `phase2.md` — the user is providing one spec file per sub-phase
-(`phase2a.md` done; `phase2b.md` etc. expected as each sub-phase starts).
-Design skills (`ui-ux-pro-max`, `frontend-design`, `dataviz`,
-`artifact-design`) are relevant from 2b onward, once there's UI to build
-— 2a was schema/query-only.
+(`phase2a.md`, `phase2b.md` done; `phase2c.md` etc. expected as each
+sub-phase starts). Design skills (`ui-ux-pro-max`, `frontend-design`,
+`dataviz`, `artifact-design`) are relevant from 2b onward, once there's
+UI to build — 2a was schema/query-only.
 
 ---
 
@@ -202,19 +202,69 @@ Spec: `phase2a.md`. Delivered, all locally + live verified:
 - No UI touched. Typecheck/lint/format/build/unit tests all green (22
   total unit tests now, up from 11).
 
+## Phase 2b — Dashboard KPI Cards (done)
+
+Spec: `phase2b.md`. Delivered, all locally + live verified:
+
+- `/dashboard`'s four `KpiCard`s (`src/app/(app)/dashboard/page.tsx` +
+  new `dashboard-kpis.tsx`) now render real numbers from 2a's query
+  functions instead of a hardcoded `"—"`. Fetched independently via
+  `Promise.allSettled` — one query rejecting shows `ErrorState` on just
+  that card (verified via a mocked rejection in the component test),
+  not a broken row.
+- **Decision (phase2b.md §4), followed as recommended, no override**:
+  Inventory Value is cost-basis and commercially sensitive, so it's
+  visible only to Admin/Manager. New `canViewInventoryValue(role)` in
+  `src/lib/permissions/index.ts` — checked server-side in the page
+  before the value query is even called, so Staff/Read-Only never
+  receive it in the response. Grid drops to 3 columns (`LoadingState`
+  gained a matching `columns` prop so the loading skeleton doesn't
+  shift layout). Followed as-is, so no new ADR — recorded here per the
+  spec's "must be recorded either way."
+- Value card shows a tooltip qualifier ("N item(s) missing cost data,
+  not included") when `getInventoryValue()`'s `excludedCount > 0`.
+- New `formatCurrency()` in `src/lib/utils.ts` — **currency was a real
+  open question, asked the user rather than guessing**: INR, whole-rupee
+  rounding, Indian digit grouping (`₹12,34,567`). This is now the one
+  place money formatting lives; future money displays (reports, etc.)
+  should reuse it.
+- "No data yet" alert is now conditional on a genuinely empty inventory
+  (item count `0`), not permanent.
+- Added `motion` as a dependency (`motion/react`) per phase2b.md #0; new
+  shared `src/components/shared/motion-fade-in.tsx` gives the KPI row a
+  restrained fade-in once its Suspense boundary resolves — reusable for
+  2c/2d/2e's own loading transitions rather than one-off per component.
+- Two test-infra fixes needed along the way, both general (not
+  one-offs): (1) Testing Library's `render()` output was leaking
+  between tests — `vitest.config.mts` doesn't set `test.globals: true`,
+  so TL's auto-cleanup never fired; fixed with an explicit
+  `afterEach(cleanup)` in `vitest.setup.ts`, so every future component
+  test file gets it for free. (2) A `Tooltip` needs `TooltipProvider`
+  (normally mounted by `app/layout.tsx`), so component tests render
+  through a local `TooltipProvider` wrapper.
+- Testing: `dashboard-kpis.test.tsx` (7 tests — rendering, role
+  omission, qualifier, empty-alert, per-card error isolation);
+  `permissions/index.test.ts` and `utils.test.ts` extended; new
+  `e2e/dashboard.spec.ts` — live-verified with the staff fixture
+  (screenshot-checked at 1440px too): 3-card layout, no value card, no
+  `"—"` placeholders remain. **Admin/Manager's 4-card view was not
+  live-verified** — no admin e2e credentials exist in this environment
+  (only the staff fixture) — that path is covered by the component
+  tests instead. 35 total unit/component tests, 4 e2e tests, all green;
+  typecheck/lint/format/build all pass.
+
 ## Next steps
 
-1. **2b — Dashboard KPI Cards** is next: wire the 4 cards to 2a's query
-   functions. Ask the user for `phase2b.md` before starting (same
-   pattern as 2a — each sub-phase gets its own spec file). This is where
-   the installed design skills (`ui-ux-pro-max`, `frontend-design`,
-   `dataviz`, etc.) actually apply, since 2a had no UI.
-2. KPI cards will still show empty/"—" states honestly where there's no
-   real inventory yet — only a "Popular Forklift Models" style widget
-   could use real data today (the imported catalogue). Don't fabricate
-   inventory numbers to make a mockup "look" populated before Phase 3
-   adds real stock.
+1. **2c — Stock Movement Chart + Recent Activity** is next. Ask the
+   user for `phase2c.md` before starting (same pattern as 2a/2b).
+2. 2c will need real `stock_movements` data to chart — currently only
+   the two Phase 1 seed rows exist live. Don't fabricate movement/
+   activity history to make the widgets "look" populated.
 3. Follow `CLAUDE.md` §20's Phase Workflow for each sub-phase.
+4. Commit hygiene: split every sub-phase's changes into multiple
+   logically-scoped commits (schema/infra/feature/tests/docs) as they're
+   made, rather than one large checkpoint commit at the end — standing
+   instruction from the user as of Phase 2a's wrap-up.
 
 ### If `.env.local` is missing in a new environment
 

@@ -54,7 +54,7 @@ function ChartTooltip({
               style={{ backgroundColor: entry.color }}
             />
             <span className="text-muted-foreground">{entry.name}</span>
-            <span className="ml-auto font-medium tabular-nums">
+            <span className="ml-auto font-mono font-medium tabular-nums">
               {entry.value}
             </span>
           </div>

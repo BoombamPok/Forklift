@@ -74,7 +74,7 @@ function KpiCard({
         ) : null}
       </CardHeader>
       <CardContent className="space-y-1">
-        <CardTitle className="font-heading text-[1.75rem] leading-none font-semibold tracking-tight tabular-nums">
+        <CardTitle className="font-mono text-[1.75rem] leading-none font-semibold tracking-tight tabular-nums">
           {value}
         </CardTitle>
         {trend ? (

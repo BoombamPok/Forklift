@@ -482,6 +482,55 @@ purely visual, no new functionality:
    to `/inventory/:id` for in-stock parts, so that route existing and
    working is now user-facing, not just a stub.
 
+## Design pass — typography audit (post-Phase 2, done)
+
+The user invoked `/ui-ux-pro-max:ui-styling` out of band asking for a
+full redesign audit ("premium, distinctive, human-designed... avoid
+AI-slop"), with instructions to audit first rather than blindly
+rewrite. Audited every built screen (dashboard, login, app shell/
+sidebar/header, and all shared UI primitives — cards, badges, buttons,
+tables, empty/error states, search) against the anti-slop checklist in
+the command (gradients, glassmorphism, pill-heavy UI, generic
+purple/blue, repetitive card grids, unnecessary shadows).
+
+**Conclusion: the app already passes almost all of it.** The prior
+premium visual polish pass (see above) already established a
+restrained, semantic, non-generic system — no purple/blue, no
+glassmorphism, no repetitive card grids, cards use a subtle `ring-1`
+border instead of shadows, badges are the only pill-shaped element
+(correct convention, not "pill-heavy UI"). Did not blindly rewrite
+working, tested UI just to look busy.
+
+**The one real generic tell**: Geist Sans/Mono + Space Grotesk is an
+extremely common default pairing in AI-scaffolded Next.js/shadcn apps
+— the single thing most likely to read as "AI-generated" despite
+everything else being bespoke. Asked the user to choose a replacement
+direction (rather than gambling on a whole-product identity call
+alone); they picked **IBM Plex Sans + IBM Plex Mono** — a genuinely
+industrial-grade family (designed for IBM's enterprise/technical
+products), rare in AI-generated app output.
+
+- Swapped the font imports in `src/app/layout.tsx` and the
+  `--font-sans`/`--font-mono`/`--font-heading` tokens in
+  `globals.css` — headings now share the Plex Sans family (weight/
+  tracking does the hierarchy work, no third face needed).
+- Put Plex Mono to work wherever the app shows tabular/numeric data —
+  the exact "instrument panel" use case IBM Plex Mono is suited for:
+  KPI card values, the stock-movement chart tooltip's numbers, and
+  part numbers/quantity/min-stock in the low-stock table and global
+  search results.
+- Swapped the placeholder-page icon from `ConstructionIcon` (a
+  generic "under construction" road-sign cliché) to `CircleDashedIcon`
+  — still says "not built yet," doesn't remake the placeholder into
+  something busier per CLAUDE.md §19's honesty-over-decoration rule.
+- **Deliberately left everything else alone** — color palette,
+  spacing, card/badge/button shapes, motion, layout, all already
+  matched the brief.
+- Verified with real Playwright screenshots (not just typecheck) at
+  1440px (login, dashboard, search dropdown, a placeholder page) and
+  390px mobile (login) against the live Supabase fixture data. 91 unit
+  tests + 8 e2e tests still green; typecheck/lint/build all pass.
+
 ### If `.env.local` is missing in a new environment
 
 It's gitignored (never committed, and deliberately not reproduced here)

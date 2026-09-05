@@ -32,7 +32,7 @@ const columns: ColumnDef<LowStockRow, unknown>[] = [
     cell: ({ row }) => (
       <div>
         <p className="font-medium text-foreground">{row.original.name}</p>
-        <p className="text-xs text-muted-foreground">
+        <p className="font-mono text-xs text-muted-foreground">
           {row.original.partNumber}
         </p>
       </div>
@@ -46,11 +46,18 @@ const columns: ColumnDef<LowStockRow, unknown>[] = [
   {
     accessorKey: "quantity",
     header: "Quantity",
+    cell: ({ row }) => (
+      <span className="font-mono tabular-nums">{row.original.quantity}</span>
+    ),
   },
   {
     accessorKey: "minStock",
     header: "Min. stock",
-    cell: ({ row }) => row.original.minStock ?? "—",
+    cell: ({ row }) => (
+      <span className="font-mono tabular-nums">
+        {row.original.minStock ?? "—"}
+      </span>
+    ),
   },
   {
     accessorKey: "status",

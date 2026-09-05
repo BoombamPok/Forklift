@@ -195,7 +195,7 @@ function GlobalSearch({ className }: GlobalSearchProps) {
                             {result.title}
                           </span>
                           {result.subtitle ? (
-                            <span className="block truncate text-xs text-muted-foreground">
+                            <span className="block truncate font-mono text-xs text-muted-foreground">
                               {result.subtitle}
                             </span>
                           ) : null}

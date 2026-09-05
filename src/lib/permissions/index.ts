@@ -73,3 +73,13 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
 export function can(role: Role, permission: Permission): boolean {
   return ROLE_PERMISSIONS[role].includes(permission);
 }
+
+/**
+ * Cost-basis inventory value is commercially sensitive in a way item/
+ * low-stock counts aren't (phase2b.md #4) - kept as its own named check
+ * rather than a granular `Permission` entry since it isn't an action,
+ * just a visibility boundary the dashboard enforces server-side.
+ */
+export function canViewInventoryValue(role: Role): boolean {
+  return role === "admin" || role === "manager";
+}

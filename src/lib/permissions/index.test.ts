@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { can, ROLES } from "@/lib/permissions";
+import { can, canViewInventoryValue, ROLES } from "@/lib/permissions";
 
 describe("can", () => {
   it("grants admins every permission", () => {
@@ -27,5 +27,17 @@ describe("can", () => {
     expect(can("read_only", "inventory.view")).toBe(true);
     expect(can("read_only", "inventory.create")).toBe(false);
     expect(can("read_only", "catalogue.manage")).toBe(false);
+  });
+});
+
+describe("canViewInventoryValue", () => {
+  it("allows admin and manager", () => {
+    expect(canViewInventoryValue("admin")).toBe(true);
+    expect(canViewInventoryValue("manager")).toBe(true);
+  });
+
+  it("withholds it from staff and read_only", () => {
+    expect(canViewInventoryValue("staff")).toBe(false);
+    expect(canViewInventoryValue("read_only")).toBe(false);
   });
 });

@@ -3,7 +3,9 @@ import { PlusIcon } from "lucide-react";
 
 import { requireRole } from "@/lib/auth/require-role";
 import { can } from "@/lib/permissions";
+import { toErrorKind } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
+import { ErrorState } from "@/components/shared/error-state";
 import {
   getInventoryList,
   type InventorySortColumn,
@@ -14,7 +16,12 @@ import { InventoryFilters } from "./inventory-filters";
 import { InventoryTable } from "./inventory-table";
 
 const PAGE_SIZE = 20;
-const SORT_COLUMNS: InventorySortColumn[] = ["part_number", "name", "quantity", "status"];
+const SORT_COLUMNS: InventorySortColumn[] = [
+  "part_number",
+  "name",
+  "quantity",
+  "status",
+];
 const STATUSES: InventoryStatus[] = ["active", "discontinued", "damaged"];
 const STOCK_FILTERS: StockFilter[] = ["low", "critical", "out_of_stock"];
 
@@ -46,27 +53,38 @@ export default async function InventoryPage(props: PageProps<"/inventory">) {
 
   const linkedParam = first(searchParams.linked);
   const linked =
-    linkedParam === "linked" || linkedParam === "unlinked" ? linkedParam : undefined;
+    linkedParam === "linked" || linkedParam === "unlinked"
+      ? linkedParam
+      : undefined;
 
   const stockParam = first(searchParams.stock);
   const stockFilter = STOCK_FILTERS.includes(stockParam as StockFilter)
     ? (stockParam as StockFilter)
     : undefined;
 
-  const { rows, totalCount } = await getInventoryList({
-    page,
-    pageSize: PAGE_SIZE,
-    sortBy,
-    sortDir,
-    status,
-    linked,
-    stockFilter,
-  });
+  let rows, totalCount;
+  try {
+    ({ rows, totalCount } = await getInventoryList({
+      page,
+      pageSize: PAGE_SIZE,
+      sortBy,
+      sortDir,
+      status,
+      linked,
+      stockFilter,
+    }));
+  } catch (error) {
+    return <ErrorState kind={toErrorKind(error)} />;
+  }
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <InventoryFilters status={status} stockFilter={stockFilter} linked={linked} />
+        <InventoryFilters
+          status={status}
+          stockFilter={stockFilter}
+          linked={linked}
+        />
         {can(user.role, "inventory.create") ? (
           <Button asChild>
             <Link href="/inventory/new">

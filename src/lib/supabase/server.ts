@@ -6,22 +6,25 @@ import type { Database } from "@/types/database";
 /**
  * The Supabase client for Server Components and Server Actions. Cookie
  * writes are wrapped in try/catch because Server Components can't set
- * cookies - middleware.ts is what actually refreshes the session; this
+ * cookies - proxy.ts is what actually refreshes the session; this
  * silently no-ops there instead of throwing.
+ *
+ * Uses the publishable key (see lib/supabase/client.ts) - this client
+ * still respects the caller's session/RLS, it's just usable server-side.
  */
 export async function createClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
-  if (!url || !anonKey) {
+  if (!url || !publishableKey) {
     throw new Error(
-      "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY. See .env.example.",
+      "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY. See .env.example.",
     );
   }
 
   const cookieStore = await cookies();
 
-  return createServerClient<Database>(url, anonKey, {
+  return createServerClient<Database>(url, publishableKey, {
     cookies: {
       getAll() {
         return cookieStore.getAll();
@@ -32,7 +35,7 @@ export async function createClient() {
             cookieStore.set(name, value, options),
           );
         } catch {
-          // Called from a Server Component - middleware refreshes the
+          // Called from a Server Component - proxy.ts refreshes the
           // session instead, so this is safe to ignore.
         }
       },

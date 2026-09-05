@@ -9,7 +9,11 @@ vi.spyOn(console, "error").mockImplementation(() => {});
 
 describe("toSafeErrorMessage", () => {
   it("gives a specific message for bad credentials without echoing Supabase's wording", () => {
-    const error = new AuthError("Invalid login credentials", 400, "invalid_credentials");
+    const error = new AuthError(
+      "Invalid login credentials",
+      400,
+      "invalid_credentials",
+    );
     expect(toSafeErrorMessage(error)).toBe(
       "That email or password is incorrect.",
     );
@@ -41,9 +45,9 @@ describe("toErrorKind", () => {
   });
 
   it("classifies Postgres' not-found code as not-found", () => {
-    expect(
-      toErrorKind({ code: "PGRST116", message: "", details: "" }),
-    ).toBe("not-found");
+    expect(toErrorKind({ code: "PGRST116", message: "", details: "" })).toBe(
+      "not-found",
+    );
   });
 
   it("classifies Postgres' insufficient-privilege code as permission", () => {

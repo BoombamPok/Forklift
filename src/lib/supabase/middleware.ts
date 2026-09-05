@@ -7,22 +7,22 @@ const PUBLIC_PATHS = ["/login"];
  * Refreshes the Supabase session cookie on every request and redirects
  * unauthenticated visitors away from protected routes (CLAUDE.md #12).
  *
- * If NEXT_PUBLIC_SUPABASE_URL/ANON_KEY aren't set yet, this passes every
- * request through untouched instead of throwing - lets the shell built in
- * an earlier Phase 1 step stay browsable before a Supabase project exists.
- * Once real credentials are added (Phase 1 step 8-10) this activates with
- * no code change needed.
+ * If NEXT_PUBLIC_SUPABASE_URL/PUBLISHABLE_KEY aren't set yet, this passes
+ * every request through untouched instead of throwing - lets the shell
+ * built in an earlier Phase 1 step stay browsable before a Supabase
+ * project exists. Once real credentials are added (Phase 1 step 8-10)
+ * this activates with no code change needed.
  */
 export async function updateSession(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anonKey) {
+  const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  if (!url || !publishableKey) {
     return NextResponse.next({ request });
   }
 
   let supabaseResponse = NextResponse.next({ request });
 
-  const supabase = createServerClient(url, anonKey, {
+  const supabase = createServerClient(url, publishableKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll();

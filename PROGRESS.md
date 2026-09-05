@@ -30,9 +30,9 @@ into five sub-phases; each reads the previous ones' output:
 - **2b — Dashboard KPI Cards: COMPLETE** (spec: `phase2b.md`).
 - **2c — Stock Movement Chart + Recent Activity: COMPLETE** (spec:
   `phase2c.md`, combined with 2d/2e in one doc - implemented in order).
-- 2d — Low-Stock Table: NOT STARTED — **this is where the next session
-  picks up.**
-- 2e — Global Search: NOT STARTED (saved for last, self-contained).
+- **2d — Low-Stock Table: COMPLETE** (spec: `phase2c.md` §"2d").
+- 2e — Global Search: NOT STARTED (saved for last, self-contained) —
+  **this is where the next session picks up.**
 
 Phases: 1) Architecture + UX Foundation → 2) Core UI + Dashboard →
 3) Inventory + Parts → 4) Warehouse Management →
@@ -303,21 +303,57 @@ each committed and verified separately). Delivered:
   total unit/component tests, 5 e2e tests, all green;
   typecheck/lint/format/build all pass.
 
+## Phase 2d — Low-Stock Table (done)
+
+Spec: `phase2c.md` §"2d" (same combined doc). Delivered:
+
+- `src/features/dashboard/low-stock.ts`: `getLowStockRows()` — every
+  zero-quantity part plus anything at/below its `min_stock`, same
+  qualifying rule as 2a's `getLowStockCount()`/`getOutOfStockCount()`.
+  Status is `out_of_stock` / `critical` (≤50% of `min_stock`) / `low`.
+  Brand resolved via `inventory_parts.catalogue_part_id →
+  catalogue_parts.brand_id → brands.name` (flat queries, same
+  fetch-flat-join-in-JS precedent as 2a/2c). **Model deliberately
+  omitted**: a catalogue part's model fit is many-to-many via
+  `compatibility`, so it doesn't reduce to one column for a summary row.
+- UI: `LowStockTable` (client) — `DataTable` + `StatusBadge`, a
+  Tabs-based status filter that narrows the already-fetched rows
+  client-side (no per-status query, no Restock button, no
+  sort/paginate-everything — this is a summary, Phase 3 owns the real
+  inventory table). Two distinct empty states: genuinely nothing needs
+  attention vs. nothing matches the active filter. `LowStockWidget`
+  (server) fetches and handles the error case, own Suspense boundary.
+- **Live-verified** (staff fixture): the real live inventory has
+  nothing needing attention today, so the genuine empty state renders
+  correctly end-to-end. Skipped a live populated/badge check —
+  temporarily editing the two real seed parts' `min_stock` just to
+  produce one, even though reversible, still means writing to the live
+  project's data without being asked; component tests cover every
+  status/filter/empty-state combination instead (same call as skipping
+  synthetic `stock_movements` seeding in 2c, for a related reason).
+- Testing: 8 unit tests (`low-stock.test.ts`) + 8 component tests
+  (`low-stock-table.test.tsx`, `low-stock-widget.test.tsx`) + 1 e2e
+  test. Added `@testing-library/user-event` (interaction testing for
+  the filter tabs) and `recharts`/`motion` continue from 2c/2b. 75
+  total unit/component tests, 6 e2e tests, all green;
+  typecheck/lint/format/build all pass.
+
 ## Next steps
 
-1. **2d — Low-Stock Table** is next (spec: `phase2c.md` §"2d", same
-   combined doc). No new spec file needed — 2e after that, same doc.
-2. 2d needs a brand lookup via `inventory_parts.catalogue_part_id →
-   catalogue_parts.brand_id → brands.name`. Model is many-to-many via
-   `compatibility` (a part can fit multiple forklift models), so it
-   doesn't reduce to one column for a summary table row — plan to show
-   brand only and skip per-row model, unless reconsidered when actually
-   building the table.
-3. Follow `CLAUDE.md` §20's Phase Workflow for each sub-phase.
-4. Commit hygiene: split every sub-phase's changes into multiple
+1. **2e — Global Header Search** is next (spec: `phase2c.md` §"2e",
+   same combined doc — saved for last, self-contained, no new spec file
+   needed). This is the largest remaining piece of Phase 2.
+2. Follow `CLAUDE.md` §20's Phase Workflow for each sub-phase.
+3. Commit hygiene: split every sub-phase's changes into multiple
    logically-scoped commits (schema/infra/feature/tests/docs) as they're
    made, rather than one large checkpoint commit at the end — standing
    instruction from the user as of Phase 2a's wrap-up.
+4. **Live-data judgment call, applied consistently in 2c/2d**: don't
+   write synthetic or temporary rows/config into this project's live
+   Supabase data for test purposes without asking first — even
+   reversible config edits — and say so plainly in PROGRESS.md/commits
+   when a spec's literal testing ask is skipped for that reason, with a
+   non-destructive equivalent test in its place.
 
 ### If `.env.local` is missing in a new environment
 

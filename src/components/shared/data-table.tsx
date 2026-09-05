@@ -177,7 +177,9 @@ function DataTable<TData>({
     getRowId,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: manualSorting ? undefined : getSortedRowModel(),
-    getPaginationRowModel: manualPagination ? undefined : getPaginationRowModel(),
+    getPaginationRowModel: manualPagination
+      ? undefined
+      : getPaginationRowModel(),
     manualPagination,
     manualSorting,
     pageCount: manualPagination ? (manualPageCount ?? -1) : undefined,

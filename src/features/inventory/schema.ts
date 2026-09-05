@@ -21,7 +21,9 @@ const optionalText = (max: number) =>
     .string()
     .max(max)
     .optional()
-    .transform((value) => (value && value.trim().length > 0 ? value.trim() : undefined))
+    .transform((value) =>
+      value && value.trim().length > 0 ? value.trim() : undefined,
+    )
     .optional();
 
 const optionalUuid = z
@@ -40,7 +42,8 @@ const optionalUuid = z
 function optionalNumber<T extends z.ZodTypeAny>(inner: T) {
   return z
     .preprocess((value) => {
-      if (value === "" || value === undefined || value === null) return undefined;
+      if (value === "" || value === undefined || value === null)
+        return undefined;
       return value;
     }, inner.optional())
     .optional();

@@ -69,9 +69,8 @@ function StockMovementDialog({
   initialType = "in",
 }: StockMovementDialogProps) {
   const router = useRouter();
-  const [movementType, setMovementType] = React.useState<MovementType>(
-    initialType,
-  );
+  const [movementType, setMovementType] =
+    React.useState<MovementType>(initialType);
   const [quantity, setQuantity] = React.useState("");
   const [quantityChange, setQuantityChange] = React.useState("");
   const [boxId, setBoxId] = React.useState<string | undefined>(undefined);
@@ -148,9 +147,15 @@ function StockMovementDialog({
       return;
     }
 
-    const quantityError = validateMovementQuantity(parsed.data, currentQuantity);
+    const quantityError = validateMovementQuantity(
+      parsed.data,
+      currentQuantity,
+    );
     if (quantityError) {
-      setFieldErrors({ quantity: quantityError, quantityChange: quantityError });
+      setFieldErrors({
+        quantity: quantityError,
+        quantityChange: quantityError,
+      });
       return;
     }
 
@@ -209,11 +214,13 @@ function StockMovementDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {(Object.keys(MOVEMENT_LABEL) as MovementType[]).map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {MOVEMENT_LABEL[type]}
-                    </SelectItem>
-                  ))}
+                  {(Object.keys(MOVEMENT_LABEL) as MovementType[]).map(
+                    (type) => (
+                      <SelectItem key={type} value={type}>
+                        {MOVEMENT_LABEL[type]}
+                      </SelectItem>
+                    ),
+                  )}
                 </SelectContent>
               </Select>
             </div>

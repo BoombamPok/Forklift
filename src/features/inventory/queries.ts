@@ -5,7 +5,8 @@ import { classifyMovement, describeMovement } from "@/lib/stock-movements";
 import type { MovementDirection } from "@/lib/stock-movements";
 import type { InventoryStatus } from "@/types/database";
 
-export type InventorySortColumn = "part_number" | "name" | "quantity" | "status";
+export type InventorySortColumn =
+  "part_number" | "name" | "quantity" | "status";
 export type StockFilter = "low" | "critical" | "out_of_stock";
 
 export type InventoryListParams = {
@@ -57,9 +58,7 @@ function stockLevelOf(row: {
   return null;
 }
 
-async function resolveBrandAndBoxLabels(
-  rows: RawInventoryRow[],
-): Promise<{
+async function resolveBrandAndBoxLabels(rows: RawInventoryRow[]): Promise<{
   brandNameByCataloguePartId: Map<string, string>;
   boxCodeByBoxId: Map<string, string>;
 }> {
@@ -67,16 +66,23 @@ async function resolveBrandAndBoxLabels(
 
   const cataloguePartIds = [
     ...new Set(
-      rows.map((r) => r.catalogue_part_id).filter((id): id is string => id !== null),
+      rows
+        .map((r) => r.catalogue_part_id)
+        .filter((id): id is string => id !== null),
     ),
   ];
   const boxIds = [
-    ...new Set(rows.map((r) => r.box_id).filter((id): id is string => id !== null)),
+    ...new Set(
+      rows.map((r) => r.box_id).filter((id): id is string => id !== null),
+    ),
   ];
 
   const [catalogueRes, boxRes] = await Promise.all([
     cataloguePartIds.length > 0
-      ? supabase.from("catalogue_parts").select("id, brand_id").in("id", cataloguePartIds)
+      ? supabase
+          .from("catalogue_parts")
+          .select("id, brand_id")
+          .in("id", cataloguePartIds)
       : Promise.resolve({ data: [], error: null }),
     boxIds.length > 0
       ? supabase.from("boxes").select("id, code").in("id", boxIds)
@@ -110,7 +116,9 @@ async function resolveBrandAndBoxLabels(
       .map((c) => [c.id, brandNameById.get(c.brand_id!)!]),
   );
 
-  const boxCodeByBoxId = new Map((boxRes.data ?? []).map((b) => [b.id, b.code]));
+  const boxCodeByBoxId = new Map(
+    (boxRes.data ?? []).map((b) => [b.id, b.code]),
+  );
 
   return { brandNameByCataloguePartId, boxCodeByBoxId };
 }
@@ -151,7 +159,8 @@ export async function getInventoryList(
   params: InventoryListParams,
 ): Promise<InventoryListResult> {
   const supabase = await createClient();
-  const { page, pageSize, sortBy, sortDir, status, linked, stockFilter } = params;
+  const { page, pageSize, sortBy, sortDir, status, linked, stockFilter } =
+    params;
 
   let query = supabase
     .from("inventory_parts")
@@ -178,7 +187,9 @@ export async function getInventoryList(
       await resolveBrandAndBoxLabels(rows);
 
     return {
-      rows: rows.map((r) => toListRow(r, brandNameByCataloguePartId, boxCodeByBoxId)),
+      rows: rows.map((r) =>
+        toListRow(r, brandNameByCataloguePartId, boxCodeByBoxId),
+      ),
       totalCount: count ?? rows.length,
     };
   }
@@ -203,7 +214,9 @@ export async function getInventoryList(
     await resolveBrandAndBoxLabels(pageRows);
 
   return {
-    rows: pageRows.map((r) => toListRow(r, brandNameByCataloguePartId, boxCodeByBoxId)),
+    rows: pageRows.map((r) =>
+      toListRow(r, brandNameByCataloguePartId, boxCodeByBoxId),
+    ),
     totalCount,
   };
 }
@@ -380,7 +393,9 @@ export async function getPartMovementHistory(
 
   const actorIds = [
     ...new Set(
-      movements.map((m) => m.created_by).filter((id): id is string => id !== null),
+      movements
+        .map((m) => m.created_by)
+        .filter((id): id is string => id !== null),
     ),
   ];
 
@@ -404,7 +419,10 @@ export async function getPartMovementHistory(
     timestamp: movement.created_at,
     actorName:
       (movement.created_by && actorNameById.get(movement.created_by)) || null,
-    direction: classifyMovement(movement.movement_type, movement.quantity_change),
+    direction: classifyMovement(
+      movement.movement_type,
+      movement.quantity_change,
+    ),
   }));
 }
 
@@ -421,27 +439,38 @@ export type SelectOption = { value: string; label: string };
 export async function getBoxOptions(): Promise<SelectOption[]> {
   const supabase = await createClient();
 
-  const [{ data: boxes, error: boxError }, { data: shelves, error: shelfError }, { data: racks, error: rackError }, { data: warehouses, error: warehouseError }] =
-    await Promise.all([
-      supabase.from("boxes").select("id, code, shelf_id").is("deleted_at", null),
-      supabase.from("shelves").select("id, code, rack_id").is("deleted_at", null),
-      supabase.from("racks").select("id, code, warehouse_id").is("deleted_at", null),
-      supabase.from("warehouses").select("id, name").is("deleted_at", null),
-    ]);
+  const [
+    { data: boxes, error: boxError },
+    { data: shelves, error: shelfError },
+    { data: racks, error: rackError },
+    { data: warehouses, error: warehouseError },
+  ] = await Promise.all([
+    supabase.from("boxes").select("id, code, shelf_id").is("deleted_at", null),
+    supabase.from("shelves").select("id, code, rack_id").is("deleted_at", null),
+    supabase
+      .from("racks")
+      .select("id, code, warehouse_id")
+      .is("deleted_at", null),
+    supabase.from("warehouses").select("id, name").is("deleted_at", null),
+  ]);
 
   if (boxError) throw boxError;
   if (shelfError) throw shelfError;
   if (rackError) throw rackError;
   if (warehouseError) throw warehouseError;
 
-  const warehouseNameById = new Map((warehouses ?? []).map((w) => [w.id, w.name]));
+  const warehouseNameById = new Map(
+    (warehouses ?? []).map((w) => [w.id, w.name]),
+  );
   const rackById = new Map((racks ?? []).map((r) => [r.id, r]));
   const shelfById = new Map((shelves ?? []).map((s) => [s.id, s]));
 
   return (boxes ?? []).map((box) => {
     const shelf = shelfById.get(box.shelf_id);
     const rack = shelf ? rackById.get(shelf.rack_id) : undefined;
-    const warehouseName = rack ? warehouseNameById.get(rack.warehouse_id) : undefined;
+    const warehouseName = rack
+      ? warehouseNameById.get(rack.warehouse_id)
+      : undefined;
     const label = [warehouseName, rack?.code, shelf?.code, box.code]
       .filter(Boolean)
       .join(" / ");

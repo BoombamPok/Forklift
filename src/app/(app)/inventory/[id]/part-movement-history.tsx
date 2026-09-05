@@ -56,7 +56,8 @@ function PartMovementHistory({ items }: PartMovementHistoryProps) {
       getRowId={(row) => row.id}
       emptyState={{
         title: "No movements yet",
-        description: "Stock In/Out, transfers, and adjustments will appear here.",
+        description:
+          "Stock In/Out, transfers, and adjustments will appear here.",
       }}
     />
   );

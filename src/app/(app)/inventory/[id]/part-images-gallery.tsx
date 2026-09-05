@@ -19,7 +19,11 @@ type PartImagesGalleryProps = {
   canEdit: boolean;
 };
 
-function PartImagesGallery({ partId, images, canEdit }: PartImagesGalleryProps) {
+function PartImagesGallery({
+  partId,
+  images,
+  canEdit,
+}: PartImagesGalleryProps) {
   const router = useRouter();
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = React.useState(false);

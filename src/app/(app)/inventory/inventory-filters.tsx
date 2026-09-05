@@ -43,7 +43,11 @@ type InventoryFiltersProps = {
  * matching the "Server Components read data directly" architecture
  * (ADR 0004) over client-side query state.
  */
-function InventoryFilters({ status, stockFilter, linked }: InventoryFiltersProps) {
+function InventoryFilters({
+  status,
+  stockFilter,
+  linked,
+}: InventoryFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -58,7 +62,10 @@ function InventoryFilters({ status, stockFilter, linked }: InventoryFiltersProps
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <Select value={status ?? "all"} onValueChange={(v) => setParam("status", v)}>
+      <Select
+        value={status ?? "all"}
+        onValueChange={(v) => setParam("status", v)}
+      >
         <SelectTrigger size="sm" className="w-40">
           <SelectValue />
         </SelectTrigger>
@@ -87,7 +94,10 @@ function InventoryFilters({ status, stockFilter, linked }: InventoryFiltersProps
         </SelectContent>
       </Select>
 
-      <Select value={linked ?? "all"} onValueChange={(v) => setParam("linked", v)}>
+      <Select
+        value={linked ?? "all"}
+        onValueChange={(v) => setParam("linked", v)}
+      >
         <SelectTrigger size="sm" className="w-52">
           <SelectValue />
         </SelectTrigger>

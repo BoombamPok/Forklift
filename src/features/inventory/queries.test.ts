@@ -177,7 +177,10 @@ describe("getInventoryList", () => {
       data: [{ id: "cp1", brand_id: "br1" }],
       error: null,
     };
-    tableResults.brands = { data: [{ id: "br1", name: "Godrej" }], error: null };
+    tableResults.brands = {
+      data: [{ id: "br1", name: "Godrej" }],
+      error: null,
+    };
     tableResults.boxes = { data: [{ id: "b1", code: "B01" }], error: null };
 
     const result = await getInventoryList({
@@ -196,7 +199,12 @@ describe("getInventoryList", () => {
     const dbError = { code: "PGRST000", message: "network error" };
     tableResults.inventory_parts = { data: null, error: dbError, count: null };
     await expect(
-      getInventoryList({ page: 1, pageSize: 20, sortBy: "name", sortDir: "asc" }),
+      getInventoryList({
+        page: 1,
+        pageSize: 20,
+        sortBy: "name",
+        sortDir: "asc",
+      }),
     ).rejects.toBe(dbError);
   });
 });

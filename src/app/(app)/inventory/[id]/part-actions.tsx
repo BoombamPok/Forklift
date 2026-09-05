@@ -110,7 +110,9 @@ function PartActions({
           boxOptions={boxOptions}
           open={movementOpen}
           onOpenChange={setMovementOpen}
-          initialType={isMovementType(openMovementParam) ? openMovementParam : "in"}
+          initialType={
+            isMovementType(openMovementParam) ? openMovementParam : "in"
+          }
         />
       ) : null}
 

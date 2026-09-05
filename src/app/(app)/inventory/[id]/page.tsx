@@ -60,7 +60,9 @@ export default async function InventoryPartDetailPage(
   const canEdit = can(user.role, "inventory.edit");
   const canDelete = can(user.role, "inventory.delete");
   const canRecordMovement =
-    canEdit || can(user.role, "inventory.adjust") || can(user.role, "inventory.transfer");
+    canEdit ||
+    can(user.role, "inventory.adjust") ||
+    can(user.role, "inventory.transfer");
 
   return (
     <div className="space-y-6">
@@ -111,8 +113,9 @@ export default async function InventoryPartDetailPage(
               <MapPinIcon aria-hidden className="mt-0.5 size-4 shrink-0" />
               {detail.location ? (
                 <span>
-                  {detail.location.warehouseName} / Rack {detail.location.rackCode} /
-                  Shelf {detail.location.shelfCode} / Box {detail.location.boxCode}
+                  {detail.location.warehouseName} / Rack{" "}
+                  {detail.location.rackCode} / Shelf {detail.location.shelfCode}{" "}
+                  / Box {detail.location.boxCode}
                 </span>
               ) : (
                 <span>No location assigned</span>
@@ -133,7 +136,9 @@ export default async function InventoryPartDetailPage(
           <CardHeader>
             <CardTitle>Catalogue link</CardTitle>
             <CardDescription>
-              {detail.catalogueLink ? "Catalogue + Inventory" : "Inventory only"}
+              {detail.catalogueLink
+                ? "Catalogue + Inventory"
+                : "Inventory only"}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -170,7 +175,11 @@ export default async function InventoryPartDetailPage(
           <CardTitle>Images</CardTitle>
         </CardHeader>
         <CardContent>
-          <PartImagesGallery partId={detail.id} images={images} canEdit={canEdit} />
+          <PartImagesGallery
+            partId={detail.id}
+            images={images}
+            canEdit={canEdit}
+          />
         </CardContent>
       </Card>
 

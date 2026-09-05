@@ -137,10 +137,7 @@ describe("validateMovementQuantity", () => {
       validateMovementQuantity({ movementType: "returned", quantity: 999 }, 0),
     ).toBeNull();
     expect(
-      validateMovementQuantity(
-        { movementType: "transfer", toBoxId: "b1" },
-        0,
-      ),
+      validateMovementQuantity({ movementType: "transfer", toBoxId: "b1" }, 0),
     ).toBeNull();
   });
 });

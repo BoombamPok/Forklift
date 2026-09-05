@@ -28,13 +28,19 @@ describe("classifyMovement", () => {
 describe("describeMovement", () => {
   it("describes a positive movement with the part label", () => {
     expect(
-      describeMovement("in", 10, { part_number: "SAMPLE-0001", name: "Sample Oil Filter" }),
+      describeMovement("in", 10, {
+        part_number: "SAMPLE-0001",
+        name: "Sample Oil Filter",
+      }),
     ).toBe("Received 10 × Sample Oil Filter (SAMPLE-0001)");
   });
 
   it("uses the absolute value of a negative quantity_change", () => {
     expect(
-      describeMovement("out", -4, { part_number: "SAMPLE-0001", name: "Sample Oil Filter" }),
+      describeMovement("out", -4, {
+        part_number: "SAMPLE-0001",
+        name: "Sample Oil Filter",
+      }),
     ).toBe("Shipped 4 × Sample Oil Filter (SAMPLE-0001)");
   });
 
@@ -44,8 +50,12 @@ describe("describeMovement", () => {
 
   it("covers every movement type's verb", () => {
     const part = { part_number: "P", name: "Part" };
-    expect(describeMovement("transfer", 0, part)).toBe("Transferred 0 × Part (P)");
-    expect(describeMovement("damaged", 2, part)).toBe("Marked damaged 2 × Part (P)");
+    expect(describeMovement("transfer", 0, part)).toBe(
+      "Transferred 0 × Part (P)",
+    );
+    expect(describeMovement("damaged", 2, part)).toBe(
+      "Marked damaged 2 × Part (P)",
+    );
     expect(describeMovement("returned", 3, part)).toBe("Returned 3 × Part (P)");
   });
 });

@@ -29,7 +29,10 @@ const MOVEMENT_PERMISSION: Record<MovementType, Permission> = {
 };
 
 function invalidFieldsResult(): ActionResult<never> {
-  return { success: false, error: { message: "Check the highlighted fields." } };
+  return {
+    success: false,
+    error: { message: "Check the highlighted fields." },
+  };
 }
 
 /**
@@ -164,7 +167,10 @@ export async function recordStockMovement(
     .single();
 
   if (partError) {
-    return { success: false, error: { message: toSafeErrorMessage(partError) } };
+    return {
+      success: false,
+      error: { message: toSafeErrorMessage(partError) },
+    };
   }
 
   const quantityError = validateMovementQuantity(v, part.quantity);
@@ -206,17 +212,22 @@ export async function recordStockMovement(
       break;
   }
 
-  const { error: movementError } = await supabase.from("stock_movements").insert({
-    inventory_part_id: partId,
-    movement_type: v.movementType,
-    quantity_change: quantityChange,
-    from_box_id: fromBoxId,
-    to_box_id: toBoxId,
-    reason: v.reason ?? null,
-  });
+  const { error: movementError } = await supabase
+    .from("stock_movements")
+    .insert({
+      inventory_part_id: partId,
+      movement_type: v.movementType,
+      quantity_change: quantityChange,
+      from_box_id: fromBoxId,
+      to_box_id: toBoxId,
+      reason: v.reason ?? null,
+    });
 
   if (movementError) {
-    return { success: false, error: { message: toSafeErrorMessage(movementError) } };
+    return {
+      success: false,
+      error: { message: toSafeErrorMessage(movementError) },
+    };
   }
 
   if (nextBoxId !== undefined) {
@@ -264,7 +275,10 @@ export async function uploadPartImage(
     return { success: false, error: { message: "Choose an image to upload." } };
   }
   if (!file.type.startsWith("image/")) {
-    return { success: false, error: { message: "Only image files are supported." } };
+    return {
+      success: false,
+      error: { message: "Only image files are supported." },
+    };
   }
   if (file.size > MAX_IMAGE_BYTES) {
     return { success: false, error: { message: "Image must be under 8MB." } };
@@ -278,7 +292,10 @@ export async function uploadPartImage(
     .upload(path, file, { contentType: file.type });
 
   if (uploadError) {
-    return { success: false, error: { message: toSafeErrorMessage(uploadError) } };
+    return {
+      success: false,
+      error: { message: toSafeErrorMessage(uploadError) },
+    };
   }
 
   const { error: insertError } = await supabase.from("part_images").insert({
@@ -291,7 +308,10 @@ export async function uploadPartImage(
     // of truth for what images "exist" (§11: never leave the two
     // inconsistent).
     await supabase.storage.from("part-images").remove([path]);
-    return { success: false, error: { message: toSafeErrorMessage(insertError) } };
+    return {
+      success: false,
+      error: { message: toSafeErrorMessage(insertError) },
+    };
   }
 
   revalidatePath(`/inventory/${partId}`);
@@ -312,7 +332,10 @@ export async function deletePartImage(
     .single();
 
   if (fetchError) {
-    return { success: false, error: { message: toSafeErrorMessage(fetchError) } };
+    return {
+      success: false,
+      error: { message: toSafeErrorMessage(fetchError) },
+    };
   }
 
   const { error: deleteRowError } = await supabase
@@ -321,7 +344,10 @@ export async function deletePartImage(
     .eq("id", imageId);
 
   if (deleteRowError) {
-    return { success: false, error: { message: toSafeErrorMessage(deleteRowError) } };
+    return {
+      success: false,
+      error: { message: toSafeErrorMessage(deleteRowError) },
+    };
   }
 
   const { error: storageError } = await supabase.storage

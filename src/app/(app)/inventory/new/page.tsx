@@ -1,5 +1,8 @@
 import { requireRole } from "@/lib/auth/require-role";
-import { getBoxOptions, getCatalogueOptions } from "@/features/inventory/queries";
+import {
+  getBoxOptions,
+  getCatalogueOptions,
+} from "@/features/inventory/queries";
 import { PartForm } from "../part-form";
 
 export default async function NewInventoryPartPage() {

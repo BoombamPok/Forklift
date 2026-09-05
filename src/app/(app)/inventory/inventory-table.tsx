@@ -127,7 +127,8 @@ function InventoryTable({
       getRowId={(row) => row.id}
       emptyState={{
         title: "No parts match these filters",
-        description: "Try a different status, stock level, or catalogue filter.",
+        description:
+          "Try a different status, stock level, or catalogue filter.",
       }}
       manualPagination
       pageCount={Math.max(1, Math.ceil(totalCount / pageSize))}

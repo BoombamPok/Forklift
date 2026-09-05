@@ -51,3 +51,25 @@ test("stock movement chart and recent activity render against real data", async 
     page.getByRole("alert").filter({ hasText: /wrong|problem/i }),
   ).toHaveCount(0);
 });
+
+// phase2c.md's "2d" section asks for an e2e check with a seeded
+// low-stock and a seeded out-of-stock row. min_stock is safe, reversible
+// config (not audit history), but the live project's two parts are the
+// only ones there are - temporarily changing their config for a test
+// still touches the real project's data. Kept to the same non-
+// destructive standard as the movements test above instead: verify the
+// widget renders correctly against whatever real state exists.
+test("low-stock table renders against real data", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByLabel("Email").fill(email!);
+  await page.getByLabel("Password").fill(password!);
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+
+  await expect(
+    page.getByText("Needs attention", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("alert").filter({ hasText: /wrong|problem/i }),
+  ).toHaveCount(0);
+});

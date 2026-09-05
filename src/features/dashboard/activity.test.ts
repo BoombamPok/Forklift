@@ -25,7 +25,6 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 
 import {
-  classifyMovement,
   getRecentActivity,
   getStockMovementSeries,
 } from "@/features/dashboard/activity";
@@ -35,28 +34,9 @@ beforeEach(() => {
   for (const key of Object.keys(tableResults)) delete tableResults[key];
 });
 
-describe("classifyMovement", () => {
-  it("treats in and returned as inbound", () => {
-    expect(classifyMovement("in", 5)).toBe("in");
-    expect(classifyMovement("returned", 2)).toBe("in");
-  });
-
-  it("treats out and damaged as outbound", () => {
-    expect(classifyMovement("out", -5)).toBe("out");
-    expect(classifyMovement("damaged", -1)).toBe("out");
-  });
-
-  it("excludes transfer - no net quantity change", () => {
-    expect(classifyMovement("transfer", 5)).toBe("none");
-    expect(classifyMovement("transfer", -5)).toBe("none");
-  });
-
-  it("classifies adjust by the sign of its own quantity_change", () => {
-    expect(classifyMovement("adjust", 3)).toBe("in");
-    expect(classifyMovement("adjust", -3)).toBe("out");
-    expect(classifyMovement("adjust", 0)).toBe("none");
-  });
-});
+// classifyMovement/describeMovement now live in src/lib/stock-movements.ts
+// (shared with the Phase 3 inventory detail page) - see
+// src/lib/stock-movements.test.ts for their own unit tests.
 
 describe("getStockMovementSeries", () => {
   it("returns exactly 30 continuous days, zero-filled by default", async () => {

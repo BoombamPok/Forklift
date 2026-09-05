@@ -1,7 +1,10 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
-import type { MovementType } from "@/types/database";
+import { classifyMovement, describeMovement } from "@/lib/stock-movements";
+import type { MovementDirection } from "@/lib/stock-movements";
+
+export type { MovementDirection };
 
 const CHART_WINDOW_DAYS = 30;
 const RECENT_ACTIVITY_LIMIT = 10;
@@ -12,36 +15,6 @@ export type StockMovementDay = {
   inbound: number;
   outbound: number;
 };
-
-export type MovementDirection = "in" | "out" | "none";
-
-/**
- * Classifies a stock_movements row for the chart (phase2c.md, decision
- * followed as recommended - see PROGRESS.md rather than a dedicated ADR
- * since it wasn't overridden): `in`/`returned` are inbound, `out`/
- * `damaged` are outbound, `transfer` has no net quantity change so it's
- * excluded from the chart entirely, and `adjust` is classified by the
- * sign of its own `quantity_change`.
- */
-export function classifyMovement(
-  type: MovementType,
-  quantityChange: number,
-): MovementDirection {
-  switch (type) {
-    case "in":
-    case "returned":
-      return "in";
-    case "out":
-    case "damaged":
-      return "out";
-    case "transfer":
-      return "none";
-    case "adjust":
-      if (quantityChange > 0) return "in";
-      if (quantityChange < 0) return "out";
-      return "none";
-  }
-}
 
 /**
  * Daily inbound/outbound totals for the last 30 UTC calendar days
@@ -95,26 +68,6 @@ export type RecentActivityItem = {
    * a matching visual cue per row without re-deriving it from text. */
   direction: MovementDirection;
 };
-
-const MOVEMENT_VERB: Record<MovementType, string> = {
-  in: "Received",
-  out: "Shipped",
-  transfer: "Transferred",
-  adjust: "Adjusted",
-  damaged: "Marked damaged",
-  returned: "Returned",
-};
-
-function describeMovement(
-  type: MovementType,
-  quantityChange: number,
-  part: { part_number: string; name: string } | null,
-): string {
-  const verb = MOVEMENT_VERB[type];
-  const quantity = Math.abs(quantityChange);
-  const partLabel = part ? `${part.name} (${part.part_number})` : "a part";
-  return `${verb} ${quantity} × ${partLabel}`;
-}
 
 /**
  * Last `limit` stock movements, each described in plain language with

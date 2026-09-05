@@ -82,6 +82,15 @@ supabase db push
 Or paste the files (in order) into the SQL Editor in the Supabase
 dashboard if you don't have the CLI set up.
 
+**Real catalogue data** — `supabase/reference-data/` holds real (not
+fabricated) parts-catalogue source files as they're provided.
+`scripts/import-master-catalogue.mjs` imports
+`godrej-voltas-master-catalogue.csv` (284 real Godrej/Voltas parts, 9
+forklift models, 979 compatibility links) using the secret key — run it
+with `node scripts/import-master-catalogue.mjs` after migrations are
+applied. It's idempotent and safe to re-run. See `docs/decisions/0008`
+for the schema decisions this data required.
+
 **Seed data** — `supabase/seed.sql` has clearly-fictional development
 data (prefixed `Sample `/`Demo `) demonstrating all three valid
 catalogue/inventory states described in `CLAUDE.md` §3. It is **not**

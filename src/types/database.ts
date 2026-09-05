@@ -108,6 +108,7 @@ export type Database = {
           model_family_id: string | null;
           name: string;
           model_code: string | null;
+          fuel_type: string | null;
         } & TimestampColumns &
           SoftDeleteColumn;
         Insert: {
@@ -116,6 +117,7 @@ export type Database = {
           model_family_id?: string | null;
           name: string;
           model_code?: string | null;
+          fuel_type?: string | null;
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
@@ -132,7 +134,10 @@ export type Database = {
           name: string;
           brand_id: string | null;
           category_id: string | null;
-          source_id: string | null;
+          sub_category: string | null;
+          assembly_group: string | null;
+          is_fastener: boolean;
+          capacity_range_kg: string | null;
           oem_reference: string | null;
           description: string | null;
           verification_status: VerificationStatus;
@@ -144,7 +149,10 @@ export type Database = {
           name: string;
           brand_id?: string | null;
           category_id?: string | null;
-          source_id?: string | null;
+          sub_category?: string | null;
+          assembly_group?: string | null;
+          is_fastener?: boolean;
+          capacity_range_kg?: string | null;
           oem_reference?: string | null;
           description?: string | null;
           verification_status?: VerificationStatus;
@@ -154,6 +162,24 @@ export type Database = {
         };
         Update: Partial<
           Database["public"]["Tables"]["catalogue_parts"]["Insert"]
+        >;
+        Relationships: [];
+      };
+      catalogue_part_sources: {
+        Row: {
+          id: string;
+          catalogue_part_id: string;
+          source_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          catalogue_part_id: string;
+          source_id: string;
+          created_at?: string;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["catalogue_part_sources"]["Insert"]
         >;
         Relationships: [];
       };

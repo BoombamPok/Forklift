@@ -101,11 +101,31 @@ Do not start Phase 2+ work until Phase 1's acceptance criteria (see
   `@/lib/utils` (standardized — the package itself is shadcn-ui's own
   official one, this was purely an import-path consistency fix). See
   `docs/decisions/0007` and the two "fix:" commits after the docs commit.
+- **Real catalogue data imported, ahead of Phase 5.** The user provided
+  the actual consolidation report `phase1.md` §5 referenced —
+  `supabase/reference-data/godrej-voltas-master-catalogue.csv`: 284 real
+  parts, 2 real brands (Godrej, Voltas/OM), 9 real forklift models, 979
+  compatibility links — all counts matched what `phase1.md` had already
+  cited. Importing it surfaced real schema gaps (`sub_category`,
+  `assembly_group`, `is_fastener`, `capacity_range_kg` on
+  `catalogue_parts`; `fuel_type` on `catalogue_models`; a proper
+  `catalogue_part_sources` join table replacing a single nullable FK,
+  since 14/284 rows cite two source catalogues) — see
+  `docs/decisions/0008`. Imported via `scripts/import-master-catalogue.mjs`
+  (idempotent, re-runnable), verified live: cross-reference parsing,
+  multi-source linking, and the one real `is_fastener` flag all spot-checked
+  correct against the live data.
+- **User-provided vehicle-parts dashboard mockup** clarified real V1
+  scope before Phase 2: the business is heavy-lifting-vehicle (forklift)
+  spare parts, not passenger cars (the mockup's car-brand content was
+  generic/not literal) — confirms `CLAUDE.md`'s existing scope. Sales,
+  Purchases, Suppliers, Customers, and invoicing shown in that mockup are
+  explicitly **out of scope** — user confirmed keep to `CLAUDE.md`'s
+  defined V1 scope (Inventory/Catalogue/Warehouse/Operations/Reports/
+  Administration). The mockup's visual density/layout (KPI row, charts,
+  low-stock table, activity feed, quick actions) is a good Phase 2
+  dashboard reference once real inventory data exists to drive it.
 - Claude Code plugins installed: `ui-ux-pro-max`, `mattpocock-skills`.
-- Reference catalogue data (the old Hook Locator consolidation report
-  mentioned in `phase1.md` §5) is not present in this repo. Proceeding
-  without it per user decision — Phase 1 doesn't need real data, only
-  schema foundation + clearly-marked dev seed data.
 
 ---
 

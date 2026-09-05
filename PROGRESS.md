@@ -47,9 +47,23 @@ Do not start Phase 2+ work until Phase 1's acceptance criteria (see
   Tailwind CSS v4, ESLint, `src/` dir, npm, import alias `@/*`.
   Next 16.3.4 / React 19.2.8. `npm run build`, `npm run lint`,
   `npm run typecheck` all pass clean on the untouched scaffold.
-- Not yet done: shadcn/ui, design tokens, Vitest/Playwright, application
-  shell, Supabase client code, database migrations. These are the remaining
-  steps in the approved plan (see below).
+- Vitest + React Testing Library, Playwright (one smoke test), Prettier
+  wired into ESLint — all passing.
+- shadcn/ui initialized (Nova preset: Lucide icons + Geist fonts, Radix
+  base). Design tokens customized in `src/app/globals.css`: light neutral
+  workspace, warm orange primary, fixed dark navy `--sidebar-*` tokens
+  (same values in `:root` and `.dark` — chrome never changes with theme),
+  added success/warning/info semantic tokens shadcn doesn't ship by
+  default. `next-themes` deliberately removed (no dark-mode toggle in V1).
+  TanStack Table pinned to v8 (v9 installs by default but is a ground-up
+  API rewrite, not yet the well-supported version CLAUDE.md calls for).
+  Full primitive set built: all shadcn base components plus composed
+  `components/shared/*` (SearchInput, IconButton, EmptyState, ErrorState,
+  LoadingState, ConfirmDialog, StatusBadge, KpiCard, ChartContainer,
+  Combobox, DataTable, Form field primitives for React Hook Form + Zod).
+- Not yet done: application shell/navigation, Supabase client code,
+  database migrations. These are the remaining steps in the approved plan
+  (see below).
 - No Supabase project exists yet — user chose to be walked through creating
   one (dashboard, not CLI) once local scaffolding is finished.
 - Claude Code plugins installed: `ui-ux-pro-max` (UI/UX design skill set),

@@ -1,7 +1,7 @@
 import { MenuIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { SearchInput } from "@/components/shared/search-input";
+import { GlobalSearch } from "@/components/layout/global-search";
 
 type HeaderProps = {
   title: string;
@@ -9,9 +9,8 @@ type HeaderProps = {
 };
 
 /**
- * Page title/context + global search foundation, per phase1.md #19. The
- * search input is intentionally disabled - the real search engine is a
- * later phase, this only establishes where it will live.
+ * Page title/context + global search (phase1.md #19 shell, wired up per
+ * phase2c.md's "2e").
  */
 function Header({ title, onOpenMobileNav }: HeaderProps) {
   return (
@@ -32,11 +31,7 @@ function Header({ title, onOpenMobileNav }: HeaderProps) {
       </h1>
 
       <div className="ml-auto flex items-center gap-2">
-        <SearchInput
-          placeholder="Search (coming soon)"
-          disabled
-          className="hidden w-64 sm:block"
-        />
+        <GlobalSearch className="hidden w-64 sm:block" />
       </div>
     </header>
   );

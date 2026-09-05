@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Loader2Icon, PackageIcon, TagIcon, TruckIcon } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 
 import { cn } from "@/lib/utils";
 import { SearchInput } from "@/components/shared/search-input";
@@ -32,6 +33,12 @@ const RESULT_ICON: Record<SearchResultKind, LucideIcon> = {
   part: PackageIcon,
   brand: TagIcon,
   model: TruckIcon,
+};
+
+const RESULT_ICON_STYLE: Record<SearchResultKind, string> = {
+  part: "bg-info/10 text-info",
+  brand: "bg-primary/10 text-primary",
+  model: "bg-muted text-muted-foreground",
 };
 
 type GlobalSearchProps = {
@@ -130,75 +137,85 @@ function GlobalSearch({ className }: GlobalSearchProps) {
         }}
       />
 
-      {showPanel ? (
-        <div
-          id="global-search-listbox"
-          role="listbox"
-          aria-label="Search results"
-          className="absolute top-full right-0 z-50 mt-2 w-80 rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-md"
-        >
-          {isPending ? (
-            <div className="flex items-center gap-2 px-3 py-4 text-sm text-muted-foreground">
-              <Loader2Icon aria-hidden className="size-4 animate-spin" />
-              Searching…
-            </div>
-          ) : state.status === "error" ? (
-            <p className="px-3 py-4 text-sm text-muted-foreground">
-              Something went wrong. Try again.
-            </p>
-          ) : results.length === 0 ? (
-            <p className="px-3 py-4 text-sm text-muted-foreground">
-              No results for &ldquo;{debouncedQuery}&rdquo;.
-            </p>
-          ) : (
-            <ul>
-              {results.map((result, index) => {
-                const Icon = RESULT_ICON[result.kind];
-                return (
-                  <li key={`${result.kind}-${result.id}`}>
-                    <button
-                      id={`global-search-option-${index}`}
-                      role="option"
-                      aria-selected={index === activeIndex}
-                      type="button"
-                      className={cn(
-                        "flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm",
-                        index === activeIndex
-                          ? "bg-accent text-accent-foreground"
-                          : "hover:bg-accent hover:text-accent-foreground",
-                      )}
-                      onMouseDown={(event) => event.preventDefault()}
-                      onClick={() => navigateTo(result)}
-                    >
-                      <Icon
-                        aria-hidden
-                        className="size-4 shrink-0 text-muted-foreground"
-                      />
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate font-medium text-foreground">
-                          {result.title}
+      <AnimatePresence>
+        {showPanel ? (
+          <motion.div
+            id="global-search-listbox"
+            role="listbox"
+            aria-label="Search results"
+            initial={{ opacity: 0, y: -4, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.98 }}
+            transition={{ duration: 0.12, ease: "easeOut" }}
+            className="absolute top-full right-0 z-50 mt-2 w-88 rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg"
+          >
+            {isPending ? (
+              <div className="flex items-center gap-2 px-3 py-4 text-sm text-muted-foreground">
+                <Loader2Icon aria-hidden className="size-4 animate-spin" />
+                Searching…
+              </div>
+            ) : state.status === "error" ? (
+              <p className="px-3 py-4 text-sm text-muted-foreground">
+                Something went wrong. Try again.
+              </p>
+            ) : results.length === 0 ? (
+              <p className="px-3 py-4 text-sm text-muted-foreground">
+                No results for &ldquo;{debouncedQuery}&rdquo;.
+              </p>
+            ) : (
+              <ul>
+                {results.map((result, index) => {
+                  const Icon = RESULT_ICON[result.kind];
+                  return (
+                    <li key={`${result.kind}-${result.id}`}>
+                      <button
+                        id={`global-search-option-${index}`}
+                        role="option"
+                        aria-selected={index === activeIndex}
+                        type="button"
+                        className={cn(
+                          "flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm",
+                          index === activeIndex
+                            ? "bg-accent text-accent-foreground"
+                            : "hover:bg-accent hover:text-accent-foreground",
+                        )}
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => navigateTo(result)}
+                      >
+                        <span
+                          className={cn(
+                            "flex size-7 shrink-0 items-center justify-center rounded-md",
+                            RESULT_ICON_STYLE[result.kind],
+                          )}
+                        >
+                          <Icon aria-hidden className="size-3.5" />
                         </span>
-                        {result.subtitle ? (
-                          <span className="block truncate text-xs text-muted-foreground">
-                            {result.subtitle}
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-medium text-foreground">
+                            {result.title}
                           </span>
+                          {result.subtitle ? (
+                            <span className="block truncate text-xs text-muted-foreground">
+                              {result.subtitle}
+                            </span>
+                          ) : null}
+                        </span>
+                        {result.badge ? (
+                          <StatusBadge
+                            label={result.badge.label}
+                            tone={result.badge.tone}
+                            className="shrink-0"
+                          />
                         ) : null}
-                      </span>
-                      {result.badge ? (
-                        <StatusBadge
-                          label={result.badge.label}
-                          tone={result.badge.tone}
-                          className="shrink-0"
-                        />
-                      ) : null}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
-      ) : null}
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }

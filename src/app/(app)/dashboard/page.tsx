@@ -8,11 +8,12 @@ import { canViewInventoryValue } from "@/lib/permissions";
 import { DashboardKpis } from "./dashboard-kpis";
 import { StockMovementWidget } from "./stock-movement-widget";
 import { RecentActivityWidget } from "./recent-activity-widget";
+import { LowStockWidget } from "./low-stock-widget";
 
 /**
- * KPI row (2b), stock movement chart + recent activity (2c) all wired to
- * live data, each in its own Suspense boundary so one widget's failure
- * or loading time never blocks the others.
+ * KPI row (2b), stock movement chart + recent activity (2c), and the
+ * low-stock table (2d) all wired to live data, each in its own Suspense
+ * boundary so one widget's failure or loading time never blocks another.
  */
 export default async function DashboardPage() {
   const user = await getCurrentUser();
@@ -58,6 +59,21 @@ export default async function DashboardPage() {
           <RecentActivityWidget />
         </Suspense>
       </div>
+
+      <Suspense
+        fallback={
+          <Card>
+            <CardHeader>
+              <CardTitle>Needs attention</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <LoadingState variant="table" rows={4} />
+            </CardContent>
+          </Card>
+        }
+      >
+        <LowStockWidget />
+      </Suspense>
     </div>
   );
 }

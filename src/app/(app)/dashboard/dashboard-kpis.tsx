@@ -16,6 +16,10 @@ import {
 import { KpiCard } from "@/components/shared/kpi-card";
 import { ErrorState } from "@/components/shared/error-state";
 import { MotionFadeIn } from "@/components/shared/motion-fade-in";
+import {
+  MotionStagger,
+  MotionStaggerItem,
+} from "@/components/shared/motion-stagger";
 import { cn, formatCurrency } from "@/lib/utils";
 import { toErrorKind } from "@/lib/errors";
 import {
@@ -60,18 +64,26 @@ async function DashboardKpis({ showValue }: DashboardKpisProps) {
         </Alert>
       ) : null}
 
-      <div
+      <MotionStagger
         className={cn(
           "grid grid-cols-1 gap-4 sm:grid-cols-2",
           showValue ? "lg:grid-cols-4" : "lg:grid-cols-3",
         )}
       >
-        {renderKpi(itemCountResult, (count) => (
-          <KpiCard label="Inventory items" value={count} icon={PackageIcon} />
-        ))}
+        <MotionStaggerItem>
+          {renderKpi(itemCountResult, (count) => (
+            <KpiCard
+              label="Inventory items"
+              value={count}
+              icon={PackageIcon}
+              tone="info"
+            />
+          ))}
+        </MotionStaggerItem>
 
-        {showValue
-          ? renderKpi(valueResult, (value) =>
+        {showValue ? (
+          <MotionStaggerItem>
+            {renderKpi(valueResult, (value) =>
               value === undefined ? null : (
                 <KpiCard
                   label="Inventory value"
@@ -95,19 +107,35 @@ async function DashboardKpis({ showValue }: DashboardKpisProps) {
                     </span>
                   }
                   icon={WalletIcon}
+                  tone="success"
                 />
               ),
-            )
-          : null}
+            )}
+          </MotionStaggerItem>
+        ) : null}
 
-        {renderKpi(lowStockResult, (count) => (
-          <KpiCard label="Low stock" value={count} icon={AlertTriangleIcon} />
-        ))}
+        <MotionStaggerItem>
+          {renderKpi(lowStockResult, (count) => (
+            <KpiCard
+              label="Low stock"
+              value={count}
+              icon={AlertTriangleIcon}
+              tone="warning"
+            />
+          ))}
+        </MotionStaggerItem>
 
-        {renderKpi(outOfStockResult, (count) => (
-          <KpiCard label="Out of stock" value={count} icon={XCircleIcon} />
-        ))}
-      </div>
+        <MotionStaggerItem>
+          {renderKpi(outOfStockResult, (count) => (
+            <KpiCard
+              label="Out of stock"
+              value={count}
+              icon={XCircleIcon}
+              tone="destructive"
+            />
+          ))}
+        </MotionStaggerItem>
+      </MotionStagger>
     </MotionFadeIn>
   );
 }

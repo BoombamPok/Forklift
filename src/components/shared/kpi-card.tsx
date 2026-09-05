@@ -12,11 +12,13 @@ import {
 } from "@/components/ui/card";
 
 type TrendDirection = "up" | "down" | "flat";
+type KpiTone = "default" | "success" | "warning" | "destructive" | "info";
 
 type KpiCardProps = {
   label: string;
   value: React.ReactNode;
   icon?: LucideIcon;
+  tone?: KpiTone;
   trend?: {
     direction: TrendDirection;
     label: string;
@@ -30,23 +32,49 @@ const TREND_STYLES: Record<TrendDirection, string> = {
   flat: "text-muted-foreground",
 };
 
+const TONE_STYLES: Record<KpiTone, string> = {
+  default: "bg-muted text-muted-foreground",
+  success: "bg-success/10 text-success",
+  warning: "bg-warning/15 text-warning-foreground",
+  destructive: "bg-destructive/10 text-destructive",
+  info: "bg-info/10 text-info",
+};
+
 /**
- * The KPI primitive dashboard/report screens build on - Phase 1 only wires
- * the shell (see phase1.md #48); real business numbers arrive in Phase 2/6.
+ * The KPI primitive dashboard/report screens build on. `tone` tints the
+ * icon chip to match what the metric means (e.g. warning for low stock)
+ * - purely a semantic color cue, not a claim the card is interactive, so
+ * no hover/press affordance is added here.
  */
-function KpiCard({ label, value, icon: Icon, trend, className }: KpiCardProps) {
+function KpiCard({
+  label,
+  value,
+  icon: Icon,
+  tone = "default",
+  trend,
+  className,
+}: KpiCardProps) {
   return (
-    <Card className={cn("gap-2", className)}>
+    <Card className={cn("gap-3", className)}>
       <CardHeader>
-        <CardDescription>{label}</CardDescription>
+        <CardDescription className="font-medium tracking-wide text-muted-foreground/90 uppercase text-[0.6875rem]">
+          {label}
+        </CardDescription>
         {Icon ? (
           <CardAction>
-            <Icon aria-hidden className="size-4 text-muted-foreground" />
+            <div
+              className={cn(
+                "flex size-8 items-center justify-center rounded-lg",
+                TONE_STYLES[tone],
+              )}
+            >
+              <Icon aria-hidden className="size-4" />
+            </div>
           </CardAction>
         ) : null}
       </CardHeader>
       <CardContent className="space-y-1">
-        <CardTitle className="text-2xl font-semibold tabular-nums">
+        <CardTitle className="font-heading text-[1.75rem] leading-none font-semibold tracking-tight tabular-nums">
           {value}
         </CardTitle>
         {trend ? (
@@ -59,4 +87,4 @@ function KpiCard({ label, value, icon: Icon, trend, className }: KpiCardProps) {
   );
 }
 
-export { KpiCard };
+export { KpiCard, type KpiTone };

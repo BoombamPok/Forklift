@@ -41,70 +41,46 @@ Do not start Phase 2+ work until Phase 1's acceptance criteria (see
 
 ## Repo state (as of 2026-09-05)
 
-- Git repo initialized (`main` branch). No commits yet — first checkpoint
-  commit ("chore: initialize Next.js project") about to be made.
-- Next.js scaffolded via `create-next-app`: TypeScript, App Router,
-  Tailwind CSS v4, ESLint, `src/` dir, npm, import alias `@/*`.
-  Next 16.3.4 / React 19.2.8. `npm run build`, `npm run lint`,
-  `npm run typecheck` all pass clean on the untouched scaffold.
-- Vitest + React Testing Library, Playwright (one smoke test), Prettier
-  wired into ESLint — all passing.
-- shadcn/ui initialized (Nova preset: Lucide icons + Geist fonts, Radix
-  base). Design tokens customized in `src/app/globals.css`: light neutral
-  workspace, warm orange primary, fixed dark navy `--sidebar-*` tokens
-  (same values in `:root` and `.dark` — chrome never changes with theme),
-  added success/warning/info semantic tokens shadcn doesn't ship by
-  default. `next-themes` deliberately removed (no dark-mode toggle in V1).
-  TanStack Table pinned to v8 (v9 installs by default but is a ground-up
-  API rewrite, not yet the well-supported version CLAUDE.md calls for).
-  Full primitive set built: all shadcn base components plus composed
-  `components/shared/*` (SearchInput, IconButton, EmptyState, ErrorState,
-  LoadingState, ConfirmDialog, StatusBadge, KpiCard, ChartContainer,
-  Combobox, DataTable, Form field primitives for React Hook Form + Zod).
-- Application shell built: fixed dark sidebar (desktop ≥1024px) /
-  Sheet-based drawer (<1024px), header with page title + disabled search
-  placeholder, account menu in sidebar footer (shows neutral "Account"
-  placeholder + person icon until Step 5 wires real session data — no
-  fabricated user name/email). `(app)/` route group renders every
-  business-feature route as `<PlaceholderPage phase={N}>` (no auth guard
-  yet — that's wired in Step 5 alongside Supabase). `/dashboard` is the one
-  fleshed-out foundation page: KPI cards, chart container, activity list,
-  all showing "—"/empty states rather than fabricated numbers. `/` redirects
-  to `/dashboard`. Visually verified via Playwright screenshots at
-  1440/1024/390px — matches the premium-industrial-SaaS direction, mobile
-  drawer collapses correctly. Also fixed `next.config.ts` `devIndicators`
-  position (default bottom-left collided with the sidebar's account menu).
-- Supabase client architecture done: `lib/supabase/{client,server,admin}.ts`,
-  `src/proxy.ts` (renamed from `middleware.ts` — Next.js 16 deprecated that
-  file convention), `lib/auth/{get-current-user,require-role}.ts`,
-  `lib/permissions/` (role/permission model + tests), `lib/errors.ts`
-  (safe error classification + tests). Login route is fully built (real
-  form, Server Action) and the `(app)` layout fetches the real user
-  server-side — but none of it can be exercised end-to-end without a live
-  project. Everything degrades gracefully without credentials (middleware
-  passes through, `getCurrentUser()` returns null) — verified by screenshot
-  that the shell/login still render correctly with no `.env.local` present.
-  `(app)/layout.tsx` is `force-dynamic` (was getting statically prerendered
-  with a baked-in "signed out" shell otherwise).
-- Full database schema written as ordered SQL migrations in
-  `supabase/migrations/` + `supabase/seed.sql` (clearly-fictional dev data)
-  — **not yet applied to any project**, since none exists yet. Includes the
-  trigger-maintained `inventory_parts.quantity` + guard trigger blocking
-  direct writes to it, `current_user_role()` backing all RLS policies, and
-  `log_audit_event()` for the audit log. `types/database.ts` is hand-authored
-  to match these migrations until `supabase gen types` can generate it for
-  real against a live project.
-- All local verification passing: typecheck, lint (one benign React
-  Compiler warning on TanStack Table, not a real issue), Prettier, 11 unit
-  tests, Playwright e2e smoke test, production build, and every route
-  (including dynamic `[id]` routes) manually checked at 200.
-- **Blocked on the user creating a Supabase project** — next step is
-  walking them through the dashboard (their choice earlier this session)
-  to get `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and
-  `SUPABASE_SERVICE_ROLE_KEY` into `.env.local`, then apply the migrations,
-  regenerate `types/database.ts` for real, and verify auth/RLS live.
-- Claude Code plugins installed: `ui-ux-pro-max` (UI/UX design skill set),
-  `mattpocock-skills` (TDD, code review, domain modeling, etc.).
+- Next.js 16.3.4 / React 19.2.8, TypeScript, Tailwind v4, `src/` dir, npm.
+  shadcn/ui (Nova preset: Lucide + Geist, Radix base) with custom design
+  tokens in `src/app/globals.css` — light neutral workspace, warm orange
+  primary, fixed dark navy `--sidebar-*` chrome (identical in `:root` and
+  `.dark` — V1 is light-only, no theme toggle), added success/warning/info
+  tokens. Full primitive set in `components/ui/*` + composed
+  `components/shared/*` (DataTable on TanStack Table v8, Form field
+  primitives for RHF+Zod, EmptyState/ErrorState/LoadingState/ConfirmDialog/
+  KpiCard/ChartContainer/Combobox/etc).
+- Application shell (fixed sidebar ≥1024px / Sheet drawer below),
+  `(app)/` route group with a `PlaceholderPage` stub per business feature
+  and one fleshed-out `/dashboard` foundation page. Visually verified via
+  Playwright screenshots at 1440/1024/390px.
+- **Supabase is fully live and verified**, not just scaffolded:
+  - Project created by the user; credentials in `.env.local` (gitignored).
+    Uses Supabase's current **publishable/secret** key naming
+    (`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` / `SUPABASE_SECRET_KEY`) — the
+    older anon/service_role naming is being retired by Supabase end of
+    2026; caught and fixed before this ever shipped with the old names.
+  - All 7 migrations in `supabase/migrations/` + `supabase/seed.sql`
+    applied directly via `psql` (no Docker/CLI-login available in this
+    environment, so `supabase db push`/`gen types` weren't usable — see
+    below). `types/database.ts` stays hand-authored, confirmed to match
+    the live schema (`\dt` listed all 17 tables as expected).
+  - Two real users exist: an admin account for the user
+    (`pingatravi@gmail.com`) and a synthetic `e2e-tests@forkstock.dev`
+    fixture (role `staff`) used only by `e2e/auth.spec.ts`, both created
+    via the Supabase Admin Auth API using the secret key.
+  - Live-verified, not just structurally trusted: `guard_inventory_quantity`
+    rejects a direct `UPDATE ... SET quantity` (tested via psql); RLS
+    returns `[]` to anonymous requests on protected tables; the staff
+    fixture can read inventory but gets a real `42501` trying to write
+    `catalogue_parts`; an admin can read an `audit_logs` row (inserted via
+    `log_audit_event()`) that the staff fixture genuinely cannot see.
+    Test artifacts cleaned up after.
+  - `e2e/auth.spec.ts` covers login → dashboard → account menu → sign-out
+    and the unauthenticated-redirect-to-/login case, against the live
+    project. All 3 e2e tests + 11 unit tests + typecheck/lint/format/build
+    pass.
+- Claude Code plugins installed: `ui-ux-pro-max`, `mattpocock-skills`.
 - Reference catalogue data (the old Hook Locator consolidation report
   mentioned in `phase1.md` §5) is not present in this repo. Proceeding
   without it per user decision — Phase 1 doesn't need real data, only
@@ -123,17 +99,22 @@ quantity is a trigger-maintained column backed by an insert-only
 `stock_movements` ledger; RLS backed by one `current_user_role()` Postgres
 function; V1 ships light-theme-only with a fixed (non-toggleable) dark
 navy sidebar; auth is email/password only, no self-signup UI; npm as
-package manager; git commits at each build checkpoint.
+package manager; git commits at each build checkpoint; Supabase's current
+publishable/secret key naming, not the legacy anon/service_role names
+(user caught this — see the commit titled "fix: use Supabase's
+publishable/secret keys..."); migrations applied via direct `psql`
+(installed in this environment) using the project's DB password rather
+than the Supabase CLI, since CLI login/`db push` needs a personal access
+token and `gen types`'s `--db-url` path needs Docker, neither available
+here — a real project elsewhere could use either of those instead.
 
 ---
 
 ## Next steps
 
-Done: tooling, shadcn/ui + design tokens + UI primitives, application
-shell/navigation, Supabase client code, database migrations + seed, local
-verification (all 6 checkpoint commits landed, see `git log`).
+Done: tooling, design system + primitives, application shell, Supabase
+client code + migrations, and live auth/RLS verification against a real
+project (see `git log` for the checkpoint commits).
 
-Remaining, in order: **user creates a Supabase project (blocked here)** →
-apply migrations to it + regenerate `types/database.ts` for real → wire
-and verify auth/RLS live → testing pass → docs (README, ADRs) → final
-Phase 1 validation report against `phase1.md` §59/§60.
+Remaining: docs (README, ADRs) → final Phase 1 validation report against
+`phase1.md` §59/§60, then stop at the phase boundary — no Phase 2 work.

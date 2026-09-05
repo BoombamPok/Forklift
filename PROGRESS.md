@@ -38,6 +38,16 @@ five sub-phases; each read the previous ones' output:
 for a `phase3.md` spec first** (same one-spec-file-per-phase pattern
 used throughout Phase 2).
 
+**A premium visual-polish design pass also happened after Phase 2**,
+user-requested directly (not from a phase spec) — see the "Design
+pass" section below for full detail. Short version: Space Grotesk is
+now `--font-heading`, meaningful icons sit in tone-tinted chips
+(success/warning/destructive/info), there's a `MotionStagger` primitive
+for cascading card/list entrances, and the login page is a branded
+split-screen layout. Reuse these conventions in Phase 3+ UI rather than
+inventing new ones — see that section and
+`project-forkstock-phase2-patterns` memory for specifics.
+
 Phases: 1) Architecture + UX Foundation → 2) Core UI + Dashboard →
 3) Inventory + Parts → 4) Warehouse Management →
 5) Catalogue + Vehicle Compatibility → 6) Operations + BI →

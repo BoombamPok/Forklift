@@ -24,12 +24,8 @@ re-deriving context.
 
 **Phase 1 of 7 — Architecture + UX Foundation: COMPLETE.**
 **Phase 2 of 7 — Core UI + Dashboard: COMPLETE.**
-**Phase 3 of 7 — Inventory + Parts: COMPLETE, with one follow-up**: the
-new migration (`20260905110000_part_images_delete_and_storage_path.sql`)
-needs applying to the live Supabase project via `psql` — blocked on the
-user pasting the DB password. See the Phase 3 section below for full
-detail; the next session should apply that migration first if it hasn't
-happened yet, then verify part-image removal live.
+**Phase 3 of 7 — Inventory + Parts: COMPLETE.** See the Phase 3 section
+below for full detail.
 
 The user split Phase 2 into five sub-phases; each read the previous
 ones' output:
@@ -575,16 +571,13 @@ triggers, and RLS without reinterpreting them.
   **ADR 0011** (`docs/decisions/0011-part-images-storage-path-and-delete.md`),
   which also fixes the storage path convention
   (`{inventory_part_id}/{uuid}.{ext}`).
-  **This migration has NOT yet been applied to the live Supabase
-  project** — applying migrations here requires `psql` with the DB
-  password (no Docker/CLI login available), and the password wasn't
-  provided this session. Part image upload/view work fine against the
-  live project today (the existing SELECT/INSERT policies cover them);
-  only image **removal** is blocked live until this migration is
-  applied. **Next session: ask the user for the DB password, apply this
-  migration via `psql`, then confirm image removal works against the
-  live project** (component tests already cover the client-side logic;
-  see below).
+  Applied to the live project via `psql` (the user provided the DB
+  password); both policies confirmed present with `pg_policies` after
+  applying. Live-verified end-to-end afterward: uploaded a real image
+  to a fresh test part, confirmed it rendered, removed it, confirmed
+  both the `part_images` row and the storage object were actually
+  gone (`select count(*) ... = 0`) — not just that the UI stopped
+  showing it.
 - **Movement-type semantics**, resolved during planning since phase3.md
   described them loosely: Stock In (positive `quantity`, optional box —
   defaults to the part's current box, updates `box_id` if changed),
@@ -673,14 +666,14 @@ triggers, and RLS without reinterpreting them.
     permanent `stock_movements` rows it also leaves — see ADR 0002).
     Soft-deleting it would require the admin account, whose password
     isn't stored.
-  - **No live/manual admin-role check happened this session** — testing
-    admin-only behavior (Delete visibility, and confirming the new
-    image-delete RLS policy once applied) needs the
-    `pingatravi@gmail.com` password, which wasn't available. The
-    permission-boundary *logic* itself (role → allowed actions) is
-    fully covered by `PartActions`' component tests and by RLS policies
-    already reviewed in Phase 1/2a; what's unverified is only the live,
-    end-to-end admin path.
+  - **No live/manual admin-role check happened this session** —
+    confirming Delete's visibility live as `pingatravi@gmail.com` would
+    need that account's password, which wasn't available (only the DB
+    password was, for applying the migration above — a different
+    credential). The permission-boundary *logic* itself (role → allowed
+    actions) is fully covered by `PartActions`' component tests and by
+    RLS policies already reviewed in Phase 1/2a; what's unverified is
+    only the live, end-to-end admin path.
 - Typecheck, lint, format, build, and all unit/component/e2e tests pass.
 
 **Out of scope, confirmed against phase3.md §4/§15 and left alone**:

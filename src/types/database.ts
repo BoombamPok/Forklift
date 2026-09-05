@@ -305,6 +305,7 @@ export type Database = {
           name: string;
           box_id: string | null;
           quantity: number;
+          min_stock: number | null;
           purchase_cost: number | null;
           selling_price: number | null;
           status: InventoryStatus;
@@ -318,6 +319,7 @@ export type Database = {
           name: string;
           box_id?: string | null;
           quantity?: number;
+          min_stock?: number | null;
           purchase_cost?: number | null;
           selling_price?: number | null;
           status?: InventoryStatus;

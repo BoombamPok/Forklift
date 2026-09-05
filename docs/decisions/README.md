@@ -12,3 +12,4 @@ overview.
 - [0006 — No self-signup — accounts are admin-provisioned](0006-no-self-signup.md)
 - [0007 — Server-enforced attribution, and no `for all` RLS policies](0007-server-enforced-attribution-and-no-for-all-policies.md)
 - [0008 — Imported the real Godrej/Voltas master catalogue ahead of Phase 5](0008-real-catalogue-import.md)
+- [0009 — `inventory_parts.min_stock` as a nullable low-stock threshold](0009-inventory-min-stock-threshold.md)

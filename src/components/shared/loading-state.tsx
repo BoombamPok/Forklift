@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 type LoadingStateProps = {
   variant?: "table" | "cards" | "block";
   rows?: number;
+  columns?: 3 | 4;
   className?: string;
 };
 
@@ -16,6 +17,7 @@ type LoadingStateProps = {
 function LoadingState({
   variant = "block",
   rows = 5,
+  columns = 4,
   className,
 }: LoadingStateProps) {
   if (variant === "table") {
@@ -38,7 +40,8 @@ function LoadingState({
         role="status"
         aria-label="Loading"
         className={cn(
-          "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4",
+          "grid grid-cols-1 gap-4 sm:grid-cols-2",
+          columns === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4",
           className,
         )}
       >

@@ -1,11 +1,15 @@
 import * as React from "react";
 
+import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/shared/empty-state";
+
+type ActivityTone = "positive" | "negative" | "neutral";
 
 type ActivityItem = {
   id: string;
   description: string;
   timestamp: string;
+  tone?: ActivityTone;
 };
 
 type ActivityListProps = {
@@ -14,9 +18,17 @@ type ActivityListProps = {
   emptyDescription?: string;
 };
 
+const TONE_DOT: Record<ActivityTone, string> = {
+  positive: "bg-success",
+  negative: "bg-destructive",
+  neutral: "bg-muted-foreground/40",
+};
+
 /**
- * The activity-list primitive dashboard/detail screens build on (phase1.md
- * #48) - real activity/audit data starts flowing in Phase 2+.
+ * The activity-list primitive dashboard/detail screens build on. `tone`
+ * is an optional small color cue (e.g. inbound vs outbound movement) -
+ * purely decorative context, the description text always stands on its
+ * own without it.
  */
 function ActivityList({
   items,
@@ -28,13 +40,22 @@ function ActivityList({
   }
 
   return (
-    <ul className="space-y-3">
+    <ul className="space-y-1">
       {items.map((item) => (
         <li
           key={item.id}
-          className="flex items-start justify-between gap-3 text-sm"
+          className="flex items-start gap-3 rounded-lg px-2 py-2 text-sm transition-colors hover:bg-muted/60"
         >
-          <span className="text-foreground">{item.description}</span>
+          <span
+            aria-hidden
+            className={cn(
+              "mt-1.5 size-1.5 shrink-0 rounded-full",
+              TONE_DOT[item.tone ?? "neutral"],
+            )}
+          />
+          <span className="min-w-0 flex-1 text-foreground">
+            {item.description}
+          </span>
           <time className="shrink-0 text-xs text-muted-foreground">
             {item.timestamp}
           </time>
@@ -44,4 +65,4 @@ function ActivityList({
   );
 }
 
-export { ActivityList, type ActivityItem };
+export { ActivityList, type ActivityItem, type ActivityTone };

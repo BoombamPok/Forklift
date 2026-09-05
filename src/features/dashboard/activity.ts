@@ -13,7 +13,7 @@ export type StockMovementDay = {
   outbound: number;
 };
 
-type MovementDirection = "in" | "out" | "none";
+export type MovementDirection = "in" | "out" | "none";
 
 /**
  * Classifies a stock_movements row for the chart (phase2c.md, decision
@@ -91,6 +91,9 @@ export type RecentActivityItem = {
    * profile from the current viewer - the two are indistinguishable from
    * here, so neither is presented as an error or as "Unknown". */
   actorName: string | null;
+  /** Reuses the chart's in/out/none classification so the feed can show
+   * a matching visual cue per row without re-deriving it from text. */
+  direction: MovementDirection;
 };
 
 const MOVEMENT_VERB: Record<MovementType, string> = {
@@ -176,5 +179,9 @@ export async function getRecentActivity(
     timestamp: movement.created_at,
     actorName:
       (movement.created_by && actorNameById.get(movement.created_by)) || null,
+    direction: classifyMovement(
+      movement.movement_type,
+      movement.quantity_change,
+    ),
   }));
 }

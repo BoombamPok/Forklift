@@ -153,6 +153,7 @@ describe("getRecentActivity", () => {
 
     expect(item.description).toBe("Received 10 × Sample Part (SAMPLE-0001)");
     expect(item.actorName).toBeNull();
+    expect(item.direction).toBe("in");
   });
 
   it("attributes the actor when their profile is visible to this viewer", async () => {

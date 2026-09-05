@@ -23,6 +23,7 @@ describe("RecentActivityWidget", () => {
         description: "Received 10 × Sample Part (SAMPLE-0001)",
         timestamp: new Date().toISOString(),
         actorName: "Jane Warehouse",
+        direction: "in",
       },
     ]);
 
@@ -42,6 +43,7 @@ describe("RecentActivityWidget", () => {
         description: "Received 10 × Sample Part (SAMPLE-0001)",
         timestamp: new Date().toISOString(),
         actorName: null,
+        direction: "in",
       },
     ]);
 

@@ -28,9 +28,10 @@ into five sub-phases; each reads the previous ones' output:
 
 - **2a — Schema + Data Foundation: COMPLETE** (spec: `phase2a.md`). No UI.
 - **2b — Dashboard KPI Cards: COMPLETE** (spec: `phase2b.md`).
-- 2c — Stock Movement Chart + Recent Activity: NOT STARTED — **this is
-  where the next session picks up.**
-- 2d — Low-Stock Table: NOT STARTED.
+- **2c — Stock Movement Chart + Recent Activity: COMPLETE** (spec:
+  `phase2c.md`, combined with 2d/2e in one doc - implemented in order).
+- 2d — Low-Stock Table: NOT STARTED — **this is where the next session
+  picks up.**
 - 2e — Global Search: NOT STARTED (saved for last, self-contained).
 
 Phases: 1) Architecture + UX Foundation → 2) Core UI + Dashboard →
@@ -253,13 +254,65 @@ Spec: `phase2b.md`. Delivered, all locally + live verified:
   tests instead. 35 total unit/component tests, 4 e2e tests, all green;
   typecheck/lint/format/build all pass.
 
+## Phase 2c — Stock Movement Chart + Recent Activity (done)
+
+Spec: `phase2c.md` (combined doc for 2c/2d/2e — implemented in order,
+each committed and verified separately). Delivered:
+
+- `src/features/dashboard/activity.ts`: `getStockMovementSeries()` (30
+  continuous UTC-day inbound/outbound buckets) and `getRecentActivity()`
+  (last 10 movements, plain-language description, actor name when
+  visible). Classification decision (in/returned inbound, out/damaged
+  outbound, transfer excluded, adjust by its own sign) followed exactly
+  as phase2c.md recommended — no override, so no new ADR, recorded here
+  per the same "must be recorded either way" convention as 2b's value-
+  visibility decision.
+- **Discovered while building the activity join**: `profiles` RLS only
+  lets a user see their own row (or an admin see everyone's) — asked
+  the user rather than assuming, and they chose to **keep RLS as-is**
+  rather than add a policy exposing `full_name` more broadly. So
+  `getRecentActivity()`'s actor is `null` both when `created_by` is
+  genuinely null and when RLS hides that profile from the current
+  viewer — the two are indistinguishable from here by design, and
+  never rendered as "Unknown."
+- Implemented the join as three flat queries (movements, then
+  inventory_parts + profiles by id) rather than a PostgREST embed:
+  `types/database.ts` has no `Relationships` metadata for an embed to
+  type against, and row volume doesn't justify solving that yet — same
+  "fetch flat, join in JS" call as 2a.
+- UI: new `StockMovementWidget` (Recharts `StockMovementBarChart` in
+  the existing `ChartContainer`) and `RecentActivityWidget` (existing
+  `ActivityList`), each its own Suspense boundary on `/dashboard` so
+  one widget's failure/latency never affects the other. Added
+  `recharts` (CLAUDE.md #9's approved charting library) and
+  `formatRelativeTime()` (`src/lib/utils.ts`) for activity timestamps.
+- **Live-verified visually** (Playwright screenshot, staff fixture,
+  1440px): real chart bars and four real activity rows rendered
+  correctly against the live project's actual movement history.
+- **e2e scope call**: phase2c.md asked for an e2e test that seeds a few
+  movements and confirms they render. `stock_movements` is a
+  deliberately insert-only ledger (no UPDATE/DELETE RLS policy at all,
+  CLAUDE.md #5) on this project's real, live Supabase instance —
+  seeding synthetic rows would permanently pollute real inventory
+  history with no way to clean up after. Wrote a non-destructive
+  equivalent instead (`e2e/dashboard.spec.ts`): confirms both widgets
+  render content-or-honest-empty-state with no error card, against
+  whatever real activity already exists.
+- Testing: 13 unit tests (`activity.test.ts`) + 7 component tests
+  (widget-level empty/error/populated branching) + 2 e2e tests. 59
+  total unit/component tests, 5 e2e tests, all green;
+  typecheck/lint/format/build all pass.
+
 ## Next steps
 
-1. **2c — Stock Movement Chart + Recent Activity** is next. Ask the
-   user for `phase2c.md` before starting (same pattern as 2a/2b).
-2. 2c will need real `stock_movements` data to chart — currently only
-   the two Phase 1 seed rows exist live. Don't fabricate movement/
-   activity history to make the widgets "look" populated.
+1. **2d — Low-Stock Table** is next (spec: `phase2c.md` §"2d", same
+   combined doc). No new spec file needed — 2e after that, same doc.
+2. 2d needs a brand lookup via `inventory_parts.catalogue_part_id →
+   catalogue_parts.brand_id → brands.name`. Model is many-to-many via
+   `compatibility` (a part can fit multiple forklift models), so it
+   doesn't reduce to one column for a summary table row — plan to show
+   brand only and skip per-row model, unless reconsidered when actually
+   building the table.
 3. Follow `CLAUDE.md` §20's Phase Workflow for each sub-phase.
 4. Commit hygiene: split every sub-phase's changes into multiple
    logically-scoped commits (schema/infra/feature/tests/docs) as they're

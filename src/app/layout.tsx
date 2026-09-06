@@ -31,7 +31,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${plexSans.variable} ${plexMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="bg-grain flex min-h-full flex-col">
         <TooltipProvider delayDuration={200}>{children}</TooltipProvider>
         <Toaster position="top-right" />
       </body>

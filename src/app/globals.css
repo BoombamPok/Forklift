@@ -52,6 +52,22 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Elevation: shadows are tinted toward the foreground hue instead of
+     flat black, and layered (a tight contact shadow + a soft ambient
+     one) so surfaces read as physically lifted rather than "boxed". */
+  --shadow-color: 260 15% 15%;
+  --shadow-xs: 0 1px 2px hsl(var(--shadow-color) / 0.04);
+  --shadow-sm:
+    0 1px 2px hsl(var(--shadow-color) / 0.04),
+    0 2px 6px -2px hsl(var(--shadow-color) / 0.06);
+  --shadow-md:
+    0 1px 2px hsl(var(--shadow-color) / 0.05),
+    0 8px 20px -6px hsl(var(--shadow-color) / 0.1);
+  --shadow-lg:
+    0 2px 4px hsl(var(--shadow-color) / 0.05),
+    0 16px 40px -12px hsl(var(--shadow-color) / 0.16);
+  --shadow-glow: 0 0 0 1px var(--primary), 0 0 24px -4px var(--primary);
 }
 
 :root {
@@ -147,6 +163,17 @@
   --sidebar-accent-foreground: oklch(0.97 0.005 255);
   --sidebar-border: oklch(1 0 0 / 8%);
   --sidebar-ring: oklch(0.646 0.222 41.116);
+  --shadow-color: 0 0% 0%;
+  --shadow-xs: 0 1px 2px hsl(var(--shadow-color) / 0.3);
+  --shadow-sm:
+    0 1px 2px hsl(var(--shadow-color) / 0.3),
+    0 2px 6px -2px hsl(var(--shadow-color) / 0.35);
+  --shadow-md:
+    0 1px 2px hsl(var(--shadow-color) / 0.3),
+    0 8px 20px -6px hsl(var(--shadow-color) / 0.45);
+  --shadow-lg:
+    0 2px 4px hsl(var(--shadow-color) / 0.3),
+    0 16px 40px -12px hsl(var(--shadow-color) / 0.55);
 }
 
 @layer base {
@@ -154,9 +181,45 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply relative bg-background text-foreground;
   }
   html {
     @apply font-sans;
+  }
+  ::selection {
+    background: color-mix(in oklch, var(--primary), transparent 75%);
+  }
+}
+
+@utility bg-grain {
+  &::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.025;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+@utility bg-ambient-glow {
+  &::after {
+    content: "";
+    position: fixed;
+    top: -10%;
+    right: -10%;
+    z-index: 0;
+    pointer-events: none;
+    width: 40rem;
+    height: 40rem;
+    border-radius: 9999px;
+    background: radial-gradient(
+      circle,
+      color-mix(in oklch, var(--primary), transparent 88%),
+      transparent 70%
+    );
+    filter: blur(40px);
   }
 }

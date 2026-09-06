@@ -14,7 +14,7 @@ type HeaderProps = {
  */
 function Header({ title, onOpenMobileNav }: HeaderProps) {
   return (
-    <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background px-4 lg:px-6">
+    <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-3 border-b border-border/80 bg-background/85 px-4 backdrop-blur-md lg:px-6">
       <Button
         type="button"
         variant="ghost"
@@ -26,7 +26,7 @@ function Header({ title, onOpenMobileNav }: HeaderProps) {
         <MenuIcon />
       </Button>
 
-      <h1 className="min-w-0 truncate font-heading text-sm font-semibold tracking-tight text-foreground">
+      <h1 className="min-w-0 truncate font-heading text-base font-semibold tracking-tight text-foreground">
         {title}
       </h1>
 

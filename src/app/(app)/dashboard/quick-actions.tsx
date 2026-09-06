@@ -3,6 +3,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   BarChart3Icon,
   BookOpenIcon,
+  ChevronRightIcon,
   PlusIcon,
   WarehouseIcon,
 } from "lucide-react";
@@ -63,19 +64,23 @@ function QuickActions({ role }: QuickActionsProps) {
       <CardHeader>
         <CardTitle>Quick actions</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent className="-my-1 divide-y divide-border/70">
         {actions.map((action) => {
           const Icon = action.icon;
           return (
             <Link
               key={action.href}
               href={action.href}
-              className="flex items-center gap-3 rounded-lg border border-border px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-accent"
+              className="group flex items-center gap-3 py-2.5 text-sm font-medium text-foreground transition-colors first:pt-1 last:pb-1 hover:text-primary"
             >
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-transform group-hover:scale-105">
                 <Icon aria-hidden className="size-4" />
               </span>
-              {action.label}
+              <span className="flex-1">{action.label}</span>
+              <ChevronRightIcon
+                aria-hidden
+                className="size-4 shrink-0 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5 group-hover:text-primary"
+              />
             </Link>
           );
         })}

@@ -40,6 +40,14 @@ const TONE_STYLES: Record<KpiTone, string> = {
   info: "bg-info/10 text-info",
 };
 
+const TONE_ACCENT: Record<KpiTone, string> = {
+  default: "bg-muted-foreground/30",
+  success: "bg-success",
+  warning: "bg-warning",
+  destructive: "bg-destructive",
+  info: "bg-info",
+};
+
 /**
  * The KPI primitive dashboard/report screens build on. `tone` tints the
  * icon chip to match what the metric means (e.g. warning for low stock)
@@ -55,7 +63,14 @@ function KpiCard({
   className,
 }: KpiCardProps) {
   return (
-    <Card className={cn("gap-3", className)}>
+    <Card className={cn("relative gap-3 pt-3.5", className)}>
+      <div
+        aria-hidden
+        className={cn(
+          "absolute inset-x-0 top-0 h-[3px] rounded-t-xl",
+          TONE_ACCENT[tone],
+        )}
+      />
       <CardHeader>
         <CardDescription className="font-medium tracking-wide text-muted-foreground uppercase text-[0.6875rem]">
           {label}

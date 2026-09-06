@@ -1239,10 +1239,80 @@ screenshotted the real rendered dashboard at 1600px and 390px - real
 catalogue data (Godrej/Voltas-OM brands, DVX-series forklift models) came
 through correctly, no console errors, all widgets resolved.
 
+## Admin feature — Users/Roles + Import/Export (2026-09-06, done)
+
+Not a phase (there is no Phase 8) - a real gap closed. `/admin` had shown
+a `PlaceholderPage` labeled "Coming in Phase 7" since Phase 1
+(`5d4cd5b`), a guess made before the phase plan was finalized. When
+Phase 7 actually ran, its own spec was "no new product features" -
+hardening only - so the feature the placeholder promised was never built
+in any of the 7 phases. The user confirmed this while checking the live
+deployed `/admin` page and asked to build it. No new migration was
+needed - `profiles`/`app_role` (Phase 1) already covered everything
+users/roles needs.
+
+- **Users & Roles** (`/admin/users`, `src/features/admin/{actions,
+  queries,schema}.ts`): new users are added by **email invite**
+  (`createAdminClient().auth.admin.inviteUserByEmail`), not an
+  admin-set password - the invitee sets their own via a new
+  `/accept-invite` page (`src/features/auth/components/
+  accept-invite-form.tsx`) that the browser's Supabase client
+  auto-authenticates from the invite link's URL tokens
+  (`detectSessionInUrl`). Required a middleware fix
+  (`src/lib/supabase/middleware.ts`): `/accept-invite` needed a *third*
+  redirect category (`AUTH_FLOW_PATHS`, exempt from both "must be logged
+  in" and "must be logged out" rules) - a plain `PUBLIC_PATHS` entry
+  would have bounced an already-authenticated invitee straight to
+  `/dashboard` before they could set a password. `getUserList()` merges
+  `profiles` (via the regular RLS-scoped client - RLS's "Admins can view
+  all profiles" already permits it) with Supabase Auth's
+  `admin.listUsers()` (email/last-sign-in/ban state - only the admin API
+  has these). Role changes go through the regular client (RLS-gated);
+  deactivate/reactivate bans/unbans via the admin API
+  (`ban_duration: "876000h"`/`"none"`) rather than deleting the account,
+  so historical records referencing that user stay intact. Both
+  `updateUserRole` and `setUserActive` refuse to touch the caller's own
+  row, and refuse to demote/deactivate the last remaining `admin` -
+  never leaves the app with zero admins able to fix it.
+- **Import/Export** (`/admin/import-export`, `/admin/catalogue-export`
+  GET Route Handler - this app's first-ever API route):
+  **catalogue parts only** for V1, not inventory stock records (the
+  user's explicit call - avoids risking bulk writes to live stock).
+  `catalogue_parts.part_number` is deliberately not unique at the DB
+  level ("duplicate detection is an app workflow, not a constraint" -
+  `20260905060100_catalogue_schema.sql`), so import never upserts: rows
+  matching an existing (brand, part_number) pair are reported as
+  skipped, never overwritten - mirrors `scripts/
+  import-master-catalogue.mjs`'s own skip-existing behavior. New
+  `src/lib/csv.ts` (RFC4180 parse/stringify, ported from that same
+  script) rather than adding a dependency.
+- **Admin landing page** (`/admin`) now links to the two sections above
+  plus the already-built `/warehouse` CRUD (Phase 4) - "warehouse
+  configuration" was never rebuilt here, since duplicating working code
+  would have contradicted the rest of this change's own reasoning.
+
+Verified: typecheck/lint/format/build/251 unit tests all green (11 new -
+`csv.test.ts`, `admin/schema.test.ts`). e2e coverage added to
+`e2e/admin.spec.ts`: CSV export returns a well-formed file, a CSV import
+happy path (synthetic `E2E Admin Test Import Part`, cleaned up via the
+catalogue UI's own soft-delete afterward, same prefix convention as the
+warehouse/brand tests above), and a non-admin-redirect check using the
+plain `staff` fixture. **Not run against the live Supabase project in
+this session** - importing writes a real (synthetic, cleaned-up) row to
+the live catalogue, and there's no live-invite test at all, since that
+would email a real address; per this project's standing caution around
+live-data e2e writes, that's for the user to run or explicitly authorize.
+Real invite-email delivery isn't E2E-testable in CI at all (no way to
+receive the email) - flagged as a manual step in
+`docs/LAUNCH_CHECKLIST.md` instead.
+
 ## Next steps
 
 There is no Phase 8. ForkStock V1 is feature-complete, reviewed,
-hardened, and documented. What's left is entirely for a human to do,
-tracked in `docs/LAUNCH_CHECKLIST.md`: add the CI `e2e` job's repository
-secrets, and do one final manual walkthrough on the actual deployed URL
-before real warehouse staff start using it.
+hardened, and documented, and the `/admin` gap above is closed. What's
+left is entirely for a human to do, tracked in
+`docs/LAUNCH_CHECKLIST.md`: add the CI `e2e` job's repository secrets,
+run (or authorize) the new admin e2e tests and a real invite-email smoke
+test against the live Supabase project, and do one final manual
+walkthrough on the actual deployed URL before real warehouse staff start
+using it.

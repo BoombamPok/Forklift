@@ -22,6 +22,13 @@ verified during Phase 7 and what's left for a person to actually do.
       `E2E_ADMIN_TEST_EMAIL`/`PASSWORD` (values are already in your local
       `.env.local`). Until this is done, the `verify` job will still pass
       on every push, but the `e2e` job will fail on pushes to `main`.
+- [ ] **Action needed:** the new admin e2e tests (`e2e/admin.spec.ts` —
+      CSV export/import, non-admin redirect) haven't been run against the
+      live Supabase project yet; the import test writes a real (synthetic,
+      self-cleaning) row to the live catalogue, so this needs a person to
+      run it or explicitly authorize an agent to. Real invite-email
+      delivery for `inviteUser` has no automated test at all (nothing in
+      CI can receive the email) — see the manual step in §8.
 - [ ] After adding secrets, push to `main` (or re-run the workflow) and
       confirm both jobs go green in the Actions tab.
 
@@ -52,6 +59,12 @@ verified during Phase 7 and what's left for a person to actually do.
 - [ ] Do one final manual pass through every major workflow (§8 below)
       on the **actual deployed URL**, not just localhost — a stale
       deployment was a real, previously-observed risk in this project.
+- [ ] **Action needed:** in the Supabase dashboard, confirm
+      Authentication → URL Configuration's Site URL matches production
+      (or set `NEXT_PUBLIC_SITE_URL` — see `.env.example`), and that the
+      "Invite user" email template is enabled — `inviteUser`
+      (`src/features/admin/actions.ts`) depends on both to send a working
+      invite link.
 
 ## 3. Security review
 
@@ -135,7 +148,8 @@ verified during Phase 7 and what's left for a person to actually do.
 
 ## 7. Test coverage
 
-- [x] `npm run test` — 240 unit/component tests, all green.
+- [x] `npm run test` — 251 unit/component tests, all green (11 new for
+      the Admin feature's CSV utility and invite/role schema).
 - [x] `npm run test:e2e` — 28 Playwright specs, all green (run against a
       production build; see §1).
 - [x] Admin-role e2e coverage added (`e2e/admin.spec.ts`) — creates,
@@ -143,6 +157,10 @@ verified during Phase 7 and what's left for a person to actually do.
       catalogue brand as the `admin` fixture, closing the gap every
       earlier phase's own notes flagged (Phases 3, 4, 5 all shipped
       without any admin/manager-role browser test).
+- [ ] Three more specs were added to `e2e/admin.spec.ts` for the new
+      Admin feature (CSV export, CSV import with self-cleanup, non-admin
+      redirect) but not yet run against live Supabase — see §1's action
+      item above.
 
 ## 8. Manual full-workflow pass (do this on the deployed URL)
 
@@ -156,6 +174,16 @@ Walk through each of these as a real user before calling this launched:
 - [ ] View every report under `/reports`.
 - [ ] As an admin/manager account, create/edit/delete a warehouse and a
       catalogue brand (the actions `e2e/admin.spec.ts` automates).
+- [ ] As an admin, invite a real test address at `/admin/users`, confirm
+      the invite email arrives, and that its link lands on
+      `/accept-invite` and successfully signs the new user in after
+      setting a password — the one part of the Admin feature nothing
+      automated can verify (see §7).
+- [ ] As an admin, change a user's role and deactivate/reactivate a
+      (non-yourself) test account at `/admin/users`.
+- [ ] Export catalogue parts to CSV from `/admin/import-export`, edit one
+      row, and re-import it — confirm the new row is added and the
+      unmodified existing rows are reported as skipped, not duplicated.
 - [ ] Confirm loading/empty/error states look right on a slow connection
       (throttle in devtools) and on a page with genuinely no data yet.
 
@@ -169,12 +197,11 @@ Walk through each of these as a real user before calling this launched:
 
 ## 10. Known, accepted gaps (not blockers — documented on purpose)
 
-- **No in-app user/role management UI.** An admin changes a user's role
-  via the Supabase dashboard/SQL directly. Building this UI would be new
-  product-feature scope, which Phase 7 explicitly excludes
-  (`CLAUDE.md`/`phase7.md` §3's "no new product features"). If this
-  becomes a real operational pain point, it's a candidate for scoping as
-  its own small phase later — not a silent omission.
+- **Import/export covers catalogue parts only**, not inventory stock
+  records — the user's explicit scope call for the Admin feature (see
+  `PROGRESS.md`), to avoid risking bulk writes to live stock data. Not a
+  silent omission; a candidate to revisit if a real operational need for
+  bulk inventory edits shows up.
 - **No QR/barcode, Sales/Purchases/Suppliers/Customers/Invoicing.** Never
   in scope for V1, at any phase, per `CLAUDE.md` §14 and §19.
 - **Reports fetch unbounded at the current (small) data scale** — see §6

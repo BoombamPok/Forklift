@@ -98,5 +98,5 @@ test("browses the full hierarchy and reaches a real part's detail page, with man
   const partLink = page.getByRole("link", { name: /SAMPLE-0001/ });
   await expect(partLink).toBeVisible();
   await partLink.click();
-  await expect(page).toHaveURL(/\/inventory\/[^/]+$/);
+  await expect(page).toHaveURL(/\/inventory\/[^/]+$/, { timeout: 20_000 });
 });

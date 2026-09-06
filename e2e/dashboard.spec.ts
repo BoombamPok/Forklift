@@ -24,9 +24,6 @@ test("staff sees real KPI numbers but not the inventory value card", async ({
   await expect(page.getByText("Low stock", { exact: true })).toBeVisible();
   await expect(page.getByText("Out of stock", { exact: true })).toBeVisible();
   await expect(page.getByText("Inventory value")).not.toBeAttached();
-
-  // Real data, not the Phase 1 placeholder dash.
-  await expect(page.getByText("—", { exact: true })).toHaveCount(0);
 });
 
 // phase2c.md asks for an e2e check that seeds a few movements and

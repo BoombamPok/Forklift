@@ -21,7 +21,7 @@ vi.mock("sonner", () => ({
   toast: { success: mocks.toastSuccess, error: mocks.toastError },
 }));
 
-import { StockMovementDialog } from "@/app/(app)/inventory/[id]/stock-movement-dialog";
+import { StockMovementDialog } from "@/features/inventory/stock-movement-dialog";
 
 // `toBoxId` is validated as `z.string().uuid()`, so the fixture values
 // need to actually parse as UUIDs (a truncated placeholder like "b1"

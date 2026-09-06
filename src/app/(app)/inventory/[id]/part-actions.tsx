@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { softDeletePart } from "@/features/inventory/actions";
 import type { ComboboxOption } from "@/components/shared/combobox";
-import { StockMovementDialog } from "./stock-movement-dialog";
+import { StockMovementDialog } from "@/features/inventory/stock-movement-dialog";
 import type { MovementType } from "@/types/database";
 
 type PartActionsProps = {

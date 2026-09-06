@@ -3,6 +3,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { classifyMovement, describeMovement } from "@/lib/stock-movements";
 import type { MovementDirection } from "@/lib/stock-movements";
+import { fetchFlatHierarchy } from "@/features/warehouse/queries";
 import type { InventoryStatus } from "@/types/database";
 
 export type InventorySortColumn =
@@ -431,45 +432,23 @@ export type SelectOption = { value: string; label: string };
 /**
  * Every box, labeled with its full Warehouse/Rack/Shelf/Box chain
  * (CLAUDE.md §4 - a location must be unambiguous) for the part form's
- * box picker. Current warehouse footprint is small (racks/shelves/boxes
- * are physical, not a high-cardinality dimension), so one flat fetch +
- * client-side Combobox filtering (the existing Combobox pattern) is
- * enough - no search-as-you-type endpoint needed yet.
+ * box picker. Built on `fetchFlatHierarchy()` (src/features/warehouse/
+ * queries.ts) - the one shared flat-fetch-then-join-in-JS implementation
+ * Phase 4's browsing/occupancy views also build on (phase4.md §6), rather
+ * than a second, separate hierarchy-flattening implementation living here.
  */
 export async function getBoxOptions(): Promise<SelectOption[]> {
-  const supabase = await createClient();
+  const { warehouses, racks, shelves, boxes } = await fetchFlatHierarchy();
 
-  const [
-    { data: boxes, error: boxError },
-    { data: shelves, error: shelfError },
-    { data: racks, error: rackError },
-    { data: warehouses, error: warehouseError },
-  ] = await Promise.all([
-    supabase.from("boxes").select("id, code, shelf_id").is("deleted_at", null),
-    supabase.from("shelves").select("id, code, rack_id").is("deleted_at", null),
-    supabase
-      .from("racks")
-      .select("id, code, warehouse_id")
-      .is("deleted_at", null),
-    supabase.from("warehouses").select("id, name").is("deleted_at", null),
-  ]);
+  const warehouseNameById = new Map(warehouses.map((w) => [w.id, w.name]));
+  const rackById = new Map(racks.map((r) => [r.id, r]));
+  const shelfById = new Map(shelves.map((s) => [s.id, s]));
 
-  if (boxError) throw boxError;
-  if (shelfError) throw shelfError;
-  if (rackError) throw rackError;
-  if (warehouseError) throw warehouseError;
-
-  const warehouseNameById = new Map(
-    (warehouses ?? []).map((w) => [w.id, w.name]),
-  );
-  const rackById = new Map((racks ?? []).map((r) => [r.id, r]));
-  const shelfById = new Map((shelves ?? []).map((s) => [s.id, s]));
-
-  return (boxes ?? []).map((box) => {
-    const shelf = shelfById.get(box.shelf_id);
-    const rack = shelf ? rackById.get(shelf.rack_id) : undefined;
+  return boxes.map((box) => {
+    const shelf = shelfById.get(box.shelfId);
+    const rack = shelf ? rackById.get(shelf.rackId) : undefined;
     const warehouseName = rack
-      ? warehouseNameById.get(rack.warehouse_id)
+      ? warehouseNameById.get(rack.warehouseId)
       : undefined;
     const label = [warehouseName, rack?.code, shelf?.code, box.code]
       .filter(Boolean)

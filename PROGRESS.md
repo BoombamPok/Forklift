@@ -26,8 +26,13 @@ re-deriving context.
 **Phase 2 of 7 — Core UI + Dashboard: COMPLETE.**
 **Phase 3 of 7 — Inventory + Parts: COMPLETE.** See the Phase 3 section
 below for full detail.
-**Phase 4 of 7 — Warehouse Management: COMPLETE.** See the Phase 4
-section below for full detail.
+**Phase 4 of 7 — Warehouse Management: COMPLETE.**
+**Phase 5 of 7 — Catalogue + Vehicle Compatibility: COMPLETE.**
+**Phase 6 of 7 — Operations + Business Intelligence: COMPLETE.**
+**Phase 7 of 7 — Security + Testing + Hardening + Launch: COMPLETE.**
+See the Phase 7 section below for full detail. **ForkStock V1 is
+feature-complete, reviewed, hardened, and documented — there is no
+Phase 8.**
 
 The user split Phase 2 into five sub-phases; each read the previous
 ones' output:
@@ -1026,12 +1031,144 @@ CSV/export tooling, backup/restore, any new summary/materialized table,
 QR/barcode, and any Sales/Purchases/Suppliers/Customers/Invoicing
 concept.
 
+## Phase 7 — Security + Testing + Hardening + Launch (done)
+
+Spec: `phase7.md` (saved to the repo root). No new product features —
+this phase reviewed and hardened the application built across Phases
+1–6: security, RLS, CI, deployment, accessibility, performance, test
+coverage, and documentation.
+
+- **Security review**: exhaustively checked every exported function in
+  every `features/*/actions.ts` calls `requireRole()` before touching
+  data (compared exported-function counts against `requireRole`-call
+  counts per file, not spot-checked); confirmed `SUPABASE_SECRET_KEY` is
+  referenced in exactly one file (`src/lib/supabase/admin.ts`, `import
+  "server-only"`-guarded); confirmed every client-visible error message
+  (`result.error.message`) traces back to `toSafeErrorMessage()`'s
+  sanitized text, never a raw Postgrest/SQL error. **No fixes were
+  needed** — the pattern established in Phases 1–6 held up under a real
+  audit, not just spot review.
+- **RLS re-audit**: all 18 tables checked table-by-table against
+  `src/lib/permissions`'s capability model, not just the tables touched
+  by the two prior hardening migrations. **No gap found; no new
+  migration was needed** — a real, checked outcome, documented as such
+  rather than silently skipped (same pattern Phase 5 used when its own
+  RLS check came back clean).
+- **CI pipeline** (`.github/workflows/ci.yml`, GitHub Actions — this
+  project's repo is already on GitHub, no new external service needed):
+  a `verify` job (typecheck/lint/format:check/test/build — the exact
+  `package.json` scripts) on every push/PR, and a separate `e2e` job
+  (Playwright against the live Supabase project) on push to `main`
+  only, since it hits real data over the network. **This is the first
+  CI this project has ever had** — every prior phase's verification was
+  manual. Repo secrets for the `e2e` job still need to be added by the
+  user (documented in `docs/LAUNCH_CHECKLIST.md`) — not something an
+  agent can do without the GitHub CLI/API access this environment
+  doesn't have.
+- **CI e2e runs against a production build**, not `next dev` — a real
+  finding: dev mode's per-route first-compile was a genuine source of
+  flaky first-hit timeouts (reproduced directly, not assumed), which a
+  cold CI container would hit on literally every route on every run.
+  `playwright.config.ts` now runs `next start` (after a `next build`
+  CI step) when `process.env.CI` is set, `next dev` locally otherwise.
+- **Deployment verification**: confirmed via the Vercel API (not
+  assumed) that the `forklift` project's `gitProviderOptions.
+  createDeployments` is `enabled`, and that the most recent production
+  deployment's timestamp landed ~3.5 minutes after the last git push to
+  `main` with no manual `vercel` command in between — closes the
+  previously-observed "stale deployed URL" gap for good, with evidence,
+  not just a settings screenshot.
+- **Accessibility review** (`e2e/accessibility.spec.ts`, axe-core WCAG
+  2.1 AA scan across 6 pages + a manual keyboard/focus-trap check) found
+  and fixed four real issues, all shipped silently across Phases 1–6:
+  (1) `--primary`/`--success` color-contrast below 4.5:1 — darkened both
+  (same hue/brand identity) with margin, verified via a small WCAG
+  luminance script, not eyeballed; (2) bare filter `Select` triggers
+  with no accessible name across 5 files — added specific `aria-label`s;
+  (3) a filter-only `Tabs` control (`low-stock-table.tsx` ×2) pointing
+  `aria-controls` at a nonexistent panel — added empty, `forceMount`+
+  `hidden` `TabsContent` panels; (4) **the one non-obvious finding**:
+  Radix's own FocusScope-based focus-restore-on-close doesn't reliably
+  return focus to a Dialog/AlertDialog/Sheet's trigger in this app's
+  stack — reproduced live via Escape/Cancel/X-close, in both `next dev`
+  and a production server, with mouse- and keyboard-triggered opens.
+  Fixed once, in the three shared primitives
+  (`components/ui/dialog.tsx`/`alert-dialog.tsx`/`sheet.tsx`), via a
+  corrective focus-capture layer using React's "adjusting state during
+  render" pattern (not a ref mutation — the React Compiler's
+  `react-hooks/refs` lint rule, enabled in this project, correctly
+  rejects that). Full detail and reasoning: `docs/decisions/0013`.
+- **Performance review**: audited every loop in every
+  `features/*/queries.ts`/`actions.ts` file for N+1 patterns — none
+  found, every loop post-processes an already-batched `.in()`/
+  `Promise.all()` result. Pagination is real (`.range()`) for the
+  inventory/catalogue-parts plain-filter path; the free-text search path
+  on those same lists still fetches-all-then-paginates-in-JS, a
+  pre-existing Phase 3/5 tradeoff, left as-is. Reports fetch their full
+  underlying table(s) unbounded — measured against the real current
+  dataset at well under a second per report, **noted but not fixed**
+  for CLAUDE.md's stated 1,500–2,000-part ceiling, per §18/§45's
+  "don't optimize for a scale that doesn't exist yet."
+- **Admin-role e2e coverage** (`e2e/admin.spec.ts`, a real gap every
+  prior phase's own notes flagged): provisioned a dedicated `admin`-role
+  Supabase Auth fixture (`scripts/create-e2e-admin.mjs`, mirrors how the
+  `staff` fixture was created in Phase 1) and added two specs — create/
+  edit/soft-delete a synthetic warehouse, and create/soft-delete a
+  synthetic catalogue brand — both exercising real admin/manager-gated
+  Server Actions end-to-end in a real browser for the first time.
+- **Two pre-existing e2e flakes fixed** while running the full suite
+  repeatedly for verification: `e2e/dashboard.spec.ts`'s em-dash
+  assertion (documented as a known Phase 5 issue — real optional-field
+  em-dashes now legitimately appear elsewhere on the page, so the
+  assertion was testing the wrong thing; removed, the KPI assertions
+  above it already cover the original intent) and
+  `e2e/warehouse.spec.ts`'s final navigation assertion missing the
+  file's own "generous timeout on first hit to a dynamic route"
+  convention (added, matching the other four navigations in the same
+  file).
+- **Removed the stale `/operations` nav item and placeholder page** —
+  it was still claiming "coming in Phase 6" after Phase 6 shipped; its
+  promised functionality (record a movement, see the ledger) already
+  lives at `/inventory/[id]` and `/reports/movements`. A real, if minor,
+  UX-polish finding, not a new feature.
+- **Documentation**: `README.md` rewritten to reflect the full
+  application (all six product phases, CI, and the confirmed deployment
+  story, not just Phase 1's original shape); `.env.example` updated with
+  the admin e2e fixture; `docs/LAUNCH_CHECKLIST.md` added — a human-run
+  checklist distinguishing what Phase 7 verified live from what still
+  needs a person to actually do (adding CI secrets, a final manual pass
+  on the deployed URL).
+- **Test-data hygiene**: this phase's own repeated manual e2e/debugging
+  runs (far more than a normal single verification pass — see below)
+  left real accumulated synthetic residue in the live Supabase project:
+  17 `E2E-TEST-`-prefixed `inventory_parts` rows and 7
+  `E2E Admin Test Brand` rows whose soft-delete had a benign but slow
+  (~1-3s) `router.refresh()`-dependent completion that a few of this
+  session's own ad-hoc debug scripts didn't wait long enough to observe
+  before moving on. All were confirmed as disposable test fixtures (no
+  real business data) and soft-deleted directly via the secret-key admin
+  client — the same `deleted_at` mechanism the app itself uses, not a
+  hard delete. Live-verified after cleanup: no `E2E`-prefixed row remains
+  active in `warehouses`, `brands`, `categories`, `catalogue_models`,
+  `catalogue_model_families`, `catalogue_parts`, or `inventory_parts`.
+  This was environmental (many overlapping manual test/debug runs and,
+  at one point, a stale `next start` process serving from a `.next`
+  directory rebuilt out from under it) — the underlying delete mechanism
+  itself was re-verified correct and reliable across three independent,
+  careful checks once the environment was stable.
+- Typecheck, lint, format, build, the full 240-test unit/component
+  suite, and the full 28-spec e2e suite (run against a production
+  build, matching CI) all pass clean.
+
+**Out of scope, confirmed against phase7.md §4/§15 and left alone**: any
+new product feature, QR/barcode, Sales/Purchases/Suppliers/Customers/
+Invoicing, a full visual redesign of any screen, and load-testing beyond
+`CLAUDE.md`'s stated 1,500–2,000-part scale.
+
 ## Next steps
 
-Phase 7 (Security + Testing + Hardening + Launch) per the phase list —
-read `CLAUDE.md` §20's workflow and ask the user for `phase7.md` if it
-hasn't been provided yet. Per phase6.md §16, Phase 7 inherits a
-feature-complete application — inventory, warehouse, catalogue, and
-operations/reporting all real and working — and can focus entirely on
-review/hardening/launch-readiness without needing further product
-features from this phase or any before it.
+There is no Phase 8. ForkStock V1 is feature-complete, reviewed,
+hardened, and documented. What's left is entirely for a human to do,
+tracked in `docs/LAUNCH_CHECKLIST.md`: add the CI `e2e` job's repository
+secrets, and do one final manual walkthrough on the actual deployed URL
+before real warehouse staff start using it.

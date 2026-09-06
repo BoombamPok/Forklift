@@ -803,11 +803,153 @@ QR/barcode, a fabricated "capacity per box" concept, occupancy-trend
 reporting (Phase 6), and any change to Phase 3's Transfer movement
 workflow itself.
 
+## Phase 5 — Catalogue + Vehicle Compatibility (done)
+
+Spec: `phase5.md` (saved to the repo root). Unusually for this phase,
+the real Godrej/Voltas catalogue (284 parts, 2 brands, 9 models, 979
+compatibility links) was already imported ahead of schedule during
+Phase 2 prep (ADR 0008) — this phase built the browsing/search/CRUD UI
+on top of that already-live data, not a second import pipeline.
+
+- **No migration needed.** phase5.md §8 assumed RLS might need fixing
+  to match `catalogue.view`/`catalogue.manage` — checked
+  `20260905060400_rls_policies.sql` and
+  `20260905070000_harden_rls_and_triggers.sql` directly and found every
+  catalogue table (`brands`, `categories`, `catalogue_model_families`,
+  `catalogue_models`, `catalogue_parts`, `cross_refs`, `compatibility`,
+  `catalogue_part_sources`) already has the correct admin/manager-write,
+  everyone-reads split policies. Documented as a deviation rather than
+  silently skipped.
+- **New feature module** `src/features/catalogue/` (schema/queries/
+  actions), following the exact Phase 3/4 pattern. `getCataloguePartList`
+  mirrors `getInventoryList`'s own precedent exactly: plain filters
+  (brand/category/fastener/verification) run server-side via
+  `.range()`, but a free-text search — matching across part_number/
+  name/oem_reference *and* cross_refs — fetches every filtered row and
+  paginates in JS instead, since combining that many columns via
+  PostgREST would need `.or()` (deliberately avoided app-wide, see
+  `features/search/actions.ts`'s filter-DSL-injection comment) or a
+  view/RPC not justified at this volume. `capacity_range_kg` is
+  rendered verbatim per catalogue-part row everywhere it appears (part
+  detail, model detail's compatible-parts table) — never averaged or
+  derived, per ADR 0008; same treatment for `fuel_type`.
+- **Two small shared-lib extractions**, not new abstractions: pulled
+  `toIlikePattern` out of `features/search/actions.ts` into
+  `src/lib/ilike.ts` (a `"use server"` file can only export async
+  functions, and the catalogue parts search needed the same escaping
+  logic), and `isUniqueViolation` out of `features/warehouse/actions.ts`
+  into `src/lib/errors.ts` (now shared with `features/catalogue/
+  actions.ts` rather than a third copy-paste). Also extracted the
+  `first(searchParams…)` helper duplicated in `inventory/page.tsx` into
+  `src/lib/search-params.ts` (`firstParam`) once the two new catalogue
+  list pages needed it too.
+- **Routes**: `/catalogue` (real brand overview with real model/part
+  counts + inline category management, replacing the Phase 1
+  placeholder), `/catalogue/brands` (new — full brand CRUD),
+  `/catalogue/models` (real, brand-filterable, replacing the
+  placeholder, plus a model-family management section), `/catalogue/
+  models/[id]` (real detail — family, fuel type, breadcrumb, read-only
+  compatible-parts table, replacing the placeholder), `/catalogue/parts`
+  (real, paginated/searchable/filterable list, replacing the
+  placeholder), `/catalogue/parts/[id]` (new — full detail: cross-refs,
+  sources, compatibility, linked-inventory indicator, Promote to
+  inventory), `/catalogue/parts/new` and `/catalogue/parts/[id]/edit`
+  (new — `CataloguePartForm`, mirroring `PartForm`'s page-not-dialog
+  threshold since it carries 11 fields/two Combobox pickers). Brand/
+  category use a new `NameFormDialog` (mirrors `CodeFormDialog`); model
+  family/model use their own two dialogs, still short of the page
+  threshold. `HierarchyBreadcrumb` reused as-is for Brand → Model
+  family → Model.
+- **Compatibility editing, resolved per phase5.md §5**: the part detail
+  page is the primary editor (add/remove a model, change verification
+  status, optional notes) — accepted the spec's own recommendation
+  as-is, so no ADR override was needed. The model detail page shows the
+  same data read-only with a link back to each part. A duplicate
+  part+model link surfaces as "This part is already linked to this
+  model" (the DB's own unique constraint, translated), not a raw
+  Postgrest error; removing a link goes through `ConfirmDialog`.
+- **Promote to inventory** (phase5.md §4 goal #5) is a plain `<Link>`
+  from an unlinked catalogue part's detail page to `/inventory/new?
+  catalogueId=&partNumber=&name=` — `NewInventoryPartPage` reads those
+  three query params and passes them to the *existing* `PartForm` as
+  ordinary `defaultValues`. No second create flow: same page, same
+  `createPart` Server Action every other new inventory part goes
+  through. Gated on `inventory.create` (staff has it), not
+  `catalogue.manage`, per phase5.md §10, and hidden once the catalogue
+  part already has a live inventory link.
+- **Stale link fixed while here**: the global header search
+  (`features/search/actions.ts`) hard-coded `href: "/catalogue/parts"`
+  for a catalogue-only match, since no detail page existed before this
+  phase. Now points at the real `/catalogue/parts/${id}`.
+- **Verification status**: a new shared `VerificationBadge`
+  (`src/components/shared/verification-badge.tsx`) centralizes the
+  `verified`/`unverified`/`uncertain` → tone mapping once, reused
+  everywhere a catalogue part or compatibility row appears (parts list,
+  part detail, model detail, compatibility editor) rather than
+  duplicating the map per file the way `InventoryStatus` labels are.
+- **Testing**: 22 new unit/component tests — `catalogue/schema.test.ts`
+  (every new zod schema, incl. the optional-field-not-empty-string and
+  capacity-range-stays-free-text behaviors), `catalogue/queries.test.ts`
+  (`getBrandList`'s count aggregation, and `getModelDetail`'s ADR-0008
+  verbatim-per-part-capacity behavior — mock-supabase pattern mirroring
+  `warehouse/queries.test.ts`), `verification-badge.test.tsx`, and
+  `catalogue-part-actions.test.tsx` (the Promote link's exact
+  `href` incl. URL-encoding, its visibility toggling on `canPromote`,
+  and Edit/Delete's `canManage` gating). **203 total unit/component
+  tests, all green.**
+  - **E2E** (`e2e/catalogue.spec.ts`, live Supabase project, `staff`
+    fixture): browses `/catalogue/brands` → Godrej → a real model (GX
+    150 D) → confirms a real compatible part (Godrej part `02326191`,
+    "BEARING - ROLLER") shows "Verified" (confidence A from the import)
+    and its own `1500-3000` capacity range; searches `/catalogue/parts`
+    for that same real part number and confirms it resolves to the new
+    detail page with matching brand/category/verification/capacity;
+    confirms every management control (Add brand/model, part Edit, Add
+    compatible model) is absent for staff. The "Promote to inventory"
+    click deliberately **stops short of submitting** the create form —
+    unlike `inventory.spec.ts`'s synthetic `E2E-TEST-`-prefixed part,
+    actually creating an `inventory_parts` row linked to this real
+    Godrej part would make a genuine spare part falsely appear "in
+    stock" in the live project the user runs their actual business on.
+    The test instead confirms the handoff itself: landing on
+    `/inventory/new?catalogueId=…` with Part number/Name genuinely
+    pre-filled from the real catalogue record. No synthetic data was
+    left behind by this phase's e2e run.
+  - **No live admin/manager CRUD e2e test happened this session** —
+    same reason as Phases 3/4: no admin/manager *application* login is
+    available, only the `staff` fixture. The create/edit/delete/
+    compatibility-editing logic itself is covered by the component
+    tests above plus manual code review against the exact Phase 3/4
+    action patterns (`requireRole`, `isUniqueViolation`, `ActionResult`).
+  - **Incidentally fixed a pre-existing, unrelated flake** in
+    `e2e/dashboard.spec.ts`: its KPI-card assertions used
+    `getByText("Out of stock")`/`getByText("Low stock")` without
+    `exact: true`, which broke once the live project's low-stock table
+    had enough real matching rows to render its own "Out of Stock"/"Low
+    Stock" badges and tab labels on the same page. Unrelated to this
+    phase's actual work, fixed since it was found while running the
+    full e2e suite for verification.
+- Typecheck, lint, format, build, and all unit/component/e2e tests pass
+  — **except** `e2e/dashboard.spec.ts`'s pre-existing `getByText("—",
+  { exact: true })).toHaveCount(0)` assertion, which now finds 6 real
+  em-dashes elsewhere on the dashboard (legitimate empty-optional-field
+  markers from real, grown data — not a Phase 1 placeholder). This is a
+  Phase 2 test assumption invalidated by real data growth over time, not
+  a Phase 5 regression; left as a known issue rather than redesigning
+  Phase 2's dashboard e2e coverage out of scope.
+
+**Out of scope, confirmed against phase5.md §4/§15 and left alone**: a
+second/future catalogue import pipeline, full reporting/analytics on
+catalogue data (Phase 6), QR/barcode, and any
+Sales/Purchases/Suppliers/Customers/Invoicing concept.
+
 ## Next steps
 
-Phase 5 (Catalogue + Vehicle Compatibility) per the phase list — read
-`CLAUDE.md` §20's workflow and ask the user for `phase5.md` if it hasn't
-been provided yet. Per phase4.md §16, Phase 5 can import the real
-catalogue CSV mentioned during this phase using
-`inventory_parts.catalogue_part_id` and the existing catalogue schema
-from Phase 1, without needing anything further from Phase 4.
+Phase 6 (Operations + Business Intelligence) per the phase list — read
+`CLAUDE.md` §20's workflow and ask the user for `phase6.md` if it hasn't
+been provided yet. Per phase5.md §16, Phase 6 inherits a fully
+browsable, searchable catalogue with real compatibility data, real
+verification status, and a real inventory-linkage picture — enough to
+build meaningful reports (e.g. "catalogue coverage," "unlinked catalogue
+parts," "parts by verification status") without needing further
+catalogue-side work.

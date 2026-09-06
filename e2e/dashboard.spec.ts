@@ -18,8 +18,11 @@ test("staff sees real KPI numbers but not the inventory value card", async ({
   await expect(page).toHaveURL(/\/dashboard$/);
 
   await expect(page.getByText("Inventory items")).toBeVisible();
-  await expect(page.getByText("Low stock")).toBeVisible();
-  await expect(page.getByText("Out of stock")).toBeVisible();
+  // exact: true - the low-stock table below can render its own "Low
+  // Stock"/"Out of Stock" badges and tab labels once real data includes
+  // any, which would otherwise collide with these KPI card labels.
+  await expect(page.getByText("Low stock", { exact: true })).toBeVisible();
+  await expect(page.getByText("Out of stock", { exact: true })).toBeVisible();
   await expect(page.getByText("Inventory value")).not.toBeAttached();
 
   // Real data, not the Phase 1 placeholder dash.

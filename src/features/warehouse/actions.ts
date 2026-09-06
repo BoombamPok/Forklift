@@ -4,7 +4,11 @@ import { revalidatePath } from "next/cache";
 
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth/require-role";
-import { toSafeErrorMessage, type ActionResult } from "@/lib/errors";
+import {
+  isUniqueViolation,
+  toSafeErrorMessage,
+  type ActionResult,
+} from "@/lib/errors";
 import {
   boxFormSchema,
   rackFormSchema,
@@ -21,15 +25,6 @@ function invalidFieldsResult(): ActionResult<never> {
     success: false,
     error: { message: "Check the highlighted fields." },
   };
-}
-
-function isUniqueViolation(error: unknown): boolean {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    (error as { code?: unknown }).code === "23505"
-  );
 }
 
 export async function createWarehouse(

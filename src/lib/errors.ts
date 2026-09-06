@@ -14,6 +14,21 @@ export type ErrorKind = "permission" | "not-found" | "network" | "unexpected";
 export type ActionResult<T> =
   { success: true; data: T } | { success: false; error: { message: string } };
 
+/**
+ * A Postgres unique-constraint violation (SQLSTATE 23505) - shared by
+ * every feature action that wants a specific per-field message ("A
+ * warehouse with this name already exists") instead of
+ * `toSafeErrorMessage`'s generic "That already exists."
+ */
+export function isUniqueViolation(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: unknown }).code === "23505"
+  );
+}
+
 function isPostgrestError(error: unknown): error is PostgrestError {
   return (
     typeof error === "object" &&

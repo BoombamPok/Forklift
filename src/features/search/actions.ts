@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { toIlikePattern } from "@/lib/ilike";
 import type { StatusTone } from "@/components/shared/status-badge";
 
 export type SearchResultKind = "part" | "brand" | "model";
@@ -17,12 +18,6 @@ export type SearchResult = {
 const RESULTS_PER_CATEGORY = 5;
 const MAX_RESULTS = 8;
 const MIN_QUERY_LENGTH = 2;
-
-/** Escapes ILIKE's own wildcard characters so a literal "%" or "_" in a
- * part number/name is searched for literally, not as a wildcard. */
-function toIlikePattern(query: string): string {
-  return `%${query.replace(/[%_\\]/g, (match) => `\\${match}`)}%`;
-}
 
 function dedupeById<T extends { id: string }>(rows: T[]): T[] {
   return [...new Map(rows.map((row) => [row.id, row])).values()];
@@ -168,7 +163,7 @@ export async function searchGlobal(rawQuery: string): Promise<SearchResult[]> {
       kind: "part",
       title: part.name,
       subtitle: part.part_number,
-      href: "/catalogue/parts",
+      href: `/catalogue/parts/${part.id}`,
       badge: { label: "Catalogue Only", tone: "secondary" },
     });
   }

@@ -12,6 +12,7 @@ import {
   type StockFilter,
 } from "@/features/inventory/queries";
 import type { InventoryStatus } from "@/types/database";
+import { firstParam } from "@/lib/search-params";
 import { InventoryFilters } from "./inventory-filters";
 import { InventoryTable } from "./inventory-table";
 
@@ -25,10 +26,6 @@ const SORT_COLUMNS: InventorySortColumn[] = [
 const STATUSES: InventoryStatus[] = ["active", "discontinued", "damaged"];
 const STOCK_FILTERS: StockFilter[] = ["low", "critical", "out_of_stock"];
 
-function first(value: string | string[] | undefined): string | undefined {
-  return Array.isArray(value) ? value[0] : value;
-}
-
 /**
  * The real inventory list (phase3.md goal #1), replacing the Phase 1
  * placeholder. Reads `searchParams` for page/sort/filters and calls
@@ -39,25 +36,25 @@ export default async function InventoryPage(props: PageProps<"/inventory">) {
   const user = await requireRole("inventory.view");
   const searchParams = await props.searchParams;
 
-  const page = Math.max(1, Number(first(searchParams.page)) || 1);
-  const sortByParam = first(searchParams.sortBy);
+  const page = Math.max(1, Number(firstParam(searchParams.page)) || 1);
+  const sortByParam = firstParam(searchParams.sortBy);
   const sortBy = SORT_COLUMNS.includes(sortByParam as InventorySortColumn)
     ? (sortByParam as InventorySortColumn)
     : "name";
-  const sortDir = first(searchParams.sortDir) === "desc" ? "desc" : "asc";
+  const sortDir = firstParam(searchParams.sortDir) === "desc" ? "desc" : "asc";
 
-  const statusParam = first(searchParams.status);
+  const statusParam = firstParam(searchParams.status);
   const status = STATUSES.includes(statusParam as InventoryStatus)
     ? (statusParam as InventoryStatus)
     : undefined;
 
-  const linkedParam = first(searchParams.linked);
+  const linkedParam = firstParam(searchParams.linked);
   const linked =
     linkedParam === "linked" || linkedParam === "unlinked"
       ? linkedParam
       : undefined;
 
-  const stockParam = first(searchParams.stock);
+  const stockParam = firstParam(searchParams.stock);
   const stockFilter = STOCK_FILTERS.includes(stockParam as StockFilter)
     ? (stockParam as StockFilter)
     : undefined;

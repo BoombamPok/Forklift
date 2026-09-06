@@ -109,7 +109,7 @@ describe("searchGlobal", () => {
       kind: "part",
       title: "Catalogue Widget",
       subtitle: "CAT-0001",
-      href: "/catalogue/parts",
+      href: "/catalogue/parts/cp1",
       badge: { label: "Catalogue Only", tone: "secondary" },
     });
   });
@@ -163,7 +163,7 @@ describe("searchGlobal", () => {
         kind: "part",
         title: "Cross-Ref Widget",
         subtitle: "CAT-0002",
-        href: "/catalogue/parts",
+        href: "/catalogue/parts/cp2",
         badge: { label: "Catalogue Only", tone: "secondary" },
       },
     ]);

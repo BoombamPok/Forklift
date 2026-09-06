@@ -33,6 +33,9 @@ export default function LoginPage() {
           <span className="font-heading text-base font-semibold tracking-tight">
             ForkStock
           </span>
+          <span className="ml-1 rounded-sm bg-sidebar-accent px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-widest text-sidebar-foreground/50 uppercase">
+            Warehouse OS
+          </span>
         </div>
 
         <div className="relative space-y-8">
@@ -40,7 +43,7 @@ export default function LoginPage() {
             Find the right part, know whether you have it, and know exactly
             where it is.
           </p>
-          <FeatureList className="space-y-4" />
+          <FeatureList className="space-y-2.5" />
         </div>
 
         <p className="relative text-xs text-sidebar-foreground/40">
@@ -54,6 +57,9 @@ export default function LoginPage() {
             <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-orange-400 shadow-sm lg:hidden">
               <BoxesIcon aria-hidden className="size-5 text-white" />
             </div>
+            <span className="font-mono text-[10px] font-semibold tracking-widest text-primary uppercase">
+              Secure sign-in
+            </span>
             <h1 className="font-heading text-lg font-semibold tracking-tight lg:text-2xl">
               Sign in
             </h1>

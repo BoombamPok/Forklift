@@ -47,16 +47,19 @@ function FeatureList({ className }: FeatureListProps) {
       animate="visible"
       variants={containerVariants}
     >
-      {FEATURES.map(({ icon: Icon, label }) => (
+      {FEATURES.map(({ icon: Icon, label }, index) => (
         <motion.li
           key={label}
-          className="flex items-center gap-3 text-sm text-sidebar-foreground/75"
+          className="flex items-center gap-3 rounded-lg border border-sidebar-border bg-sidebar-accent/40 px-3 py-2.5 text-sm text-sidebar-foreground/80"
           variants={itemVariants}
         >
           <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-sidebar-accent">
             <Icon aria-hidden className="size-3.5 text-sidebar-primary" />
           </span>
-          {label}
+          <span className="flex-1">{label}</span>
+          <span className="font-mono text-[10px] tracking-widest text-sidebar-foreground/35">
+            {String(index + 1).padStart(2, "0")}
+          </span>
         </motion.li>
       ))}
     </motion.ul>

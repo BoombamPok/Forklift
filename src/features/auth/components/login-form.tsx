@@ -8,6 +8,8 @@ import {
   EyeIcon,
   EyeOffIcon,
   Loader2Icon,
+  LockIcon,
+  MailIcon,
 } from "lucide-react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -65,15 +67,22 @@ function LoginForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input
-                  type="email"
-                  autoComplete="email"
-                  placeholder="you@company.com"
-                  autoFocus
-                  {...field}
+              <div className="relative">
+                <MailIcon
+                  aria-hidden
+                  className="pointer-events-none absolute inset-y-0 left-2.5 my-auto size-3.5 text-muted-foreground"
                 />
-              </FormControl>
+                <FormControl>
+                  <Input
+                    type="email"
+                    autoComplete="email"
+                    placeholder="you@company.com"
+                    autoFocus
+                    className="pl-8"
+                    {...field}
+                  />
+                </FormControl>
+              </div>
               <FormMessage />
             </FormItem>
           )}
@@ -86,11 +95,15 @@ function LoginForm() {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <div className="relative">
+                <LockIcon
+                  aria-hidden
+                  className="pointer-events-none absolute inset-y-0 left-2.5 my-auto size-3.5 text-muted-foreground"
+                />
                 <FormControl>
                   <Input
                     type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
-                    className="pr-9"
+                    className="pr-9 pl-8"
                     {...field}
                   />
                 </FormControl>

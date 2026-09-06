@@ -26,6 +26,8 @@ re-deriving context.
 **Phase 2 of 7 — Core UI + Dashboard: COMPLETE.**
 **Phase 3 of 7 — Inventory + Parts: COMPLETE.** See the Phase 3 section
 below for full detail.
+**Phase 4 of 7 — Warehouse Management: COMPLETE.** See the Phase 4
+section below for full detail.
 
 The user split Phase 2 into five sub-phases; each read the previous
 ones' output:
@@ -461,11 +463,11 @@ purely visual, no new functionality:
   (metadata/font, sidebar, motion primitive, KPI cards, activity feed,
   chart, search, login page).
 
-## Next steps
+## Next steps (historical — from the end of Phase 2, superseded by the
+one at the bottom of this file)
 
-1. **Phase 3 (Inventory + Parts) is next.** Ask the user for a
-   `phase3.md` spec before starting — same one-spec-file-per-phase
-   pattern used throughout Phase 2 (no combined `phase3.md` exists yet).
+1. ~~Phase 3 (Inventory + Parts) is next.~~ Done — see the Phase 3
+   section above.
 2. Follow `CLAUDE.md` §20's Phase Workflow for each phase/sub-phase.
 3. Commit hygiene: split every phase's changes into multiple
    logically-scoped commits (schema/infra/feature/tests/docs) as they're
@@ -548,7 +550,7 @@ recreating via the Admin Auth API if lost — see
 `.env.example`; pick a fresh password for it, it doesn't need to match
 any prior one.
 
-## Phase 3 — Inventory + Parts (done, one migration not yet applied)
+## Phase 3 — Inventory + Parts (done)
 
 Spec: `phase3.md` (saved to the repo root, matching the phase1/2a/2b/2c
 pattern). Delivered the real inventory module the dashboard/search
@@ -680,3 +682,132 @@ triggers, and RLS without reinterpreting them.
 warehouse/rack/shelf/box management UI, catalogue management UI, full
 reporting, QR/barcode, bulk import/export, any Sales/Purchases/
 Suppliers/Customers/Invoicing concept.
+
+## Phase 4 — Warehouse Management (done)
+
+Spec: `phase4.md` (saved to the repo root, matching the phase1/2/3
+pattern). Delivered full CRUD + browsing for the
+warehouse/rack/shelf/box hierarchy Phase 1 defined and Phase 3 already
+consumed (the part form's box picker) — create/edit/soft-delete at every
+level, breadcrumb-driven browsing, real occupancy counts, a box's
+contents linking back to Phase 3's part detail pages, and a Transfer
+shortcut that reuses Phase 3's movement ledger rather than a second way
+to change a part's location.
+
+- **Schema**: one additive migration,
+  `supabase/migrations/20260905120000_warehouse_soft_delete_cascade.sql`
+  — four Postgres functions (`soft_delete_warehouse`/`_rack`/`_shelf`/
+  `_box`), no new tables or columns. No RLS changes needed: Phase 1's
+  hardening pass already restricted `warehouses`/`racks`/`shelves`/
+  `boxes` writes to admin/manager with no DELETE policy at all (soft-
+  delete-only), exactly matching this phase's `warehouse.manage`
+  boundary — confirmed by reading `20260905060400_rls_policies.sql`/
+  `20260905070000_harden_rls_and_triggers.sql` rather than assumed.
+  **Applied to the live project via `psql`** (the user provided the DB
+  password, now saved in `.env.local` as `SUPABASE_DB_PASSWORD` so a
+  future session doesn't need to ask again — not read by the Next.js
+  app itself, kept only for direct `psql` use). Confirmed present with
+  `\df public.soft_delete_*` after applying.
+- **Soft-delete cascade + blocking, resolved per phase4.md §5** — see
+  **ADR 0012** (`docs/decisions/0012-warehouse-soft-delete-cascade.md`):
+  deleting a warehouse/rack/shelf atomically cascades onto everything
+  beneath it via one Postgres function per level, but is **blocked
+  entirely** (no override) if any non-deleted `inventory_part` is still
+  assigned anywhere in the subtree — the function returns exactly which
+  parts are blocking instead of raising a bare error, so
+  `LocationDeleteAction` can show them with links into their Phase 3
+  detail pages rather than a generic "can't delete." **Live-verified**
+  via a rolled-back transaction against the real project: an empty
+  rack→shelf→box chain cascades cleanly (all three get `deleted_at` in
+  one statement group); the same chain with one part assigned to its box
+  is fully blocked (zero rows changed, the part returned as the
+  blocker).
+- **New feature module** `src/features/warehouse/` (schema/queries/
+  actions), following the exact Phase 3 pattern: Server Components read
+  via `queries.ts` (fetch-flat-join-in-JS), writes go through
+  `actions.ts` Server Actions returning `ActionResult<T>`.
+  `fetchFlatHierarchy()` is the one shared flat-fetch-then-join-in-JS
+  implementation — `features/inventory/queries.ts`'s `getBoxOptions()`
+  was refactored to call it instead of duplicating its own copy
+  (phase4.md §6's explicit reuse ask). Occupancy (`boxesOccupied`/
+  `boxesTotal` at every level) is computed from real, non-deleted
+  `inventory_parts.box_id` assignments — no fabricated "capacity"
+  concept, per CLAUDE.md §13/phase4.md §3.
+- **Routes**: `/warehouse` (real list, replacing the Phase 1
+  placeholder), `/warehouse/[id]` (new — warehouse detail/rack browser;
+  no such route existed before this phase), `/warehouse/racks/[id]`
+  (real, replacing the placeholder), `/warehouse/shelves/[id]` (new —
+  Phase 1 never stubbed this level), `/warehouse/boxes/[id]` (real,
+  replacing the placeholder). Every level has a real breadcrumb
+  (`HierarchyBreadcrumb`, `src/components/shared/`) with every earlier
+  segment a working link. Create/edit for racks/shelves/boxes is a
+  dialog (`CodeFormDialog`, one shared component parameterized by
+  entity label — a single required `code` field doesn't reach the
+  content threshold CLAUDE.md's "avoid unnecessary modals" rule is
+  actually about, contrast `PartForm`'s ~9 fields which does warrant a
+  page); warehouse create/edit is its own two-field dialog
+  (`WarehouseFormDialog`) for the same reason. All management controls
+  (`warehouse.manage`) are absent, not disabled, for staff/read-only —
+  the same Phase 2/3 precedent. The box detail page's "Transfer" button
+  reuses Phase 3's `StockMovementDialog`/`recordStockMovement` verbatim
+  (moved from `src/app/(app)/inventory/[id]/` to
+  `src/features/inventory/` since it's now used by two route trees, not
+  one) rather than building a second, parallel way to change a part's
+  box — the movement ledger is still the only thing that ever changes
+  `box_id`.
+- **Testing**: 29 new unit/component tests this phase — schema
+  validation (`warehouse/schema.test.ts`), hierarchy-flattening and the
+  real occupancy-calculation math (`warehouse/queries.test.ts`,
+  mirroring `inventory/queries.test.ts`'s mock-supabase pattern),
+  breadcrumb rendering including the "last segment isn't a link"
+  a11y behavior (`hierarchy-breadcrumb.test.tsx`), occupancy badge
+  rendering (`occupancy-badge.test.tsx`), role-gated action visibility
+  (`warehouse-table.test.tsx`), the `CodeFormDialog` CRUD form incl.
+  validation and a duplicate-code error surfaced inline
+  (`code-form-dialog.test.tsx`), and — the one piece of real business
+  logic in this phase's UI layer — `LocationDeleteAction`'s three
+  outcomes: deleted successfully, blocked with exactly the right parts
+  listed and linked, and an unrelated failure just toasts an error
+  (`location-delete-action.test.tsx`). **181 total unit/component
+  tests, all green.**
+  - **E2E** (`e2e/warehouse.spec.ts`, live Supabase project): logs in as
+    the `staff` fixture and browses the real "Demo Warehouse / R01 / S01
+    / B01" chain end-to-end rather than creating a new one — the fixture
+    account has `warehouse.view` but not `warehouse.manage` (per
+    `lib/permissions`), so it can't create/edit/delete a
+    warehouse/rack/shelf/box the way an admin or manager could. Confirms
+    every management button (Add warehouse/rack/shelf/box, box-level
+    Edit) is absent at every level, confirms the Transfer shortcut *is*
+    present on the box detail page (gated on `inventory.transfer`, which
+    staff has — not `warehouse.manage`), confirms the breadcrumb chain
+    resolves correctly at the leaf level, and confirms a real part
+    (`SAMPLE-0001`) links from its box through to its Phase 3 detail
+    page. Needed a generous `toHaveURL` timeout on each first-time hit to
+    a dynamic route, same reasoning as `inventory.spec.ts`'s existing
+    comment about dev-mode compile time.
+  - **No live admin/manager CRUD or cascade-delete e2e test happened
+    this session** — same reason Phase 3's admin-only Delete path wasn't
+    live-checked: no admin/manager *application* login is available
+    (only the separate Postgres DB password was, which is what applied
+    the migration above). The cascade/blocking *logic* itself was
+    instead live-verified directly against Postgres in a rolled-back
+    transaction (see ADR 0012), and the client-side outcome-handling
+    logic is fully covered by `location-delete-action.test.tsx`; what's
+    unverified is only the live, end-to-end admin-in-the-browser path
+    for create/edit/delete.
+- Typecheck, lint, format, build, and all unit/component/e2e tests pass.
+
+**Out of scope, confirmed against phase4.md §4/§15 and left alone**:
+catalogue import/management (the CSV mentioned in the spec is Phase 5),
+QR/barcode, a fabricated "capacity per box" concept, occupancy-trend
+reporting (Phase 6), and any change to Phase 3's Transfer movement
+workflow itself.
+
+## Next steps
+
+Phase 5 (Catalogue + Vehicle Compatibility) per the phase list — read
+`CLAUDE.md` §20's workflow and ask the user for `phase5.md` if it hasn't
+been provided yet. Per phase4.md §16, Phase 5 can import the real
+catalogue CSV mentioned during this phase using
+`inventory_parts.catalogue_part_id` and the existing catalogue schema
+from Phase 1, without needing anything further from Phase 4.

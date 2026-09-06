@@ -1176,6 +1176,69 @@ new product feature, QR/barcode, Sales/Purchases/Suppliers/Customers/
 Invoicing, a full visual redesign of any screen, and load-testing beyond
 `CLAUDE.md`'s stated 1,500–2,000-part scale.
 
+## Post-launch UI work (2026-09-06, done)
+
+Small, user-requested UI polish after V1 launch - not a phase, no new
+domain concepts, no schema changes.
+
+**Login page - icon-prefixed inputs + industrial accents** (commit
+`38858ec`, on top of an earlier same-day password-toggle revamp,
+`3dc82ca`): the user shared an unrelated "industrial terminal" login-page
+reference (dark cyberpunk RFID/badge-scan aesthetic with fabricated
+SOC2/uptime telemetry and Okta/YubiKey SSO). Kept only the
+structural/visual ideas that fit `CLAUDE.md` (icon-prefixed email/
+password fields, a numbered capability-tile list, a small monospace
+eyebrow label using the existing `--font-plex-mono` token) and explicitly
+left out the RFID/barcode scan tab (QR/barcode is banned for V1 per
+`CLAUDE.md` #14), the fabricated certifications/stats, and the SSO
+buttons (only Supabase email/password auth exists - non-functional
+buttons would be dead UI presented as real). `login-form.tsx`,
+`feature-list.tsx`, `login/page.tsx` touched; no new dependency.
+
+**Dashboard - greeting, quick actions, brand mix, top models** (commits
+`901b9af`, `1d9de2c`, `e662402`): the user re-shared the same "Vehicle
+Parts Inventory" mockup that was already Phase 2's dashboard reference
+(see the Phase 2 section above and `project-forkstock-dashboard-mockup`
+memory) and asked to close the remaining visual/functional gap. Added,
+all wired to live Supabase data, no fabrication:
+- `getInventoryCountByBrand()` (`src/features/dashboard/queries.ts`) -
+  same join pattern as the reports module's valuation-by-brand
+  breakdown, but item-count-only (no cost), so it needs none of that
+  report's value-visibility gating. 3 new unit tests (243 total now, up
+  from 240); the shared `queries.test.ts` mock was upgraded from a
+  single-chain (`select().is()`) mock to the reports module's more
+  flexible per-table chain mock to support the new function's extra
+  `catalogue_parts`/`brands` lookups.
+- `BrandDonutChart` (`src/components/shared/brand-donut-chart.tsx`) - new
+  Recharts donut primitive (centered total + side legend), same
+  theme-token-color/custom-tooltip convention as the existing
+  stock-movement bar chart. No new dependency (Recharts already
+  approved/installed).
+- `TopModelsWidget` - ranks catalogue models by the already-existing
+  `compatiblePartCount` from Phase 5's `getModelList()`
+  (`src/features/catalogue/queries.ts`) - a real compatibility-link
+  count, not a fabricated "popularity" metric this app doesn't track.
+- `QuickActions` - links to real, already-built pages only (Add part,
+  Add catalogue part, Browse warehouse, View reports), each gated by
+  `can(role, ...)` from `src/lib/permissions`. No invoicing/sales/CRM
+  shortcuts - confirmed out of scope again, same as Phase 2.
+- `DashboardGreeting` - a neutral "Welcome back, {name}" + date.
+  Deliberately has no time-of-day "Good morning/evening" text: this
+  renders in a Server Component, so the hour would be the deployment's
+  server timezone, not the viewer's - a real correctness risk, not just
+  a style choice, so it was dropped rather than shipped wrong.
+- `page.tsx` regrouped into: greeting → KPI row (unchanged) → [stock
+  movement chart | quick actions] → [recent activity | brand donut | top
+  models] → low-stock table (unchanged). Each new widget keeps the same
+  per-widget Suspense-boundary/loading/empty/error convention as the
+  existing ones.
+
+Verified: typecheck/lint/format/build/243 unit tests all green; manually
+logged into the running dev server (Playwright, admin test account) and
+screenshotted the real rendered dashboard at 1600px and 390px - real
+catalogue data (Godrej/Voltas-OM brands, DVX-series forklift models) came
+through correctly, no console errors, all widgets resolved.
+
 ## Next steps
 
 There is no Phase 8. ForkStock V1 is feature-complete, reviewed,

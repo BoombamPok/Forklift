@@ -79,7 +79,7 @@ function PartImagesGallery({
           {images.map((image) => (
             <div
               key={image.id}
-              className="group relative aspect-square overflow-hidden rounded-lg ring-1 ring-foreground/10"
+              className="group relative aspect-square overflow-hidden rounded-lg border border-border/70"
             >
               <Image
                 src={image.url}

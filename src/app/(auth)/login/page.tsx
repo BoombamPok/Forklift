@@ -68,7 +68,7 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <div className="rounded-xl bg-card p-6 ring-1 ring-foreground/10 sm:p-8">
+          <div className="rounded-xl border border-border/70 bg-card p-6 shadow-lg sm:p-8">
             <LoginForm />
           </div>
         </MotionFadeIn>

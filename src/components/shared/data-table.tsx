@@ -191,12 +191,22 @@ function DataTable<TData>({
         kind={error.kind}
         description={error.message}
         onRetry={error.onRetry}
+        className={cn("rounded-xl shadow-sm", className)}
       />
     );
   }
 
   if (isLoading) {
-    return <LoadingState variant="table" rows={pageSize > 8 ? 8 : pageSize} />;
+    return (
+      <div
+        className={cn(
+          "overflow-hidden rounded-xl border border-border/70 bg-card p-4 shadow-sm",
+          className,
+        )}
+      >
+        <LoadingState variant="table" rows={pageSize > 8 ? 8 : pageSize} />
+      </div>
+    );
   }
 
   if (data.length === 0) {
@@ -204,6 +214,7 @@ function DataTable<TData>({
       <EmptyState
         title={emptyState.title}
         description={emptyState.description}
+        className={className}
       />
     );
   }
@@ -213,11 +224,16 @@ function DataTable<TData>({
     : table.getPageCount();
 
   return (
-    <div className={cn("space-y-3", className)}>
+    <div
+      className={cn(
+        "overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm",
+        className,
+      )}
+    >
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
+            <TableRow key={headerGroup.id} className="hover:bg-transparent">
               {headerGroup.headers.map((header) => {
                 const canSort = header.column.getCanSort();
                 const sortDirection = header.column.getIsSorted();
@@ -228,7 +244,7 @@ function DataTable<TData>({
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="-ml-2.5 h-7 gap-1 px-2.5 font-medium"
+                        className="-ml-2.5 h-7 gap-1 px-2.5 text-[0.6875rem] font-semibold tracking-wide text-muted-foreground uppercase hover:text-foreground"
                         onClick={header.column.getToggleSortingHandler()}
                       >
                         {flexRender(
@@ -272,9 +288,13 @@ function DataTable<TData>({
       </Table>
 
       {pageCount > 1 ? (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Page {table.getState().pagination.pageIndex + 1} of {pageCount}
+        <div className="flex items-center justify-between border-t border-border/70 bg-muted/20 px-4 py-2.5">
+          <p className="text-xs text-muted-foreground">
+            Page{" "}
+            <span className="font-medium text-foreground">
+              {table.getState().pagination.pageIndex + 1}
+            </span>{" "}
+            of {pageCount}
           </p>
           <div className="flex gap-1">
             <Button

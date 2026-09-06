@@ -58,7 +58,9 @@ describe("WarehouseTable", () => {
 
   it("still shows the real occupancy and rack count either way", () => {
     renderTable(false);
-    expect(screen.getByText("4/10 boxes occupied")).toBeInTheDocument();
+    expect(
+      screen.getByRole("img", { name: "4 of 10 boxes occupied" }),
+    ).toBeInTheDocument();
     expect(screen.getByText("3")).toBeInTheDocument();
   });
 });

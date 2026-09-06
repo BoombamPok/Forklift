@@ -1,5 +1,21 @@
 export { cn } from "cn";
 
+/**
+ * Generic grouping helper shared by every "fetch flat, join in JS"
+ * query (warehouse hierarchy, reports rollups) instead of each module
+ * keeping its own copy.
+ */
+export function groupBy<T, K>(items: T[], keyOf: (item: T) => K): Map<K, T[]> {
+  const map = new Map<K, T[]>();
+  for (const item of items) {
+    const key = keyOf(item);
+    const bucket = map.get(key);
+    if (bucket) bucket.push(item);
+    else map.set(key, [item]);
+  }
+  return map;
+}
+
 const currencyFormatter = new Intl.NumberFormat("en-IN", {
   style: "currency",
   currency: "INR",

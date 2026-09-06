@@ -9,6 +9,7 @@ export type LowStockRow = {
   partNumber: string;
   name: string;
   brandName: string | null;
+  categoryName: string | null;
   quantity: number;
   minStock: number | null;
   status: LowStockStatus;
@@ -28,13 +29,14 @@ function statusFor(quantity: number, minStock: number | null): LowStockStatus {
  * only eligible via the zero-quantity case, same rule
  * `getLowStockCount`/`getOutOfStockCount` (Phase 2a) already use.
  *
- * Brand is resolved through `inventory_parts.catalogue_part_id ->
- * catalogue_parts.brand_id -> brands.name` as two more flat queries
- * (same "fetch flat, join in JS" precedent as 2a/2c) rather than a
- * PostgREST embed, since `types/database.ts` has no `Relationships`
- * metadata for an embed to type against. Model isn't included: a
- * catalogue part's model fit is many-to-many via `compatibility`, so it
- * doesn't reduce to one column for a summary row.
+ * Brand and category are resolved through `inventory_parts.
+ * catalogue_part_id -> catalogue_parts.{brand_id,category_id} ->
+ * brands.name` / `categories.name` as a few more flat queries (same
+ * "fetch flat, join in JS" precedent as 2a/2c) rather than a PostgREST
+ * embed, since `types/database.ts` has no `Relationships` metadata for
+ * an embed to type against. Model isn't included: a catalogue part's
+ * model fit is many-to-many via `compatibility`, so it doesn't reduce to
+ * one column for a summary row.
  */
 export async function getLowStockRows(): Promise<LowStockRow[]> {
   const supabase = await createClient();
@@ -63,10 +65,11 @@ export async function getLowStockRows(): Promise<LowStockRow[]> {
   ];
 
   let brandNameByCataloguePartId = new Map<string, string>();
+  let categoryNameByCataloguePartId = new Map<string, string>();
   if (cataloguePartIds.length > 0) {
     const { data: catalogueParts, error: catalogueError } = await supabase
       .from("catalogue_parts")
-      .select("id, brand_id")
+      .select("id, brand_id, category_id")
       .in("id", cataloguePartIds);
     if (catalogueError) throw catalogueError;
 
@@ -74,6 +77,13 @@ export async function getLowStockRows(): Promise<LowStockRow[]> {
       ...new Set(
         (catalogueParts ?? [])
           .map((cp) => cp.brand_id)
+          .filter((id): id is string => id !== null),
+      ),
+    ];
+    const categoryIds = [
+      ...new Set(
+        (catalogueParts ?? [])
+          .map((cp) => cp.category_id)
           .filter((id): id is string => id !== null),
       ),
     ];
@@ -88,10 +98,27 @@ export async function getLowStockRows(): Promise<LowStockRow[]> {
       brandNameById = new Map((brands ?? []).map((b) => [b.id, b.name]));
     }
 
+    let categoryNameById = new Map<string, string>();
+    if (categoryIds.length > 0) {
+      const { data: categories, error: categoriesError } = await supabase
+        .from("categories")
+        .select("id, name")
+        .in("id", categoryIds);
+      if (categoriesError) throw categoriesError;
+      categoryNameById = new Map((categories ?? []).map((c) => [c.id, c.name]));
+    }
+
     brandNameByCataloguePartId = new Map(
       (catalogueParts ?? [])
         .filter((cp) => cp.brand_id !== null && brandNameById.has(cp.brand_id))
         .map((cp) => [cp.id, brandNameById.get(cp.brand_id!)!]),
+    );
+    categoryNameByCataloguePartId = new Map(
+      (catalogueParts ?? [])
+        .filter(
+          (cp) => cp.category_id !== null && categoryNameById.has(cp.category_id),
+        )
+        .map((cp) => [cp.id, categoryNameById.get(cp.category_id!)!]),
     );
   }
 
@@ -102,6 +129,9 @@ export async function getLowStockRows(): Promise<LowStockRow[]> {
       name: part.name,
       brandName: part.catalogue_part_id
         ? (brandNameByCataloguePartId.get(part.catalogue_part_id) ?? null)
+        : null,
+      categoryName: part.catalogue_part_id
+        ? (categoryNameByCataloguePartId.get(part.catalogue_part_id) ?? null)
         : null,
       quantity: part.quantity,
       minStock: part.min_stock,

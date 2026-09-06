@@ -30,7 +30,7 @@ async function mapNamesById(
  * "Catalogue + Inventory") and the part detail page's promote-or-link
  * decision.
  */
-async function getLinkedCataloguePartIds(
+export async function getLinkedCataloguePartIds(
   cataloguePartIds: string[],
 ): Promise<Set<string>> {
   if (cataloguePartIds.length === 0) return new Set();

@@ -29,6 +29,7 @@ beforeEach(() => {
   for (const key of Object.keys(tableResults)) delete tableResults[key];
   tableResults.catalogue_parts = { data: [], error: null };
   tableResults.brands = { data: [], error: null };
+  tableResults.categories = { data: [], error: null };
 });
 
 describe("getLowStockRows", () => {
@@ -217,6 +218,33 @@ describe("getLowStockRows", () => {
 
     const rows = await getLowStockRows();
     expect(rows.every((r) => r.brandName === null)).toBe(true);
+  });
+
+  it("resolves category name through catalogue_part_id -> catalogue_parts.category_id -> categories.name", async () => {
+    tableResults.inventory_parts = {
+      data: [
+        {
+          id: "p1",
+          part_number: "A",
+          name: "A",
+          quantity: 0,
+          min_stock: null,
+          catalogue_part_id: "cp1",
+        },
+      ],
+      error: null,
+    };
+    tableResults.catalogue_parts = {
+      data: [{ id: "cp1", brand_id: null, category_id: "cat1" }],
+      error: null,
+    };
+    tableResults.categories = {
+      data: [{ id: "cat1", name: "Bearings" }],
+      error: null,
+    };
+
+    const [row] = await getLowStockRows();
+    expect(row.categoryName).toBe("Bearings");
   });
 
   it("propagates a query error instead of resolving to an empty list", async () => {

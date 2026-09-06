@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createClient } from "@/lib/supabase/server";
+import { groupBy } from "@/lib/utils";
 import type { InventoryStatus } from "@/types/database";
 
 export type HierarchyWarehouse = { id: string; name: string };
@@ -74,7 +75,7 @@ export async function fetchFlatHierarchy(): Promise<FlatHierarchy> {
  * phase4.md §3), so occupancy is always this count compared against how
  * many boxes actually exist.
  */
-async function getBoxPartCounts(): Promise<Map<string, number>> {
+export async function getBoxPartCounts(): Promise<Map<string, number>> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("inventory_parts")
@@ -90,17 +91,6 @@ async function getBoxPartCounts(): Promise<Map<string, number>> {
     counts.set(row.box_id, (counts.get(row.box_id) ?? 0) + 1);
   }
   return counts;
-}
-
-function groupBy<T, K>(items: T[], keyOf: (item: T) => K): Map<K, T[]> {
-  const map = new Map<K, T[]>();
-  for (const item of items) {
-    const key = keyOf(item);
-    const bucket = map.get(key);
-    if (bucket) bucket.push(item);
-    else map.set(key, [item]);
-  }
-  return map;
 }
 
 export type OccupancySummary = { boxesTotal: number; boxesOccupied: number };

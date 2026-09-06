@@ -36,14 +36,16 @@ export type InventoryValue = {
 };
 
 /**
- * Cost-basis value (docs/decisions/0010): sum(quantity * purchase_cost).
+ * Cost-basis sum (docs/decisions/0010): sum(quantity * purchase_cost).
  * Rows with a missing or negative purchase_cost are excluded from the
- * sum and counted in `excludedCount` rather than treated as 0, so a KPI
- * card can flag the total as incomplete instead of presenting it as
- * exact.
+ * sum and counted in `excludedCount` rather than treated as 0. Extracted
+ * so `getInventoryValue` and the Phase 6 valuation-by-category/brand
+ * reports (src/features/reports/valuation.ts) always agree - a second,
+ * differently-computed "value" number must never exist.
  */
-export async function getInventoryValue(): Promise<InventoryValue> {
-  const rows = await fetchInventoryStatsRows();
+export function sumCostBasis(
+  rows: { quantity: number; purchase_cost: number | null }[],
+): InventoryValue {
   let value = 0;
   let excludedCount = 0;
 
@@ -55,13 +57,26 @@ export async function getInventoryValue(): Promise<InventoryValue> {
     value += row.quantity * row.purchase_cost;
   }
 
-  if (excludedCount > 0) {
+  return { value, excludedCount };
+}
+
+/**
+ * Cost-basis value (docs/decisions/0010). Rows with a missing or
+ * negative purchase_cost are excluded from the sum and counted in
+ * `excludedCount` rather than treated as 0, so a KPI card can flag the
+ * total as incomplete instead of presenting it as exact.
+ */
+export async function getInventoryValue(): Promise<InventoryValue> {
+  const rows = await fetchInventoryStatsRows();
+  const result = sumCostBasis(rows);
+
+  if (result.excludedCount > 0) {
     console.warn(
-      `getInventoryValue: excluded ${excludedCount} inventory_parts row(s) with missing or negative purchase_cost from the value sum`,
+      `getInventoryValue: excluded ${result.excludedCount} inventory_parts row(s) with missing or negative purchase_cost from the value sum`,
     );
   }
 
-  return { value, excludedCount };
+  return result;
 }
 
 /** Only counts parts with a configured min_stock (docs/decisions/0009). */

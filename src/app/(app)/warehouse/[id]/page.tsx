@@ -4,19 +4,19 @@ import { toErrorKind } from "@/lib/errors";
 import { ErrorState } from "@/components/shared/error-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { HierarchyBreadcrumb } from "@/components/shared/hierarchy-breadcrumb";
-import { getRackDetail } from "@/features/warehouse/queries";
-import { RackDetailHeader } from "./rack-detail-header";
-import { ShelfList } from "./shelf-list";
+import { getWarehouseDetail } from "@/features/warehouse/queries";
+import { WarehouseDetailHeader } from "./warehouse-detail-header";
+import { RackList } from "./rack-list";
 
-export default async function WarehouseRackDetailPage(
-  props: PageProps<"/warehouse/racks/[id]">,
+export default async function WarehouseDetailPage(
+  props: PageProps<"/warehouse/[id]">,
 ) {
   const user = await requireRole("warehouse.view");
   const { id } = await props.params;
 
   let detail;
   try {
-    detail = await getRackDetail(id);
+    detail = await getWarehouseDetail(id);
   } catch (error) {
     return <ErrorState kind={toErrorKind(error)} />;
   }
@@ -28,37 +28,38 @@ export default async function WarehouseRackDetailPage(
       <HierarchyBreadcrumb
         items={[
           { label: "Warehouse", href: "/warehouse" },
-          {
-            label: detail.warehouse.name,
-            href: `/warehouse/${detail.warehouse.id}`,
-          },
-          { label: `Rack ${detail.code}` },
+          { label: detail.name },
         ]}
       />
 
       <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <h2 className="font-heading text-lg font-semibold tracking-tight">
-            Rack {detail.code}
-          </h2>
-          {detail.deletedAt ? (
-            <StatusBadge label="Deleted" tone="destructive" />
+        <div className="space-y-1.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="font-heading text-lg font-semibold tracking-tight">
+              {detail.name}
+            </h2>
+            {detail.deletedAt ? (
+              <StatusBadge label="Deleted" tone="destructive" />
+            ) : null}
+          </div>
+          {detail.address ? (
+            <p className="text-sm text-muted-foreground">{detail.address}</p>
           ) : null}
         </div>
 
         {!detail.deletedAt ? (
-          <RackDetailHeader
-            rackId={detail.id}
-            warehouseId={detail.warehouse.id}
-            code={detail.code}
+          <WarehouseDetailHeader
+            warehouseId={detail.id}
+            name={detail.name}
+            address={detail.address}
             canManage={canManage}
           />
         ) : null}
       </div>
 
-      <ShelfList
-        rackId={detail.id}
-        shelves={detail.shelves}
+      <RackList
+        warehouseId={detail.id}
+        racks={detail.racks}
         canManage={canManage}
       />
     </div>

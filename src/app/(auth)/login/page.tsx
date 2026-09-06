@@ -1,20 +1,8 @@
-import {
-  BoxesIcon,
-  MapPinIcon,
-  PackageSearchIcon,
-  HistoryIcon,
-} from "lucide-react";
+import { BoxesIcon } from "lucide-react";
 
 import { LoginForm } from "@/features/auth/components/login-form";
-
-const FEATURES = [
-  {
-    icon: PackageSearchIcon,
-    label: "Fast search across parts, brands, and models",
-  },
-  { icon: MapPinIcon, label: "Exact warehouse location for every part" },
-  { icon: HistoryIcon, label: "Full stock movement history, never silent" },
-];
+import { FeatureList } from "@/features/auth/components/feature-list";
+import { MotionFadeIn } from "@/components/shared/motion-fade-in";
 
 export default function LoginPage() {
   return (
@@ -33,6 +21,10 @@ export default function LoginPage() {
           aria-hidden
           className="pointer-events-none absolute -top-24 -right-24 size-72 rounded-full bg-sidebar-primary/20 blur-3xl"
         />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute bottom-0 left-0 h-40 w-full bg-gradient-to-t from-black/20 to-transparent"
+        />
 
         <div className="relative flex items-center gap-2.5">
           <div className="flex size-8 items-center justify-center rounded-[10px] bg-gradient-to-br from-sidebar-primary to-orange-400 shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
@@ -48,19 +40,7 @@ export default function LoginPage() {
             Find the right part, know whether you have it, and know exactly
             where it is.
           </p>
-          <ul className="space-y-4">
-            {FEATURES.map(({ icon: Icon, label }) => (
-              <li
-                key={label}
-                className="flex items-center gap-3 text-sm text-sidebar-foreground/75"
-              >
-                <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-sidebar-accent">
-                  <Icon aria-hidden className="size-3.5 text-sidebar-primary" />
-                </span>
-                {label}
-              </li>
-            ))}
-          </ul>
+          <FeatureList className="space-y-4" />
         </div>
 
         <p className="relative text-xs text-sidebar-foreground/40">
@@ -69,21 +49,23 @@ export default function LoginPage() {
       </div>
 
       <div className="flex flex-1 items-center justify-center px-4 py-12">
-        <div className="w-full max-w-sm space-y-6">
-          <div className="flex flex-col items-center gap-2 text-center lg:items-start lg:text-left">
+        <MotionFadeIn className="w-full max-w-sm">
+          <div className="flex flex-col items-center gap-2 pb-6 text-center lg:items-start lg:text-left">
             <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-orange-400 shadow-sm lg:hidden">
               <BoxesIcon aria-hidden className="size-5 text-white" />
             </div>
             <h1 className="font-heading text-lg font-semibold tracking-tight lg:text-2xl">
-              ForkStock
+              Sign in
             </h1>
             <p className="text-sm text-muted-foreground">
-              Sign in to manage inventory and warehouse operations.
+              Manage inventory and warehouse operations for ForkStock.
             </p>
           </div>
 
-          <LoginForm />
-        </div>
+          <div className="rounded-xl bg-card p-6 ring-1 ring-foreground/10 sm:p-8">
+            <LoginForm />
+          </div>
+        </MotionFadeIn>
       </div>
     </div>
   );

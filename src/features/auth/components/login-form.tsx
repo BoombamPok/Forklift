@@ -3,7 +3,12 @@
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircleIcon } from "lucide-react";
+import {
+  AlertCircleIcon,
+  EyeIcon,
+  EyeOffIcon,
+  Loader2Icon,
+} from "lucide-react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -21,6 +26,8 @@ import { loginSchema, type LoginValues } from "@/features/auth/schema";
 
 function LoginForm() {
   const [formError, setFormError] = React.useState<string | null>(null);
+  const [showPassword, setShowPassword] = React.useState(false);
+  const errorRef = React.useRef<HTMLDivElement>(null);
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
@@ -34,11 +41,19 @@ function LoginForm() {
     }
   }
 
+  React.useEffect(() => {
+    if (formError) errorRef.current?.focus();
+  }, [formError]);
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-4"
+        noValidate
+      >
         {formError ? (
-          <Alert variant="destructive">
+          <Alert variant="destructive" ref={errorRef} tabIndex={-1}>
             <AlertCircleIcon />
             <AlertDescription>{formError}</AlertDescription>
           </Alert>
@@ -55,6 +70,7 @@ function LoginForm() {
                   type="email"
                   autoComplete="email"
                   placeholder="you@company.com"
+                  autoFocus
                   {...field}
                 />
               </FormControl>
@@ -69,13 +85,35 @@ function LoginForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Password</FormLabel>
-              <FormControl>
-                <Input
-                  type="password"
-                  autoComplete="current-password"
-                  {...field}
-                />
-              </FormControl>
+              <div className="relative">
+                <FormControl>
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    className="pr-9"
+                    {...field}
+                  />
+                </FormControl>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  className="absolute inset-y-0 right-1 my-auto text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={
+                    showPassword
+                      ? "Hide typed characters"
+                      : "Show typed characters"
+                  }
+                  aria-pressed={showPassword}
+                >
+                  {showPassword ? (
+                    <EyeOffIcon aria-hidden />
+                  ) : (
+                    <EyeIcon aria-hidden />
+                  )}
+                </Button>
+              </div>
               <FormMessage />
             </FormItem>
           )}
@@ -86,7 +124,14 @@ function LoginForm() {
           className="w-full"
           disabled={form.formState.isSubmitting}
         >
-          {form.formState.isSubmitting ? "Signing in…" : "Sign in"}
+          {form.formState.isSubmitting ? (
+            <>
+              <Loader2Icon aria-hidden className="animate-spin" />
+              Signing in…
+            </>
+          ) : (
+            "Sign in"
+          )}
         </Button>
       </form>
     </Form>

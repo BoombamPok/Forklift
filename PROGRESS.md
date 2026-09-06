@@ -1071,13 +1071,24 @@ coverage, and documentation.
   cold CI container would hit on literally every route on every run.
   `playwright.config.ts` now runs `next start` (after a `next build`
   CI step) when `process.env.CI` is set, `next dev` locally otherwise.
-- **Deployment verification**: confirmed via the Vercel API (not
-  assumed) that the `forklift` project's `gitProviderOptions.
-  createDeployments` is `enabled`, and that the most recent production
-  deployment's timestamp landed ~3.5 minutes after the last git push to
-  `main` with no manual `vercel` command in between — closes the
-  previously-observed "stale deployed URL" gap for good, with evidence,
-  not just a settings screenshot.
+- **Deployment verification — a real, still-open finding, not a closed
+  gap.** Checked via the Vercel API: every deployment through the Phase
+  6 commit (`27fb8a7`) has a matching `githubCommitSha` and landed
+  within minutes of its push — real historical evidence auto-deploy was
+  working. But pushing this phase's own commits produced **no new
+  deployment** after several minutes (checked `vercel ls`, the
+  deployments API, and a `BUILDING`/`QUEUED` state query — nothing
+  pending or new). `gitProviderOptions.createDeployments` still reads
+  `enabled` and `vercel git connect` reports the repo as connected, so
+  the *configuration* looks right — something about actual webhook
+  delivery may have quietly broken (a GitHub App permission change is a
+  common cause), which isn't diagnosable from an environment without
+  GitHub dashboard/API access. Documented as an open action item in
+  `docs/LAUNCH_CHECKLIST.md` rather than papered over: check Vercel's
+  Project Settings → Git page directly, and use `vercel --prod` as a
+  manual fallback if needed. This is the exact "stale deployed URL"
+  risk the project hit once before, caught again rather than
+  re-assumed fixed just because it worked historically.
 - **Accessibility review** (`e2e/accessibility.spec.ts`, axe-core WCAG
   2.1 AA scan across 6 pages + a manual keyboard/focus-trap check) found
   and fixed four real issues, all shipped silently across Phases 1–6:

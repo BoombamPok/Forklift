@@ -27,15 +27,23 @@ verified during Phase 7 and what's left for a person to actually do.
 
 ## 2. Deployment is automatic, not manual
 
-- [x] Confirmed live via the Vercel API: project `forklift`'s
-      `gitProviderOptions.createDeployments` is `enabled`, and the most
-      recent production deployment's timestamp lines up with the last
-      git push to `main` (~3.5 minutes after, well within a normal build
-      time) with no manual `vercel` command run in between. This was a
-      real, previously-observed gap (a stale deployed URL lagging behind
-      git history) — now verified closed, not assumed fixed. Confirm
-      this again after Phase 7's own commits land, the same way: compare
-      the newest deployment's timestamp against `git log -1`.
+- [ ] **Not closed — needs a person to check.** Every deployment through
+      the Phase 6 commit (`27fb8a7`) has a matching `githubCommitSha` and
+      landed within minutes of its push, real evidence auto-deploy was
+      working historically. But Phase 7's own push did **not** produce a
+      new deployment after several minutes of waiting (checked via the
+      Vercel API, `vercel ls`, and a `BUILDING`/`QUEUED` state query —
+      nothing). `gitProviderOptions.createDeployments` still reads
+      `enabled`, so the setting looks right; the actual webhook delivery
+      may have quietly broken (a GitHub App permission change is a
+      common cause), which isn't diagnosable from an environment without
+      GitHub dashboard/API access. **Action needed:** open Vercel's
+      Project Settings → Git page and confirm the connection is actually
+      live, not just configured. Reconnect if needed, or run
+      `vercel --prod` for a one-off manual deploy to get Phase 7's work
+      live in the meantime. This is the exact "stale deployed URL" risk
+      this project hit once before — catching it again now rather than
+      re-assuming it's fixed because it worked in the past.
 - [ ] **Action needed:** confirm Vercel's project environment variables
       (Production scope) match `.env.example` — the CI verification
       above doesn't check the *deployed* environment's actual secrets,

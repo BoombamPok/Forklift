@@ -102,15 +102,24 @@ secrets and will pass regardless.
 
 ## Deployment
 
-Target is Vercel, project `forklift`. **Confirmed** (not assumed) that
-Vercel's GitHub integration auto-deploys on every push to `main` —
-`gitProviderOptions.createDeployments` is `enabled` on the linked
-project (checked via the Vercel API), and the most recent production
-deployment's timestamp lines up with the last git push to `main` (~3.5
-minutes later, a normal build time) with no manual `vercel` command run
-in between. This closes a real gap from earlier in the project, where
-the live deployed URL was once observed to lag several phases behind
-git history because deployment was only ever done by hand.
+Target is Vercel, project `forklift`, linked to
+`github.com/BoombamPok/Forklift` (confirmed via `vercel git connect`).
+**Status as of Phase 7, and this needs a person to actually check**:
+every deployment through the Phase 6 commit (`27fb8a7`) has a
+`githubCommitSha` in its metadata and landed within minutes of the
+matching push, which is real evidence auto-deploy was working — but
+Phase 7's own push did **not** produce a new deployment after several
+minutes of waiting, which breaks that pattern. `gitProviderOptions.
+createDeployments` still reads `enabled` on the project, so the
+*setting* is on; something else (a GitHub App permission change, a
+dropped webhook — not diagnosable from here without GitHub dashboard/
+API access this environment doesn't have) may have quietly stopped
+delivery. **Check Vercel's Project Settings → Git page directly**, and
+if it's genuinely not connected, reconnect it there or run
+`vercel --prod` for a one-off manual deploy in the meantime. This is
+the same "stale deployed URL" risk this project has hit once before —
+now caught again rather than assumed fixed just because it worked in
+the past.
 
 Set the same environment variables from `.env.example` in the Vercel
 project settings (Production/Preview/Development as appropriate — the

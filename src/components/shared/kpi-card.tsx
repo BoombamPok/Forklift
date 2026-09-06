@@ -57,7 +57,7 @@ function KpiCard({
   return (
     <Card className={cn("gap-3", className)}>
       <CardHeader>
-        <CardDescription className="font-medium tracking-wide text-muted-foreground/90 uppercase text-[0.6875rem]">
+        <CardDescription className="font-medium tracking-wide text-muted-foreground uppercase text-[0.6875rem]">
           {label}
         </CardDescription>
         {Icon ? (

@@ -66,7 +66,7 @@ function InventoryFilters({
         value={status ?? "all"}
         onValueChange={(v) => setParam("status", v)}
       >
-        <SelectTrigger size="sm" className="w-40">
+        <SelectTrigger size="sm" className="w-40" aria-label="Filter by status">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -82,7 +82,11 @@ function InventoryFilters({
         value={stockFilter ?? "all"}
         onValueChange={(v) => setParam("stock", v)}
       >
-        <SelectTrigger size="sm" className="w-44">
+        <SelectTrigger
+          size="sm"
+          className="w-44"
+          aria-label="Filter by stock level"
+        >
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -98,7 +102,11 @@ function InventoryFilters({
         value={linked ?? "all"}
         onValueChange={(v) => setParam("linked", v)}
       >
-        <SelectTrigger size="sm" className="w-52">
+        <SelectTrigger
+          size="sm"
+          className="w-52"
+          aria-label="Filter by catalogue link"
+        >
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

@@ -7,10 +7,47 @@ import { Dialog as DialogPrimitive } from "radix-ui";
 import { Button } from "@/components/ui/button";
 import { XIcon } from "lucide-react";
 
+/**
+ * Radix's own focus-restore-on-close (FocusScope captures
+ * `document.activeElement` in a `useEffect`, after render) doesn't
+ * reliably land back on the trigger in this app - verified live during
+ * Phase 7's accessibility audit, reproducible with mouse or keyboard
+ * activation, in both `next dev` and a production build. Capturing the
+ * pre-open focus target here instead - via React's "adjusting state
+ * during render" pattern (react.dev/reference/react/useState#storing-
+ * information-from-previous-renders), not a ref mutation, which the
+ * React Compiler's lint rules correctly reject - runs before Content's
+ * FocusScope effect (or anything else's) can run first and shift focus
+ * away. Restoring it explicitly in `DialogContent` is a corrective
+ * layer on top of Radix's own attempt, not a replacement for it -
+ * `event.preventDefault()` only fires once a real target is found.
+ */
+const DialogReturnFocusContext = React.createContext<HTMLElement | null>(null);
+
 function Dialog({
+  open,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Root>) {
-  return <DialogPrimitive.Root data-slot="dialog" {...props} />;
+  const [returnFocusEl, setReturnFocusEl] = React.useState<HTMLElement | null>(
+    null,
+  );
+  const [prevOpen, setPrevOpen] = React.useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open && typeof document !== "undefined") {
+      setReturnFocusEl(
+        document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null,
+      );
+    }
+  }
+
+  return (
+    <DialogReturnFocusContext.Provider value={returnFocusEl}>
+      <DialogPrimitive.Root data-slot="dialog" open={open} {...props} />
+    </DialogReturnFocusContext.Provider>
+  );
 }
 
 function DialogTrigger({
@@ -51,15 +88,27 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  onCloseAutoFocus,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean;
 }) {
+  const returnFocusEl = React.useContext(DialogReturnFocusContext);
+
   return (
     <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
+        onCloseAutoFocus={(event) => {
+          onCloseAutoFocus?.(event);
+          if (event.defaultPrevented) return;
+          const target = returnFocusEl;
+          if (target && document.contains(target)) {
+            event.preventDefault();
+            target.focus({ preventScroll: true });
+          }
+        }}
         className={cn(
           "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
           className,

@@ -95,7 +95,7 @@ function PartsFilters({
         value={brandId ?? "all"}
         onValueChange={(v) => setParam("brandId", v)}
       >
-        <SelectTrigger size="sm" className="w-40">
+        <SelectTrigger size="sm" className="w-40" aria-label="Filter by brand">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -112,7 +112,11 @@ function PartsFilters({
         value={categoryId ?? "all"}
         onValueChange={(v) => setParam("categoryId", v)}
       >
-        <SelectTrigger size="sm" className="w-44">
+        <SelectTrigger
+          size="sm"
+          className="w-44"
+          aria-label="Filter by category"
+        >
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -129,7 +133,11 @@ function PartsFilters({
         value={fastener ?? "all"}
         onValueChange={(v) => setParam("fastener", v)}
       >
-        <SelectTrigger size="sm" className="w-44">
+        <SelectTrigger
+          size="sm"
+          className="w-44"
+          aria-label="Filter by fastener"
+        >
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -145,7 +153,11 @@ function PartsFilters({
         value={verificationStatus ?? "all"}
         onValueChange={(v) => setParam("verification", v)}
       >
-        <SelectTrigger size="sm" className="w-44">
+        <SelectTrigger
+          size="sm"
+          className="w-44"
+          aria-label="Filter by verification status"
+        >
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

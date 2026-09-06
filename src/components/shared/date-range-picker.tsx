@@ -77,7 +77,7 @@ function DateRangePicker({ preset, from, to }: DateRangePickerProps) {
         value={showCustom ? "custom" : String(preset)}
         onValueChange={handlePresetChange}
       >
-        <SelectTrigger size="sm" className="w-40">
+        <SelectTrigger size="sm" className="w-40" aria-label="Date range">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

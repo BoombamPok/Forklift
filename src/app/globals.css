@@ -63,8 +63,14 @@
   --card-foreground: oklch(0.18 0.006 260);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.18 0.006 260);
-  /* Warm orange brand accent - reserved for primary actions, not decoration. */
-  --primary: oklch(0.646 0.222 41.116);
+  /* Warm orange brand accent - reserved for primary actions, not decoration.
+     Darkened from the original oklch(0.646 0.222 41.116) - that value only
+     hit a 3.44:1 contrast ratio against --primary-foreground (Phase 7's
+     axe-core accessibility audit), below WCAG AA's 4.5:1 floor for normal
+     text/icons on solid-fill buttons and badges. --ring/--chart-1 keep the
+     brighter original value on purpose - a focus ring and a chart fill
+     aren't held to text-contrast rules the same way. */
+  --primary: oklch(0.555 0.18 41.116);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.96 0.003 95);
   --secondary-foreground: oklch(0.205 0.006 260);
@@ -73,7 +79,9 @@
   --accent: oklch(0.96 0.012 45);
   --accent-foreground: oklch(0.25 0.03 45);
   --destructive: oklch(0.577 0.245 27.325);
-  --success: oklch(0.6 0.14 152);
+  /* Darkened from oklch(0.6 0.14 152) for the same reason as --primary -
+     text-success on bg-success/10 only hit 3.17:1. */
+  --success: oklch(0.48 0.14 152);
   --success-foreground: oklch(0.985 0 0);
   --warning: oklch(0.77 0.16 75);
   --warning-foreground: oklch(0.2 0.02 75);

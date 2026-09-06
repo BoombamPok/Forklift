@@ -32,7 +32,7 @@ function ModelFilters({ brandOptions, brandId }: ModelFiltersProps) {
 
   return (
     <Select value={brandId ?? "all"} onValueChange={setBrand}>
-      <SelectTrigger size="sm" className="w-48">
+      <SelectTrigger size="sm" className="w-48" aria-label="Filter by brand">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

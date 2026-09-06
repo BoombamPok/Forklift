@@ -5,7 +5,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 
 import { DataTable } from "@/components/shared/data-table";
 import { StatusBadge, type StatusTone } from "@/components/shared/status-badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -153,11 +153,22 @@ function LowStockReportTable({ rows }: LowStockReportTableProps) {
             </TabsTrigger>
             <TabsTrigger value="low">Low ({countFor("low")})</TabsTrigger>
           </TabsList>
+          {/* See the identical comment in dashboard/low-stock-table.tsx -
+              these tabs filter the table below, so each needs an empty
+              same-value TabsContent to keep aria-controls valid. */}
+          <TabsContent value="all" forceMount className="hidden" />
+          <TabsContent value="out_of_stock" forceMount className="hidden" />
+          <TabsContent value="critical" forceMount className="hidden" />
+          <TabsContent value="low" forceMount className="hidden" />
         </Tabs>
 
         <div className="flex gap-2">
           <Select value={brandFilter} onValueChange={setBrandFilter}>
-            <SelectTrigger size="sm" className="w-40">
+            <SelectTrigger
+              size="sm"
+              className="w-40"
+              aria-label="Filter by brand"
+            >
               <SelectValue placeholder="All brands" />
             </SelectTrigger>
             <SelectContent>
@@ -171,7 +182,11 @@ function LowStockReportTable({ rows }: LowStockReportTableProps) {
           </Select>
 
           <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger size="sm" className="w-40">
+            <SelectTrigger
+              size="sm"
+              className="w-40"
+              aria-label="Filter by category"
+            >
               <SelectValue placeholder="All categories" />
             </SelectTrigger>
             <SelectContent>

@@ -943,13 +943,95 @@ second/future catalogue import pipeline, full reporting/analytics on
 catalogue data (Phase 6), QR/barcode, and any
 Sales/Purchases/Suppliers/Customers/Invoicing concept.
 
+## Phase 6 — Operations + Business Intelligence (done)
+
+Spec: `phase6.md` (saved to the repo root). Replaced the `/reports`
+placeholder with eight real, read-only BI views built on top of Phase
+2's already-live dashboard aggregates and Phases 3–5's real inventory,
+warehouse, and catalogue data — no new domain concepts, no new tables.
+
+- **`§5`'s fast/slow-mover definition accepted as-is, no ADR override**:
+  rank by `sum(abs(quantity_change))` over non-`transfer` movements in
+  the selected range; fast = top 20 by that ranking; slow = live parts
+  with zero qualifying movement in the range, ordered by how long
+  they've actually been idle (shared with the Stock Aging report via
+  `getStockAgingRows`, not a second ordering invented for the movers
+  report).
+- **New `src/features/reports/` module**: `schema.ts`
+  (`parseReportDateRange` — `days`∈{7,30,90} or a Zod-validated custom
+  `from`/`to`, defaulting to 30 on anything invalid rather than erroring
+  the page), `valuation.ts`, `movements.ts` (shares one range-bound
+  `stock_movements` fetch across the type chart/summary and both movers
+  lists), `aging.ts` (unbounded by design — "how long has this sat" has
+  to look arbitrarily far back), `occupancy.ts`, `catalogue-coverage.ts`,
+  and `shared.ts` (`getPartLabelsById` — the brand-resolution lookup
+  extracted once a third report needed the exact pattern
+  `getLowStockRows` already established).
+- **`sumCostBasis` extracted from `getInventoryValue`**
+  (`src/features/dashboard/queries.ts`) so the valuation report's
+  category/brand breakdowns and the dashboard's own KPI can never
+  disagree — one cost-basis formula, not two. The valuation report is
+  additionally gated on `canViewInventoryValue` (admin/manager only,
+  phase2b's ADR) exactly like the dashboard KPI; staff/read-only see the
+  same permission-denied state instead of the report.
+- **Three small existing-file exports**, not new abstractions:
+  `getBoxPartCounts` (warehouse/queries.ts) and
+  `getLinkedCataloguePartIds` (catalogue/queries.ts) were already-correct
+  private logic that Phase 6 needed to reuse verbatim rather than
+  reimplement; `groupBy` moved from a private helper in
+  warehouse/queries.ts to `src/lib/utils.ts` so the new occupancy rollup
+  (`getOccupancyRollup`, one pass across every warehouse/rack instead of
+  N+1) uses the identical grouping logic instead of a second copy.
+  `LowStockRow` gained a `categoryName` field (same derivation path as
+  `brandName`) so the new low-stock report's category filter didn't need
+  a parallel query — additive, the dashboard widget is unaffected.
+- **New shared UI**: `DateRangePicker`
+  (`src/components/shared/date-range-picker.tsx`) — presets (7/30/90) +
+  an optional native `<input type="date">` custom range, no new
+  dependency (no `date-fns`/`react-day-picker`) since a calendar-picker
+  library wasn't justified for a "nice to have" per phase6.md §4. Follows
+  `InventoryFilters`'s exact URL-is-source-of-truth pattern.
+  `MovementTypeBarChart` — the 6-movement-type sibling of the dashboard's
+  2-series chart, which is left untouched.
+- **Every `ColumnDef`/`DataTable` pair lives in its own small "use
+  client" file per report** (`valuation-breakdown-table.tsx`,
+  `movement-summary-table.tsx`, `movers-tables.tsx`, `aging-table.tsx`,
+  `occupancy-table.tsx`), mirroring `low-stock-report-table.tsx`'s
+  existing pattern — a `cell` renderer is a function, and functions
+  can't cross the Server→Client Component prop boundary. Caught this
+  live against the real dev server (every range/list report crashed with
+  "Functions cannot be passed directly to Client Components" until each
+  `columns` array moved into its own client file) rather than only via
+  typecheck, which doesn't catch this class of RSC-boundary violation.
+- **Testing**: 6 new data-layer test files under `src/features/reports/`
+  (31 tests) plus `date-range-picker.test.tsx` (5 tests) — 240 total
+  unit/component tests, all green. `e2e/reports.spec.ts` (8 tests, live
+  Supabase project, `staff` fixture): the overview links to all seven
+  reports; the valuation report correctly shows the permission-denied
+  state for staff (a real behavior to verify, not a gap — same "no
+  admin/manager application login available" limitation documented in
+  Phases 3–5); the other six reports render against the real, live data
+  already in the project (2 brands, 284 catalogue parts, 979
+  compatibility links, real stock movements and warehouse occupancy).
+  Manually walked every report page against the live dev server with
+  Playwright and screenshots before writing the final e2e spec, which is
+  what caught the RSC-boundary bug above.
+- Typecheck, lint, format, build, and the full unit/component/e2e suite
+  pass — **except** the same pre-existing `e2e/dashboard.spec.ts` em-dash
+  flake already documented as a known issue in the Phase 5 entry above
+  (unrelated to this phase).
+
+**Out of scope, confirmed against phase6.md §4/§15 and left alone**:
+CSV/export tooling, backup/restore, any new summary/materialized table,
+QR/barcode, and any Sales/Purchases/Suppliers/Customers/Invoicing
+concept.
+
 ## Next steps
 
-Phase 6 (Operations + Business Intelligence) per the phase list — read
-`CLAUDE.md` §20's workflow and ask the user for `phase6.md` if it hasn't
-been provided yet. Per phase5.md §16, Phase 6 inherits a fully
-browsable, searchable catalogue with real compatibility data, real
-verification status, and a real inventory-linkage picture — enough to
-build meaningful reports (e.g. "catalogue coverage," "unlinked catalogue
-parts," "parts by verification status") without needing further
-catalogue-side work.
+Phase 7 (Security + Testing + Hardening + Launch) per the phase list —
+read `CLAUDE.md` §20's workflow and ask the user for `phase7.md` if it
+hasn't been provided yet. Per phase6.md §16, Phase 7 inherits a
+feature-complete application — inventory, warehouse, catalogue, and
+operations/reporting all real and working — and can focus entirely on
+review/hardening/launch-readiness without needing further product
+features from this phase or any before it.

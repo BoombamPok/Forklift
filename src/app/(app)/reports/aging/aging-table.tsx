@@ -48,9 +48,7 @@ const columns: ColumnDef<StockAgingRow, unknown>[] = [
 ];
 
 function AgingTable({ rows }: { rows: StockAgingRow[] }) {
-  return (
-    <DataTable columns={columns} data={rows} getRowId={(row) => row.id} />
-  );
+  return <DataTable columns={columns} data={rows} getRowId={(row) => row.id} />;
 }
 
 export { AgingTable };

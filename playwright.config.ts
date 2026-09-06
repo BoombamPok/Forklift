@@ -20,7 +20,14 @@ export default defineConfig({
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: {
-    command: "npm run dev",
+    // CI runs against a production build (`next build`, done as its own
+    // prior CI step, then `next start`) rather than `next dev` - dev
+    // mode compiles each route on its first hit, which is fine locally
+    // but was a real source of flaky first-hit timeouts in a fresh CI
+    // container with nothing pre-warmed (Phase 7 finding). This also
+    // means CI e2e exercises what actually gets deployed, not a dev-only
+    // code path.
+    command: process.env.CI ? "npm run start" : "npm run dev",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,

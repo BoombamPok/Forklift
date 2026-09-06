@@ -116,7 +116,8 @@ export async function getLowStockRows(): Promise<LowStockRow[]> {
     categoryNameByCataloguePartId = new Map(
       (catalogueParts ?? [])
         .filter(
-          (cp) => cp.category_id !== null && categoryNameById.has(cp.category_id),
+          (cp) =>
+            cp.category_id !== null && categoryNameById.has(cp.category_id),
         )
         .map((cp) => [cp.id, categoryNameById.get(cp.category_id!)!]),
     );

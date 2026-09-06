@@ -25,7 +25,9 @@ describe("DateRangePicker", () => {
 
   it("pushes a days param and clears from/to when a preset is chosen", async () => {
     mockSearchParams = new URLSearchParams("from=2026-01-01&to=2026-01-31");
-    render(<DateRangePicker preset="custom" from="2026-01-01" to="2026-01-31" />);
+    render(
+      <DateRangePicker preset="custom" from="2026-01-01" to="2026-01-31" />,
+    );
 
     await userEvent.click(screen.getByRole("combobox"));
     await userEvent.click(await screen.findByText("Last 7 days"));
@@ -34,7 +36,9 @@ describe("DateRangePicker", () => {
   });
 
   it("shows the custom date inputs when the current preset is custom", () => {
-    render(<DateRangePicker preset="custom" from="2026-01-01" to="2026-01-31" />);
+    render(
+      <DateRangePicker preset="custom" from="2026-01-01" to="2026-01-31" />,
+    );
     expect(screen.getByLabelText("Start date")).toHaveValue("2026-01-01");
     expect(screen.getByLabelText("End date")).toHaveValue("2026-01-31");
   });

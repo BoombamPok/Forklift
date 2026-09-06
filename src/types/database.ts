@@ -423,6 +423,22 @@ export type Database = {
         };
         Returns: undefined;
       };
+      soft_delete_box: {
+        Args: { p_box_id: string };
+        Returns: { part_id: string; part_number: string; name: string }[];
+      };
+      soft_delete_shelf: {
+        Args: { p_shelf_id: string };
+        Returns: { part_id: string; part_number: string; name: string }[];
+      };
+      soft_delete_rack: {
+        Args: { p_rack_id: string };
+        Returns: { part_id: string; part_number: string; name: string }[];
+      };
+      soft_delete_warehouse: {
+        Args: { p_warehouse_id: string };
+        Returns: { part_id: string; part_number: string; name: string }[];
+      };
     };
     Enums: {
       app_role: AppRole;

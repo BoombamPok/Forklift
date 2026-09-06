@@ -15,3 +15,4 @@ overview.
 - [0009 — `inventory_parts.min_stock` as a nullable low-stock threshold](0009-inventory-min-stock-threshold.md)
 - [0010 — Inventory value KPI uses cost basis, not retail value](0010-inventory-valuation-cost-basis.md)
 - [0011 — Part-image storage path convention, and a hard delete for `part_images`](0011-part-images-storage-path-and-delete.md)
+- [0012 — Warehouse hierarchy soft-delete cascades, and blocks rather than overrides](0012-warehouse-soft-delete-cascade.md)

@@ -5,22 +5,31 @@ import { ChartContainer } from "@/components/shared/chart-container";
 import { LoadingState } from "@/components/shared/loading-state";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { canViewInventoryValue } from "@/lib/permissions";
+import { DashboardGreeting } from "./dashboard-greeting";
 import { DashboardKpis } from "./dashboard-kpis";
 import { StockMovementWidget } from "./stock-movement-widget";
+import { QuickActions } from "./quick-actions";
 import { RecentActivityWidget } from "./recent-activity-widget";
+import { InventoryByBrandWidget } from "./inventory-by-brand-widget";
+import { TopModelsWidget } from "./top-models-widget";
 import { LowStockWidget } from "./low-stock-widget";
 
 /**
  * KPI row (2b), stock movement chart + recent activity (2c), and the
  * low-stock table (2d) all wired to live data, each in its own Suspense
  * boundary so one widget's failure or loading time never blocks another.
+ * The brand-mix chart, top-models list, and quick-actions panel follow
+ * the same per-widget boundary convention.
  */
 export default async function DashboardPage() {
   const user = await getCurrentUser();
   const showValue = user ? canViewInventoryValue(user.role) : false;
+  const role = user?.role ?? "read_only";
 
   return (
     <div className="space-y-6">
+      {user ? <DashboardGreeting name={user.name} /> : null}
+
       <Suspense
         fallback={
           <LoadingState
@@ -33,17 +42,23 @@ export default async function DashboardPage() {
         <DashboardKpis showValue={showValue} />
       </Suspense>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Suspense
-          fallback={
-            <ChartContainer title="Stock movement" description="Last 30 days">
-              <LoadingState variant="block" className="h-full" />
-            </ChartContainer>
-          }
-        >
-          <StockMovementWidget />
-        </Suspense>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <Suspense
+            fallback={
+              <ChartContainer title="Stock movement" description="Last 30 days">
+                <LoadingState variant="block" className="h-full" />
+              </ChartContainer>
+            }
+          >
+            <StockMovementWidget />
+          </Suspense>
+        </div>
 
+        <QuickActions role={role} />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <Suspense
           fallback={
             <Card>
@@ -57,6 +72,34 @@ export default async function DashboardPage() {
           }
         >
           <RecentActivityWidget />
+        </Suspense>
+
+        <Suspense
+          fallback={
+            <ChartContainer
+              title="Inventory by brand"
+              description="Live stock mix"
+            >
+              <LoadingState variant="block" className="h-full" />
+            </ChartContainer>
+          }
+        >
+          <InventoryByBrandWidget />
+        </Suspense>
+
+        <Suspense
+          fallback={
+            <Card>
+              <CardHeader>
+                <CardTitle>Top models</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <LoadingState variant="block" />
+              </CardContent>
+            </Card>
+          }
+        >
+          <TopModelsWidget />
         </Suspense>
       </div>
 

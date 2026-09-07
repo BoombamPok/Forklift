@@ -5,21 +5,31 @@ function Card({
   className,
   size = "default",
   interactive = false,
+  tone = "flat",
   ...props
 }: React.ComponentProps<"div"> & {
   size?: "default" | "sm";
   /** Adds a hover lift + shadow deepen for cards that link somewhere or
    * respond to a click, so they read as tactile instead of static. */
   interactive?: boolean;
+  /** "glass" applies the frosted glass-panel treatment for hero/hub
+   * surfaces; dense data screens stay "flat" (the default) so decoration
+   * never competes with the data being scanned. */
+  tone?: "flat" | "glass";
 }) {
   return (
     <div
       data-slot="card"
       data-size={size}
+      data-tone={tone}
       className={cn(
         "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl border border-border/70 bg-card py-(--card-spacing) text-sm text-card-foreground shadow-sm transition-[box-shadow,transform] duration-200 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        tone === "glass" && "glass-panel shadow-lg",
         interactive &&
           "cursor-pointer hover:-translate-y-0.5 hover:border-border hover:shadow-md",
+        interactive &&
+          tone === "glass" &&
+          "hover:shadow-glow-primary hover:border-primary/30",
         className,
       )}
       {...props}

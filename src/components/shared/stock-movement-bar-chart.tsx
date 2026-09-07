@@ -15,6 +15,10 @@ import type {
   ValueType,
   NameType,
 } from "recharts/types/component/DefaultTooltipContent";
+import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
+import Typography from "@mui/material/Typography";
+import { useTheme } from "@mui/material/styles";
 
 import type { StockMovementDay } from "@/features/dashboard/activity";
 
@@ -43,28 +47,55 @@ function ChartTooltip({
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="rounded-lg border border-border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-lg">
-      <p className="mb-1.5 font-medium">{formatTick(String(label))}</p>
-      <div className="space-y-1">
+    <Paper elevation={4} sx={{ px: 1.5, py: 1, fontSize: "0.75rem" }}>
+      <Typography
+        variant="caption"
+        sx={{ display: "block", mb: 0.5, fontWeight: 600 }}
+      >
+        {formatTick(String(label))}
+      </Typography>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
         {payload.map((entry) => (
-          <div key={entry.name} className="flex items-center gap-2">
-            <span
+          <Box
+            key={entry.name}
+            sx={{ display: "flex", alignItems: "center", gap: 1 }}
+          >
+            <Box
               aria-hidden
-              className="size-2 rounded-[2px]"
-              style={{ backgroundColor: entry.color }}
+              sx={{
+                width: 8,
+                height: 8,
+                borderRadius: "2px",
+                bgcolor: entry.color,
+              }}
             />
-            <span className="text-muted-foreground">{entry.name}</span>
-            <span className="ml-auto font-mono font-medium tabular-nums">
+            <Typography variant="caption" color="text.secondary">
+              {entry.name}
+            </Typography>
+            <Typography
+              variant="caption"
+              sx={{
+                ml: "auto",
+                fontFamily: "var(--font-roboto-mono)",
+                fontWeight: 600,
+              }}
+            >
               {entry.value}
-            </span>
-          </div>
+            </Typography>
+          </Box>
         ))}
-      </div>
-    </div>
+      </Box>
+    </Paper>
   );
 }
 
 function StockMovementBarChart({ data }: StockMovementBarChartProps) {
+  const theme = useTheme();
+  const successColor = theme.palette.success.main;
+  const errorColor = theme.palette.error.main;
+  const gridColor = theme.palette.divider;
+  const axisColor = theme.palette.text.secondary;
+
   return (
     <ResponsiveContainer width="100%" height="100%">
       <BarChart
@@ -74,19 +105,15 @@ function StockMovementBarChart({ data }: StockMovementBarChartProps) {
       >
         <defs>
           <linearGradient id="inboundFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--success)" stopOpacity={1} />
-            <stop offset="100%" stopColor="var(--success)" stopOpacity={0.55} />
+            <stop offset="0%" stopColor={successColor} stopOpacity={1} />
+            <stop offset="100%" stopColor={successColor} stopOpacity={0.55} />
           </linearGradient>
           <linearGradient id="outboundFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--destructive)" stopOpacity={1} />
-            <stop
-              offset="100%"
-              stopColor="var(--destructive)"
-              stopOpacity={0.55}
-            />
+            <stop offset="0%" stopColor={errorColor} stopOpacity={1} />
+            <stop offset="100%" stopColor={errorColor} stopOpacity={0.55} />
           </linearGradient>
         </defs>
-        <CartesianGrid vertical={false} className="stroke-border" />
+        <CartesianGrid vertical={false} stroke={gridColor} />
         <XAxis
           dataKey="date"
           tickFormatter={formatTick}
@@ -94,18 +121,18 @@ function StockMovementBarChart({ data }: StockMovementBarChartProps) {
           tickLine={false}
           axisLine={false}
           fontSize={12}
-          stroke="var(--muted-foreground)"
+          stroke={axisColor}
         />
         <YAxis
           allowDecimals={false}
           tickLine={false}
           axisLine={false}
           fontSize={12}
-          stroke="var(--muted-foreground)"
+          stroke={axisColor}
         />
         <Tooltip
           content={(props) => <ChartTooltip {...props} />}
-          cursor={{ fill: "var(--muted)", opacity: 0.5 }}
+          cursor={{ fill: theme.palette.action.hover }}
         />
         <Legend
           wrapperStyle={{ fontSize: 12 }}

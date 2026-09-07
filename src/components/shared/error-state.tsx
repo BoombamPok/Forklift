@@ -6,9 +6,11 @@ import {
   ServerCrashIcon,
   type LucideIcon,
 } from "lucide-react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import type { SxProps, Theme } from "@mui/material/styles";
 
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import type { ErrorKind } from "@/lib/errors";
 
 const ERROR_PRESETS: Record<
@@ -42,7 +44,9 @@ type ErrorStateProps = {
   title?: string;
   description?: string;
   onRetry?: () => void;
+  /** Kept for callers not yet migrated off Tailwind utility classes. */
   className?: string;
+  sx?: SxProps<Theme>;
 };
 
 /**
@@ -55,35 +59,62 @@ function ErrorState({
   description,
   onRetry,
   className,
+  sx,
 }: ErrorStateProps) {
   const preset = ERROR_PRESETS[kind];
   const Icon = preset.icon;
 
   return (
-    <div
+    <Box
       role="alert"
-      className={cn(
-        "flex flex-col items-center justify-center gap-3 rounded-lg border border-border px-6 py-12 text-center",
-        className,
-      )}
+      className={className}
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 1.5,
+        borderRadius: 2,
+        border: 1,
+        borderColor: "divider",
+        px: 3,
+        py: 6,
+        textAlign: "center",
+        ...sx,
+      }}
     >
-      <div className="flex size-10 items-center justify-center rounded-full bg-destructive/10">
-        <Icon aria-hidden className="size-5 text-destructive" />
-      </div>
-      <div className="space-y-1">
-        <p className="text-sm font-medium text-foreground">
+      <Box
+        sx={{
+          display: "flex",
+          width: 40,
+          height: 40,
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: "50%",
+          bgcolor:
+            "color-mix(in srgb, var(--mui-palette-error-main) 10%, transparent)",
+        }}
+      >
+        <Icon aria-hidden size={20} color="var(--mui-palette-error-main)" />
+      </Box>
+      <Box>
+        <Typography variant="body2" sx={{ fontWeight: 600 }}>
           {title ?? preset.title}
-        </p>
-        <p className="max-w-sm text-sm text-muted-foreground">
+        </Typography>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ maxWidth: 320 }}
+        >
           {description ?? preset.description}
-        </p>
-      </div>
+        </Typography>
+      </Box>
       {onRetry ? (
-        <Button variant="outline" size="sm" onClick={onRetry}>
+        <Button variant="outlined" size="small" onClick={onRetry}>
           Try again
         </Button>
       ) : null}
-    </div>
+    </Box>
   );
 }
 

@@ -1,14 +1,17 @@
 import * as React from "react";
 import type { LucideIcon } from "lucide-react";
-
-import { cn } from "@/lib/utils";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import type { SxProps, Theme } from "@mui/material/styles";
 
 type EmptyStateProps = {
   icon?: LucideIcon;
   title: string;
   description?: string;
   action?: React.ReactNode;
+  /** Kept for callers not yet migrated off Tailwind utility classes. */
   className?: string;
+  sx?: SxProps<Theme>;
 };
 
 /**
@@ -21,30 +24,60 @@ function EmptyState({
   description,
   action,
   className,
+  sx,
 }: EmptyStateProps) {
   return (
-    <div
+    <Box
       role="status"
-      className={cn(
-        "flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border bg-muted/20 px-6 py-12 text-center",
-        className,
-      )}
+      className={className}
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 1.5,
+        borderRadius: 3,
+        border: 1,
+        borderStyle: "dashed",
+        borderColor: "divider",
+        bgcolor: "action.hover",
+        px: 3,
+        py: 6,
+        textAlign: "center",
+        ...sx,
+      }}
     >
       {Icon ? (
-        <div className="flex size-10 items-center justify-center rounded-full bg-muted">
-          <Icon aria-hidden className="size-5 text-muted-foreground" />
-        </div>
+        <Box
+          sx={{
+            display: "flex",
+            width: 40,
+            height: 40,
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: "50%",
+            bgcolor: "action.selected",
+          }}
+        >
+          <Icon aria-hidden size={20} />
+        </Box>
       ) : null}
-      <div className="space-y-1">
-        <p className="text-sm font-medium text-foreground">{title}</p>
+      <Box>
+        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+          {title}
+        </Typography>
         {description ? (
-          <p className="max-w-sm text-sm text-muted-foreground">
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ maxWidth: 320 }}
+          >
             {description}
-          </p>
+          </Typography>
         ) : null}
-      </div>
+      </Box>
       {action}
-    </div>
+    </Box>
   );
 }
 

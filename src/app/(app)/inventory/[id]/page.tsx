@@ -98,7 +98,7 @@ export default async function InventoryPartDetailPage(
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Card>
+        <Card tone="glass" className="shadow-glow-primary">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <PackageIcon aria-hidden className="size-4 text-info" />

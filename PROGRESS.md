@@ -1690,10 +1690,32 @@ the first kill silently didn't take. Always re-check `ss -ltnp`
 after killing, never assume the first attempt worked.
 
 **Not started yet**: warehouse (4-level hierarchy), reports
-sub-pages (7), admin sub-pages (users, import-export) still render
-old shadcn/Tailwind content inside the new MUI shell+DataTable. Final
-cleanup batch (remove Tailwind/shadcn/radix-ui/cva, delete
-`src/components/ui/*`) can't happen until all pages are migrated.
+**Warehouse fully converted**: the list page, and all 4 hierarchy
+levels (warehouse/rack/shelf/box), each with its detail page +
+detail header + child-list table. `box-parts-table.tsx`'s "Transfer"
+shortcut reuses the already-MUI `StockMovementDialog` from the
+inventory batch. Shared dialogs converted: `WarehouseFormDialog`,
+`CodeFormDialog` (the single-field create/edit form racks/shelves/
+boxes all share), `LocationDeleteAction` (the cascade soft-delete
+trigger, including its "can't delete - blocked by these parts"
+secondary dialog). Also converted `OccupancyBadge` (shared with
+`reports/occupancy`).
+
+This batch converted every dialog it touched together, so the
+nested-Radix-inside-MUI-dialog bug from the catalogue batch didn't
+recur - confirmed explicitly since `accessibility.spec.ts`'s dialog-
+focus-trap test exercises the "Add warehouse" dialog specifically,
+and it passed cleanly, along with the full warehouse CRUD e2e flow.
+
+Verified: typecheck, lint, format, 251/251 vitest, production build,
+full Playwright suite (29/31, same two pre-existing/confirmed flakes
+as the catalogue and inventory batches).
+
+**Not started yet**: reports sub-pages (7), admin sub-pages (users,
+import-export) still render old shadcn/Tailwind content inside the
+new MUI shell+DataTable. Final cleanup batch (remove Tailwind/
+shadcn/radix-ui/cva, delete `src/components/ui/*`) can't happen
+until all pages are migrated.
 
 **Do not merge `redesign/mui-rehaul` (or `redesign/maximalist`) to
 `main` without the user's explicit, informed go-ahead** — main
@@ -1703,13 +1725,15 @@ some still shadcn/Tailwind.
 
 ## Next steps
 
-The MUI rehaul above is the active thread — continue with warehouse
-(4-level hierarchy: warehouse/rack/shelf/box) next, then reports/
-admin sub-pages, per the user's "yes, continue in that order."
-Confirm scope with the user if resuming after a long gap, since this
-overrides documented project direction and its own plan file may
-have drifted from reality — reconcile against the actual repo/branch
-state first.
+The MUI rehaul above is the active thread — continue with reports'
+7 sub-pages next, then admin's sub-pages (users, import-export), per
+the user's "yes, continue in that order." Once those land, every
+page will be off shadcn/Tailwind and the final cleanup batch (remove
+Tailwind/shadcn/radix-ui/cva, delete `src/components/ui/*`) becomes
+possible. Confirm scope with the user if resuming after a long gap,
+since this overrides documented project direction and its own plan
+file may have drifted from reality — reconcile against the actual
+repo/branch state first.
 
 Separately, unrelated to the redesign: ForkStock V1 (the pre-redesign
 feature set) is feature-complete, reviewed, hardened, and documented.

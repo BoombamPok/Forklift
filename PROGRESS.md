@@ -1381,13 +1381,25 @@ e2e test independently confirmed to fail identically on unmodified
   an earlier session, breaking `getByRole("heading",{name:"ForkStock"})`
   — restored as `<h2>`.
 
-**Not started yet** — Batch 2 (hub pages `/catalogue`, `/reports`,
-`/admin`: `HeroSceneHub` is built but not wired into any page yet),
-Batch 3 (inventory + catalogue data pages — 2D glass/gradient refinement
-only, no 3D, since these are dense working screens), Batch 4 (warehouse
-hierarchy, 4 levels), Batch 5 (7 report sub-pages), Batch 6 (admin
-sub-pages + `/accept-invite`, which still has the pre-redesign light
-full-bleed layout and will look inconsistent with `/login` until then).
+- **Batch 2 (hub pages)** — new `src/components/premium/hub-hero.tsx`
+  (extracted once `/catalogue`, `/reports`, `/admin` all needed the
+  identical glass-panel + `HeroSceneHub` header shape — this codebase's
+  usual extract-on-third-caller threshold), wired into all three with
+  alternating lead hue (amber for catalogue, electric for
+  reports/admin) so they don't look identical. Their link-grid cards
+  got `tone="glass"`; catalogue's brand cards (which carry real
+  Models/Parts counts, not pure navigation) deliberately stayed flat.
+  Verified: 0 axe violations on all three routes (including as an
+  admin user), full `catalogue`/`reports`/`admin` e2e suites green
+  (same pre-existing CSV-import flake as before, still unrelated), 251
+  unit tests, clean build.
+
+**Not started yet** — Batch 3 (inventory + catalogue data pages — 2D
+glass/gradient refinement only, no 3D, since these are dense working
+screens), Batch 4 (warehouse hierarchy, 4 levels), Batch 5 (7 report
+sub-pages), Batch 6 (admin sub-pages + `/accept-invite`, which still has
+the pre-redesign light full-bleed layout and will look inconsistent
+with `/login` until then).
 
 **Do not merge `redesign/maximalist` to `main` without the user's
 explicit, informed go-ahead** — main auto-deploys via Vercel

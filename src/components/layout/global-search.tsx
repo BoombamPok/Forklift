@@ -261,7 +261,7 @@ function GlobalSearch({ sx }: GlobalSearchProps) {
                           noWrap
                           sx={{
                             display: "block",
-                            fontFamily: "var(--font-roboto-mono)",
+                            fontFamily: "var(--font-plex-mono)",
                           }}
                         >
                           {result.subtitle}

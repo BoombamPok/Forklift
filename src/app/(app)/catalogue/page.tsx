@@ -93,7 +93,7 @@ export default async function CataloguePage() {
                     </Typography>
                     <Typography
                       sx={{
-                        fontFamily: "var(--font-roboto-mono)",
+                        fontFamily: "var(--font-plex-mono)",
                         fontSize: "1.125rem",
                         fontWeight: 600,
                       }}
@@ -107,7 +107,7 @@ export default async function CataloguePage() {
                     </Typography>
                     <Typography
                       sx={{
-                        fontFamily: "var(--font-roboto-mono)",
+                        fontFamily: "var(--font-plex-mono)",
                         fontSize: "1.125rem",
                         fontWeight: 600,
                       }}

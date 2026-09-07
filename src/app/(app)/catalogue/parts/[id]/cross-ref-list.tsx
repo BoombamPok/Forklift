@@ -106,7 +106,7 @@ function CrossRefList({ partId, crossRefs, canEdit }: CrossRefListProps) {
               <Typography variant="body2">
                 <Box
                   component="span"
-                  sx={{ fontFamily: "var(--font-roboto-mono)" }}
+                  sx={{ fontFamily: "var(--font-plex-mono)" }}
                 >
                   {ref.crossReferenceNumber}
                 </Box>

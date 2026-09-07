@@ -29,7 +29,7 @@ const columns: ColumnDef<CataloguePartListRow, unknown>[] = [
         <Typography
           variant="caption"
           color="text.secondary"
-          sx={{ fontFamily: "var(--font-roboto-mono)" }}
+          sx={{ fontFamily: "var(--font-plex-mono)" }}
         >
           {row.original.partNumber}
         </Typography>

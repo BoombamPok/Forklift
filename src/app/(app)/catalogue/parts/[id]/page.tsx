@@ -75,7 +75,7 @@ export default async function CataloguePartDetailPage(
           <Typography
             variant="body2"
             color="text.secondary"
-            sx={{ fontFamily: "var(--font-roboto-mono)" }}
+            sx={{ fontFamily: "var(--font-plex-mono)" }}
           >
             {detail.partNumber}
           </Typography>
@@ -196,7 +196,7 @@ export default async function CataloguePartDetailPage(
                       component="span"
                       sx={{
                         color: "text.secondary",
-                        fontFamily: "var(--font-roboto-mono)",
+                        fontFamily: "var(--font-plex-mono)",
                       }}
                     >
                       ({part.partNumber})

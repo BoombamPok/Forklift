@@ -1,6 +1,7 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
+import Typography from "@mui/material/Typography";
 
 import { DataTable } from "@/components/shared/data-table";
 import { OccupancyBadge } from "@/components/shared/occupancy-badge";
@@ -13,7 +14,12 @@ const columns: ColumnDef<OccupancyRollupRow, unknown>[] = [
     accessorKey: "shelfCount",
     header: "Shelves",
     cell: ({ row }) => (
-      <span className="font-mono tabular-nums">{row.original.shelfCount}</span>
+      <Typography
+        sx={{ fontFamily: "var(--font-roboto-mono)" }}
+        variant="body2"
+      >
+        {row.original.shelfCount}
+      </Typography>
     ),
   },
   {

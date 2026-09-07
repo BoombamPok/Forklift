@@ -15,6 +15,10 @@ import type {
   ValueType,
   NameType,
 } from "recharts/types/component/DefaultTooltipContent";
+import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
+import Typography from "@mui/material/Typography";
+import { useTheme } from "@mui/material/styles";
 
 import type { MovementTypeDay } from "@/features/reports/movements";
 import type { MovementType } from "@/types/database";
@@ -22,15 +26,6 @@ import type { MovementType } from "@/types/database";
 type MovementTypeBarChartProps = {
   data: MovementTypeDay[];
 };
-
-const SERIES: { key: MovementType; name: string; color: string }[] = [
-  { key: "in", name: "In", color: "var(--success)" },
-  { key: "returned", name: "Returned", color: "var(--info)" },
-  { key: "adjust", name: "Adjusted", color: "var(--primary)" },
-  { key: "transfer", name: "Transferred", color: "var(--muted-foreground)" },
-  { key: "damaged", name: "Damaged", color: "var(--warning)" },
-  { key: "out", name: "Out", color: "var(--destructive)" },
-];
 
 function formatTick(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-IN", {
@@ -47,26 +42,47 @@ function ChartTooltip({
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="rounded-lg border border-border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-lg">
-      <p className="mb-1.5 font-medium">{formatTick(String(label))}</p>
-      <div className="space-y-1">
+    <Paper elevation={4} sx={{ px: 1.5, py: 1, fontSize: "0.75rem" }}>
+      <Typography
+        variant="caption"
+        sx={{ display: "block", mb: 0.5, fontWeight: 600 }}
+      >
+        {formatTick(String(label))}
+      </Typography>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
         {payload
           .filter((entry) => Number(entry.value) > 0)
           .map((entry) => (
-            <div key={entry.name} className="flex items-center gap-2">
-              <span
+            <Box
+              key={entry.name}
+              sx={{ display: "flex", alignItems: "center", gap: 1 }}
+            >
+              <Box
                 aria-hidden
-                className="size-2 rounded-[2px]"
-                style={{ backgroundColor: entry.color }}
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: "2px",
+                  bgcolor: entry.color,
+                }}
               />
-              <span className="text-muted-foreground">{entry.name}</span>
-              <span className="ml-auto font-mono font-medium tabular-nums">
+              <Typography variant="caption" color="text.secondary">
+                {entry.name}
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{
+                  ml: "auto",
+                  fontFamily: "var(--font-roboto-mono)",
+                  fontWeight: 600,
+                }}
+              >
                 {entry.value}
-              </span>
-            </div>
+              </Typography>
+            </Box>
           ))}
-      </div>
-    </div>
+      </Box>
+    </Paper>
   );
 }
 
@@ -79,6 +95,23 @@ function ChartTooltip({
  * the same thing across the app.
  */
 function MovementTypeBarChart({ data }: MovementTypeBarChartProps) {
+  const theme = useTheme();
+  const gridColor = theme.palette.divider;
+  const axisColor = theme.palette.text.secondary;
+
+  const series: { key: MovementType; name: string; color: string }[] = [
+    { key: "in", name: "In", color: theme.palette.success.main },
+    { key: "returned", name: "Returned", color: theme.palette.info.main },
+    { key: "adjust", name: "Adjusted", color: theme.palette.primary.main },
+    {
+      key: "transfer",
+      name: "Transferred",
+      color: theme.palette.text.secondary,
+    },
+    { key: "damaged", name: "Damaged", color: theme.palette.warning.main },
+    { key: "out", name: "Out", color: theme.palette.error.main },
+  ];
+
   return (
     <ResponsiveContainer width="100%" height="100%">
       <BarChart
@@ -86,37 +119,37 @@ function MovementTypeBarChart({ data }: MovementTypeBarChartProps) {
         barCategoryGap={5}
         margin={{ top: 8, right: 8, left: -16, bottom: 0 }}
       >
-        <CartesianGrid vertical={false} className="stroke-border" />
+        <CartesianGrid vertical={false} stroke={gridColor} />
         <XAxis
           dataKey="date"
           tickFormatter={formatTick}
           tickLine={false}
           axisLine={false}
           fontSize={12}
-          stroke="var(--muted-foreground)"
+          stroke={axisColor}
         />
         <YAxis
           allowDecimals={false}
           tickLine={false}
           axisLine={false}
           fontSize={12}
-          stroke="var(--muted-foreground)"
+          stroke={axisColor}
         />
         <Tooltip
           content={(props) => <ChartTooltip {...props} />}
-          cursor={{ fill: "var(--muted)", opacity: 0.5 }}
+          cursor={{ fill: theme.palette.action.hover }}
         />
         <Legend
           wrapperStyle={{ fontSize: 12 }}
           iconType="circle"
           iconSize={8}
         />
-        {SERIES.map((series) => (
+        {series.map((s) => (
           <Bar
-            key={series.key}
-            dataKey={series.key}
-            name={series.name}
-            fill={series.color}
+            key={s.key}
+            dataKey={s.key}
+            name={s.name}
+            fill={s.color}
             radius={[3, 3, 0, 0]}
             maxBarSize={14}
           />

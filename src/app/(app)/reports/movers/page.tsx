@@ -1,3 +1,6 @@
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+
 import { requireRole } from "@/lib/auth/require-role";
 import { toErrorKind } from "@/lib/errors";
 import { ErrorState } from "@/components/shared/error-state";
@@ -30,18 +33,18 @@ export default async function MoversReportPage(
     ]);
   } catch (error) {
     return (
-      <div className="space-y-6">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
         <ReportHeader
           title="Fast & slow movers"
           description="Which parts move the most - and which haven't moved at all."
         />
         <ErrorState kind={toErrorKind(error)} />
-      </div>
+      </Box>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
       <ReportHeader
         title="Fast & slow movers"
         description="Which parts move the most - and which haven't moved at all."
@@ -54,17 +57,19 @@ export default async function MoversReportPage(
         }
       />
 
-      <div className="space-y-2">
-        <h3 className="text-sm font-medium text-foreground">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
           Fast movers (top {fastMovers.length})
-        </h3>
+        </Typography>
         <FastMoversTable rows={fastMovers} />
-      </div>
+      </Box>
 
-      <div className="space-y-2">
-        <h3 className="text-sm font-medium text-foreground">Slow movers</h3>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+          Slow movers
+        </Typography>
         <SlowMoversTable rows={slowMovers} />
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

@@ -1,3 +1,5 @@
+import Box from "@mui/material/Box";
+
 import { requireRole } from "@/lib/auth/require-role";
 import { toErrorKind } from "@/lib/errors";
 import { ErrorState } from "@/components/shared/error-state";
@@ -21,18 +23,18 @@ export default async function OccupancyReportPage() {
     rows = await getOccupancyRollup();
   } catch (error) {
     return (
-      <div className="space-y-6">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
         <ReportHeader
           title="Warehouse occupancy"
           description="Box occupancy for every rack, across every warehouse."
         />
         <ErrorState kind={toErrorKind(error)} />
-      </div>
+      </Box>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       <ReportHeader
         title="Warehouse occupancy"
         description="Box occupancy for every rack, across every warehouse."
@@ -45,6 +47,6 @@ export default async function OccupancyReportPage() {
       ) : (
         <OccupancyTable rows={rows} />
       )}
-    </div>
+    </Box>
   );
 }

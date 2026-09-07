@@ -1,3 +1,5 @@
+import Box from "@mui/material/Box";
+
 import { requireRole } from "@/lib/auth/require-role";
 import { toErrorKind } from "@/lib/errors";
 import { ChartContainer } from "@/components/shared/chart-container";
@@ -35,20 +37,20 @@ export default async function MovementsReportPage(
     ]);
   } catch (error) {
     return (
-      <div className="space-y-6">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
         <ReportHeader
           title="Stock movement"
           description="Every movement type over a selected date range."
         />
         <ErrorState kind={toErrorKind(error)} />
-      </div>
+      </Box>
     );
   }
 
   const hasMovement = summary.some((row) => row.movementCount > 0);
 
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       <ReportHeader
         title="Stock movement"
         description="Every movement type over a selected date range."
@@ -77,6 +79,6 @@ export default async function MovementsReportPage(
           description="Try a wider date range, or check back once operations begin."
         />
       )}
-    </div>
+    </Box>
   );
 }

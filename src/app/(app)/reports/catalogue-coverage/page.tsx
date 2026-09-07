@@ -1,4 +1,7 @@
 import { LayersIcon, LinkIcon, UnlinkIcon } from "lucide-react";
+import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
+import Typography from "@mui/material/Typography";
 
 import { requireRole } from "@/lib/auth/require-role";
 import { toErrorKind } from "@/lib/errors";
@@ -31,24 +34,30 @@ export default async function CatalogueCoverageReportPage() {
     summary = await getCatalogueCoverageSummary();
   } catch (error) {
     return (
-      <div className="space-y-6">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
         <ReportHeader
           title="Catalogue coverage"
           description="How much of the catalogue is linked and verified."
         />
         <ErrorState kind={toErrorKind(error)} />
-      </div>
+      </Box>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       <ReportHeader
         title="Catalogue coverage"
         description="How much of the catalogue is linked and verified."
       />
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
+          gap: 2,
+        }}
+      >
         <KpiCard
           label="Catalogue parts"
           value={summary.totalParts}
@@ -67,41 +76,73 @@ export default async function CatalogueCoverageReportPage() {
           icon={UnlinkIcon}
           tone="warning"
         />
-      </div>
+      </Box>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="space-y-2">
-          <h3 className="text-sm font-medium text-foreground">
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" },
+          gap: 2,
+        }}
+      >
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
             Catalogue parts by verification status
-          </h3>
-          <div className="space-y-2 rounded-lg border border-border p-4">
+          </Typography>
+          <Paper
+            variant="outlined"
+            sx={{ display: "flex", flexDirection: "column", gap: 1, p: 2 }}
+          >
             {VERIFICATION_ORDER.map((status) => (
-              <div key={status} className="flex items-center justify-between">
+              <Box
+                key={status}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
                 <VerificationBadge status={status} />
-                <span className="font-mono text-sm tabular-nums">
+                <Typography
+                  variant="body2"
+                  sx={{ fontFamily: "var(--font-roboto-mono)" }}
+                >
                   {summary.partVerification[status]}
-                </span>
-              </div>
+                </Typography>
+              </Box>
             ))}
-          </div>
-        </div>
+          </Paper>
+        </Box>
 
-        <div className="space-y-2">
-          <h3 className="text-sm font-medium text-foreground">
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
             Compatibility links by verification status
-          </h3>
-          <div className="space-y-2 rounded-lg border border-border p-4">
+          </Typography>
+          <Paper
+            variant="outlined"
+            sx={{ display: "flex", flexDirection: "column", gap: 1, p: 2 }}
+          >
             {VERIFICATION_ORDER.map((status) => (
-              <div key={status} className="flex items-center justify-between">
+              <Box
+                key={status}
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
                 <VerificationBadge status={status} />
-                <span className="font-mono text-sm tabular-nums">
+                <Typography
+                  variant="body2"
+                  sx={{ fontFamily: "var(--font-roboto-mono)" }}
+                >
                   {summary.compatibilityVerification[status]}
-                </span>
-              </div>
+                </Typography>
+              </Box>
             ))}
-          </div>
-        </div>
-      </div>
-    </div>
+          </Paper>
+        </Box>
+      </Box>
+    </Box>
   );
 }

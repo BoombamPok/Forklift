@@ -1,6 +1,8 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 
 import { DataTable } from "@/components/shared/data-table";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -12,12 +14,18 @@ const fastColumns: ColumnDef<MoverRow, unknown>[] = [
     accessorKey: "name",
     header: "Part",
     cell: ({ row }) => (
-      <div>
-        <p className="font-medium text-foreground">{row.original.name}</p>
-        <p className="font-mono text-xs text-muted-foreground">
+      <Box>
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          {row.original.name}
+        </Typography>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: "block", fontFamily: "var(--font-roboto-mono)" }}
+        >
           {row.original.partNumber}
-        </p>
-      </div>
+        </Typography>
+      </Box>
     ),
   },
   {
@@ -29,18 +37,24 @@ const fastColumns: ColumnDef<MoverRow, unknown>[] = [
     accessorKey: "quantityMoved",
     header: "Quantity moved",
     cell: ({ row }) => (
-      <span className="font-mono tabular-nums">
+      <Typography
+        sx={{ fontFamily: "var(--font-roboto-mono)" }}
+        variant="body2"
+      >
         {row.original.quantityMoved}
-      </span>
+      </Typography>
     ),
   },
   {
     accessorKey: "movementCount",
     header: "Movements",
     cell: ({ row }) => (
-      <span className="font-mono tabular-nums">
+      <Typography
+        sx={{ fontFamily: "var(--font-roboto-mono)" }}
+        variant="body2"
+      >
         {row.original.movementCount}
-      </span>
+      </Typography>
     ),
   },
 ];
@@ -50,12 +64,18 @@ const slowColumns: ColumnDef<SlowMoverRow, unknown>[] = [
     accessorKey: "name",
     header: "Part",
     cell: ({ row }) => (
-      <div>
-        <p className="font-medium text-foreground">{row.original.name}</p>
-        <p className="font-mono text-xs text-muted-foreground">
+      <Box>
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          {row.original.name}
+        </Typography>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: "block", fontFamily: "var(--font-roboto-mono)" }}
+        >
           {row.original.partNumber}
-        </p>
-      </div>
+        </Typography>
+      </Box>
     ),
   },
   {
@@ -66,13 +86,10 @@ const slowColumns: ColumnDef<SlowMoverRow, unknown>[] = [
   {
     accessorKey: "lastActivityAt",
     header: "Last activity",
-    cell: ({ row }) => (
-      <span>
-        {row.original.hasMovementHistory
-          ? formatRelativeTime(row.original.lastActivityAt)
-          : `Never moved (added ${formatRelativeTime(row.original.lastActivityAt)})`}
-      </span>
-    ),
+    cell: ({ row }) =>
+      row.original.hasMovementHistory
+        ? formatRelativeTime(row.original.lastActivityAt)
+        : `Never moved (added ${formatRelativeTime(row.original.lastActivityAt)})`,
   },
 ];
 

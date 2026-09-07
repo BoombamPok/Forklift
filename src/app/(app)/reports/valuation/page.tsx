@@ -73,11 +73,8 @@ export default async function ValuationReportPage() {
         description="Cost-basis value of stock on hand, by category and brand."
       />
 
-      {/* One reading, so one column - the cluster still supplies the
-          frame and the entrance, it just isn't divided. */}
-      <StatCluster
-        sx={{ gridTemplateColumns: "1fr", maxWidth: { sm: 380 } }}
-      >
+      {/* One reading, so one column. */}
+      <StatCluster sx={{ gridTemplateColumns: "1fr", maxWidth: { sm: 400 } }}>
         <KpiCard
           label="Total inventory value"
           value={formatCurrency(total)}

@@ -1599,12 +1599,70 @@ routes, full Playwright suite 30/31 (the one failure is the
 pre-existing `admin.spec.ts` CSV-import strict-mode flake, confirmed
 to reproduce identically on unmodified `main`).
 
-**Not started yet**: inventory, catalogue (parts/brands/models
-sub-pages + `CategoryTable`), warehouse, reports sub-pages (7),
-admin sub-pages (users, import-export) still render old
-shadcn/Tailwind content inside the new MUI shell+DataTable
-(functional but visually mixed - the table chrome is now MUI, but
-page headers/filters/forms/dialogs around it aren't yet). Final
+**Catalogue fully converted** (brands, models + model families +
+compatible-parts + detail actions, parts + cross-references +
+compatibility + detail actions + the 11-field create/edit form).
+Several broadly-used shared primitives were converted in this pass
+since they're used well beyond catalogue - each preserved its exact
+prop API so callers outside catalogue keep working unchanged:
+
+- `ConfirmDialog` (13 callers app-wide) -> MUI Dialog with
+  `role="alertdialog"` explicitly preserved (WAI-ARIA-correct for a
+  confirmation dialog, and required by existing unit tests asserting
+  `getByRole("alertdialog")`).
+- `Combobox` (17 callers app-wide) -> MUI Autocomplete, wrapped to
+  keep the existing plain-string `value`/`onChange` contract.
+- `IconButton` (14 callers) -> MUI IconButton + Tooltip.
+- `SearchInput`, `HierarchyBreadcrumb` -> MUI TextField/Breadcrumbs.
+- New `PageHeader` (`src/components/shared/page-header.tsx`) -
+  extracted the title+description+action row repeated across ~18
+  pages (only wired into catalogue's pages so far).
+- New `NavLinkText` (`src/components/shared/nav-link-text.tsx`) -
+  same `"use client"` wrapper pattern as `NavLinkBox`/`NavLinkButton`,
+  for MUI's inline `Link` rendered from a Server Component.
+- Retired `src/components/shared/form.tsx` (the shadcn-style RHF
+  `FormItem`/`FormLabel`/`FormControl`/`FormMessage` split) - MUI's
+  TextField/Combobox already take `label`/`error`/`helperText`
+  directly, so every field now uses RHF's `Controller` straight into
+  those props instead. No caller consumed `useFormContext` implicitly
+  (verified via grep before removing it), so this was a clean swap.
+
+**Two real bugs surfaced by the full verification pass, not by
+typecheck/lint/build**:
+1. Converting `ConfirmDialog` to MUI silently broke every place that
+   opens it from inside a still-shadcn (Radix) `Dialog` -
+   `StockMovementDialog` nested the old and new dialog systems, which
+   fight over `aria-hidden`/`pointer-events` on shared portal content
+   (surfaced as `vitest`'s "Unable to perform pointer interaction...
+   pointer-events: none" on the confirm button). Fixed by converting
+   `StockMovementDialog` to MUI in the same pass rather than leaving
+   it stranded with one foot in each dialog system. **This is a
+   general rule for the rest of the rehaul**: a shared dialog/overlay
+   primitive can't be converted in isolation from its callers still
+   using the old Dialog - Radix and MUI's portal/focus-trap systems
+   actively conflict when nested, not just visually inconsistent.
+2. `hierarchy-breadcrumb.test.tsx` needed `aria-current="page"`
+   preserved explicitly on the current-page segment - MUI's
+   `Breadcrumbs` doesn't add it automatically the way shadcn's
+   `BreadcrumbPage` did.
+
+Verified: typecheck, lint, format, 251/251 vitest (including the two
+fixes above), production build, full Playwright suite 29/31 (the two
+failures are both pre-existing/confirmed flakes: the `admin.spec.ts`
+CSV-import strict-mode violation, and `accessibility.spec.ts`'s
+dashboard sign-in timing, which passed on isolated retry). Also hit
+and fixed a **verification-process bug, not a code bug**: an earlier
+verification run gave a false "all clean" because a stale `next
+start` process from a previous batch was still bound to port 3000,
+so the e2e suite silently ran against old code. Fixed by force-
+freeing port 3000 (`fuser -k 3000/tcp`) and confirming the new
+`next-server` PID before trusting any e2e result against a
+production build - a `curl` 200 alone doesn't prove which build
+answered.
+
+**Not started yet**: warehouse (4-level hierarchy), reports
+sub-pages (7), admin sub-pages (users, import-export) still render
+old shadcn/Tailwind content inside the new MUI shell+DataTable. Final
 cleanup batch (remove Tailwind/shadcn/radix-ui/cva, delete
 `src/components/ui/*`) can't happen until all pages are migrated.
 
@@ -1616,16 +1674,14 @@ some still shadcn/Tailwind.
 
 ## Next steps
 
-The MUI rehaul above is the active thread — continue with inventory +
-catalogue's remaining pages next (per the user's "yes, continue in
-that order" - hub pages done, inventory/catalogue next, then
-warehouse, then reports/admin sub-pages), including the dialog-heavy
-components deferred from this batch and the DataTable batch
-(`CategoryTable`'s `NameFormDialog`/`ConfirmDialog`, and any other
-Dialog/Form/AlertDialog usages on those pages). Confirm scope with the
-user if resuming after a long gap, since this overrides documented
-project direction and its own plan file may have drifted from
-reality — reconcile against the actual repo/branch state first.
+The MUI rehaul above is the active thread — continue with
+inventory's pages next (list/detail/forms/actions/images/movement
+history - `StockMovementDialog` is already converted, see above),
+then warehouse, then reports/admin sub-pages, per the user's "yes,
+continue in that order." Confirm scope with the user if resuming
+after a long gap, since this overrides documented project direction
+and its own plan file may have drifted from reality — reconcile
+against the actual repo/branch state first.
 
 Separately, unrelated to the redesign: ForkStock V1 (the pre-redesign
 feature set) is feature-complete, reviewed, hardened, and documented.

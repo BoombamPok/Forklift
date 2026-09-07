@@ -13,6 +13,10 @@ type PageHeaderProps = {
  * page opens with. Kept deliberately simple (no back-link, unlike
  * `ReportHeader`) since most pages reach their parent via the sidebar,
  * not a breadcrumb.
+ *
+ * The description is capped near 70 characters per line. Full-width
+ * measure across a 1440px work surface is the fastest way to make a
+ * dense app tiring to read.
  */
 function PageHeader({ title, description, action }: PageHeaderProps) {
   return (
@@ -22,20 +26,26 @@ function PageHeader({ title, description, action }: PageHeaderProps) {
         flexWrap: "wrap",
         alignItems: "flex-start",
         justifyContent: "space-between",
-        gap: 1.5,
+        gap: 2,
       }}
     >
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-        <Typography variant="h6" component="h2" sx={{ fontWeight: 600 }}>
+      <Box sx={{ minWidth: 0 }}>
+        <Typography variant="h4" component="h2">
           {title}
         </Typography>
         {description ? (
-          <Typography variant="body2" color="text.secondary">
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ mt: 0.5, maxWidth: "62ch" }}
+          >
             {description}
           </Typography>
         ) : null}
       </Box>
-      {action}
+      {action ? (
+        <Box sx={{ display: "flex", flexShrink: 0, gap: 1 }}>{action}</Box>
+      ) : null}
     </Box>
   );
 }

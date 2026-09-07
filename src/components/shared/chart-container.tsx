@@ -13,7 +13,13 @@ type ChartContainerProps = {
   children: React.ReactNode;
 };
 
-/** Shared layout shell for Recharts content. */
+/**
+ * Shared layout shell for Recharts content.
+ *
+ * The header is separated from the plot by a rule rather than by empty
+ * space: charts have their own internal whitespace, and without a hard
+ * edge the title tends to float and read as part of the plot area.
+ */
 function ChartContainer({
   title,
   description,
@@ -22,19 +28,20 @@ function ChartContainer({
   children,
 }: ChartContainerProps) {
   return (
-    <Card sx={sx}>
+    <Card sx={{ display: "flex", flexDirection: "column", ...sx }}>
       <CardHeader
         title={<Typography variant="h6">{title}</Typography>}
         subheader={
           description ? (
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="caption" color="text.secondary">
               {description}
             </Typography>
           ) : undefined
         }
         action={action}
+        sx={{ pb: 1.5, borderBottom: "1px solid var(--rule)" }}
       />
-      <CardContent sx={{ height: 256, pt: 0 }}>{children}</CardContent>
+      <CardContent sx={{ flex: 1, height: 244, pt: 2 }}>{children}</CardContent>
     </Card>
   );
 }

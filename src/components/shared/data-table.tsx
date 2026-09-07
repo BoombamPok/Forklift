@@ -194,19 +194,24 @@ function DataTable<TData>({
         kind={error.kind}
         description={error.message}
         onRetry={error.onRetry}
-        sx={{ borderRadius: 3, boxShadow: 1, ...sx }}
+        sx={{
+          borderRadius: "var(--radius-panel)",
+          bgcolor: "background.paper",
+          ...sx,
+        }}
       />
     );
   }
 
   if (isLoading) {
+    // LoadingState's table variant already draws the panel frame and the
+    // row rules, so wrapping it in another Paper would double the border.
     return (
-      <Paper
-        variant="outlined"
-        sx={{ overflow: "hidden", borderRadius: 3, p: 2, ...sx }}
-      >
-        <LoadingState variant="table" rows={pageSize > 8 ? 8 : pageSize} />
-      </Paper>
+      <LoadingState
+        variant="table"
+        rows={pageSize > 8 ? 8 : pageSize}
+        sx={sx}
+      />
     );
   }
 
@@ -227,10 +232,18 @@ function DataTable<TData>({
   return (
     <Paper
       variant="outlined"
-      sx={{ overflow: "hidden", borderRadius: 3, ...sx }}
+      sx={{
+        overflow: "hidden",
+        borderRadius: "var(--radius-panel)",
+        bgcolor: "background.paper",
+        ...sx,
+      }}
     >
-      <TableContainer>
-        <Table size="small">
+      {/* The header stays put while the body scrolls - on a 200-row
+          inventory list, losing the column labels two screens down is
+          the difference between reading a number and guessing at it. */}
+      <TableContainer sx={{ maxHeight: { lg: 640 } }}>
+        <Table size="small" stickyHeader>
           <TableHead>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -241,12 +254,9 @@ function DataTable<TData>({
                     <TableCell
                       key={header.id}
                       sx={{
-                        fontWeight: 600,
-                        fontSize: "0.6875rem",
-                        letterSpacing: "0.06em",
-                        textTransform: "uppercase",
-                        color: "text.secondary",
-                        whiteSpace: "nowrap",
+                        bgcolor: "background.default",
+                        borderBottom: "1px solid var(--mui-palette-divider)",
+                        py: 1.25,
                       }}
                     >
                       {header.isPlaceholder ? null : canSort ? (
@@ -292,7 +302,19 @@ function DataTable<TData>({
           </TableHead>
           <TableBody>
             {table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} selected={row.getIsSelected()} hover>
+              <TableRow
+                key={row.id}
+                selected={row.getIsSelected()}
+                hover
+                sx={{
+                  "& .MuiTableCell-root": {
+                    borderBottom: "1px solid var(--rule)",
+                  },
+                  "&.Mui-selected": {
+                    bgcolor: "color-mix(in srgb, var(--mui-palette-primary-main) 7%, transparent)",
+                  },
+                }}
+              >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -310,9 +332,8 @@ function DataTable<TData>({
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            borderTop: 1,
-            borderColor: "divider",
-            bgcolor: "action.hover",
+            borderTop: "1px solid var(--mui-palette-divider)",
+            bgcolor: "background.default",
             px: 2,
             py: 1,
           }}
@@ -321,11 +342,12 @@ function DataTable<TData>({
             Page{" "}
             <Box
               component="span"
+              className="numeric"
               sx={{ fontWeight: 600, color: "text.primary" }}
             >
               {table.getState().pagination.pageIndex + 1}
             </Box>{" "}
-            of {pageCount}
+            of <Box component="span" className="numeric">{pageCount}</Box>
           </Typography>
           <Box sx={{ display: "flex", gap: 1 }}>
             <Button

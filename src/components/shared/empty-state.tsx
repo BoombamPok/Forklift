@@ -17,6 +17,13 @@ type EmptyStateProps = {
 /**
  * Standard empty-state pattern: what's empty, why it might be, what to do
  * next. Never render a bare "No data." per CLAUDE.md UX rules.
+ *
+ * The faint diagonal hatch is the one piece of ornament in the design and
+ * it is here on purpose: it borrows the marking used on an unassigned bay
+ * or an out-of-service slot on a warehouse floor, so an empty region
+ * reads as "nothing is stored here yet" rather than as a component that
+ * failed to load. A dashed border - the usual choice - says "drop zone",
+ * which is a promise this app doesn't keep.
  */
 function EmptyState({
   icon: Icon,
@@ -36,11 +43,10 @@ function EmptyState({
         alignItems: "center",
         justifyContent: "center",
         gap: 1.5,
-        borderRadius: 3,
-        border: 1,
-        borderStyle: "dashed",
-        borderColor: "divider",
-        bgcolor: "action.hover",
+        borderRadius: "var(--radius-panel)",
+        border: "1px solid var(--mui-palette-divider)",
+        backgroundImage:
+          "repeating-linear-gradient(135deg, var(--mui-palette-action-hover) 0 1px, transparent 1px 9px)",
         px: 3,
         py: 6,
         textAlign: "center",
@@ -49,17 +55,20 @@ function EmptyState({
     >
       {Icon ? (
         <Box
+          aria-hidden
           sx={{
             display: "flex",
-            width: 40,
-            height: 40,
+            width: 38,
+            height: 38,
             alignItems: "center",
             justifyContent: "center",
-            borderRadius: "50%",
-            bgcolor: "action.selected",
+            borderRadius: "var(--radius-control)",
+            border: "1px solid var(--mui-palette-divider)",
+            bgcolor: "background.paper",
+            color: "text.secondary",
           }}
         >
-          <Icon aria-hidden size={20} />
+          <Icon size={18} />
         </Box>
       ) : null}
       <Box>
@@ -70,7 +79,7 @@ function EmptyState({
           <Typography
             variant="body2"
             color="text.secondary"
-            sx={{ maxWidth: 320 }}
+            sx={{ mt: 0.25, maxWidth: "42ch", mx: "auto" }}
           >
             {description}
           </Typography>

@@ -1,5 +1,16 @@
 "use client";
 
+/*
+ * Chart colors are CSS custom properties, not resolved theme values.
+ *
+ * With `cssVariables` enabled, `theme.palette.x.main` read through
+ * `useTheme()` gives the *default* color scheme's literal hex, which is
+ * baked in at render and does not update when a person switches to dark
+ * mode - the charts would keep their light-mode fills on a dark panel.
+ * SVG `fill`/`stroke` accept `var()` directly, so handing Recharts the
+ * variable lets the browser re-resolve it on every scheme change.
+ */
+
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 import type { TooltipContentProps } from "recharts";
 import type {
@@ -9,7 +20,6 @@ import type {
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
-import { useTheme } from "@mui/material/styles";
 
 type BrandDonutDatum = {
   label: string;
@@ -43,7 +53,17 @@ function DonutTooltip({
   const entry = payload[0];
 
   return (
-    <Paper elevation={4} sx={{ px: 1.5, py: 1, fontSize: "0.75rem" }}>
+    <Paper
+      elevation={0}
+      sx={{
+        px: 1.5,
+        py: 1.125,
+        fontSize: "0.75rem",
+        borderRadius: "var(--radius-control)",
+        border: "1px solid var(--mui-palette-divider)",
+        boxShadow: "0 8px 24px rgba(11,16,26,0.18)",
+      }}
+    >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
         <Box
           aria-hidden
@@ -61,7 +81,7 @@ function DonutTooltip({
           variant="caption"
           sx={{
             ml: "auto",
-            fontFamily: "var(--font-roboto-mono)",
+            fontFamily: "var(--font-plex-mono)",
             fontWeight: 600,
           }}
         >
@@ -75,18 +95,20 @@ function DonutTooltip({
 /**
  * Donut chart with a centered total and a side legend showing each
  * bucket's share - used for the dashboard's inventory-by-brand mix.
- * Colors are drawn from the MUI theme palette so they stay in sync with
- * every other themed surface.
+ * Slice colors come from the categorical ramp, which is kept separate
+ * from the status palette on purpose - see sliceColors below.
  */
 function BrandDonutChart({ data, totalLabel }: BrandDonutChartProps) {
-  const theme = useTheme();
+  // The categorical ramp from globals.css, not the status palette. A
+  // brand slice filled with the same amber as "low stock" invites exactly
+  // the wrong reading.
   const sliceColors = [
-    theme.palette.primary.main,
-    theme.palette.secondary.main,
-    theme.palette.success.main,
-    theme.palette.warning.main,
-    theme.palette.error.main,
-    theme.palette.text.disabled,
+    "var(--series-1)",
+    "var(--series-2)",
+    "var(--series-3)",
+    "var(--series-4)",
+    "var(--series-5)",
+    "var(--series-6)",
   ];
   const chartData = toChartData(data);
   const total = data.reduce((sum, entry) => sum + entry.value, 0);
@@ -146,7 +168,7 @@ function BrandDonutChart({ data, totalLabel }: BrandDonutChartProps) {
         >
           <Typography
             sx={{
-              fontFamily: "var(--font-roboto-mono)",
+              fontFamily: "var(--font-plex-mono)",
               fontSize: "1.25rem",
               lineHeight: 1,
               fontWeight: 600,
@@ -157,11 +179,7 @@ function BrandDonutChart({ data, totalLabel }: BrandDonutChartProps) {
           <Typography
             variant="caption"
             color="text.secondary"
-            sx={{
-              mt: 0.5,
-              letterSpacing: "0.06em",
-              textTransform: "uppercase",
-            }}
+            sx={{ mt: 0.5 }}
           >
             {totalLabel}
           </Typography>
@@ -211,7 +229,7 @@ function BrandDonutChart({ data, totalLabel }: BrandDonutChartProps) {
               <Typography
                 variant="caption"
                 color="text.secondary"
-                sx={{ fontFamily: "var(--font-roboto-mono)", flexShrink: 0 }}
+                sx={{ fontFamily: "var(--font-plex-mono)", flexShrink: 0 }}
               >
                 {percentage}%
               </Typography>

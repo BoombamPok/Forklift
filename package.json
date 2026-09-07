@@ -15,7 +15,12 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@emotion/cache": "^11.14.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
     "@hookform/resolvers": "^5.9.1",
+    "@mui/material": "^9.4.0",
+    "@mui/material-nextjs": "^9.4.0",
     "@react-three/drei": "^10.7.8",
     "@react-three/fiber": "^9.7.0",
     "@react-three/postprocessing": "^3.1.1",

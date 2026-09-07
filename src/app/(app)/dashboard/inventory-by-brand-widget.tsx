@@ -20,7 +20,7 @@ async function InventoryByBrandWidget() {
   } catch (error) {
     return (
       <ChartContainer title="Inventory by brand" description="Live stock mix">
-        <ErrorState kind={toErrorKind(error)} className="h-full" />
+        <ErrorState kind={toErrorKind(error)} sx={{ height: "100%" }} />
       </ChartContainer>
     );
   }
@@ -30,7 +30,7 @@ async function InventoryByBrandWidget() {
   return (
     <ChartContainer title="Inventory by brand" description="Live stock mix">
       {hasData ? (
-        <MotionFadeIn className="h-full">
+        <MotionFadeIn sx={{ height: "100%" }}>
           <BrandDonutChart
             data={rows.map((row) => ({
               label: row.label,
@@ -41,7 +41,7 @@ async function InventoryByBrandWidget() {
         </MotionFadeIn>
       ) : (
         <EmptyState
-          className="h-full"
+          sx={{ height: "100%" }}
           title="No inventory yet"
           description="Brand mix will chart here once stock exists."
         />

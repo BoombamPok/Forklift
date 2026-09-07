@@ -7,8 +7,8 @@ import { toErrorKind } from "@/lib/errors";
 import { getStockMovementSeries } from "@/features/dashboard/activity";
 
 /**
- * Its own widget/Suspense boundary (phase2c.md) so a chart failure can't
- * take down the recent-activity widget next to it.
+ * Its own widget/Suspense boundary so a chart failure can't take down the
+ * recent-activity widget next to it.
  */
 async function StockMovementWidget() {
   let series;
@@ -17,7 +17,7 @@ async function StockMovementWidget() {
   } catch (error) {
     return (
       <ChartContainer title="Stock movement" description="Last 30 days">
-        <ErrorState kind={toErrorKind(error)} className="h-full" />
+        <ErrorState kind={toErrorKind(error)} sx={{ height: "100%" }} />
       </ChartContainer>
     );
   }
@@ -27,12 +27,12 @@ async function StockMovementWidget() {
   return (
     <ChartContainer title="Stock movement" description="Last 30 days">
       {hasMovement ? (
-        <MotionFadeIn className="h-full">
+        <MotionFadeIn sx={{ height: "100%" }}>
           <StockMovementBarChart data={series} />
         </MotionFadeIn>
       ) : (
         <EmptyState
-          className="h-full"
+          sx={{ height: "100%" }}
           title="No movement yet"
           description="Stock movement will chart here once operations begin."
         />

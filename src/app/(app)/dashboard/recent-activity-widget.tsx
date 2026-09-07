@@ -1,4 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Card from "@mui/material/Card";
+import CardHeader from "@mui/material/CardHeader";
+import CardContent from "@mui/material/CardContent";
+import Typography from "@mui/material/Typography";
+
 import {
   ActivityList,
   type ActivityTone,
@@ -19,8 +23,8 @@ const DIRECTION_TONE: Record<MovementDirection, ActivityTone> = {
 };
 
 /**
- * Its own widget/Suspense boundary (phase2c.md) so this can't be taken
- * down by a stock-movement chart failure, or vice versa.
+ * Its own widget/Suspense boundary so this can't be taken down by, or
+ * take down, the stock-movement chart next to it.
  */
 async function RecentActivityWidget() {
   let items;
@@ -29,10 +33,10 @@ async function RecentActivityWidget() {
   } catch (error) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle>Recent activity</CardTitle>
-        </CardHeader>
-        <CardContent>
+        <CardHeader
+          title={<Typography variant="h6">Recent activity</Typography>}
+        />
+        <CardContent sx={{ pt: 0 }}>
           <ErrorState kind={toErrorKind(error)} />
         </CardContent>
       </Card>
@@ -41,10 +45,10 @@ async function RecentActivityWidget() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Recent activity</CardTitle>
-      </CardHeader>
-      <CardContent>
+      <CardHeader
+        title={<Typography variant="h6">Recent activity</Typography>}
+      />
+      <CardContent sx={{ pt: 0 }}>
         <MotionFadeIn>
           <ActivityList
             items={items.map((item) => ({

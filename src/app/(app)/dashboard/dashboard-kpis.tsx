@@ -6,13 +6,11 @@ import {
   WalletIcon,
   XCircleIcon,
 } from "lucide-react";
+import Alert from "@mui/material/Alert";
+import AlertTitle from "@mui/material/AlertTitle";
+import Box from "@mui/material/Box";
+import Tooltip from "@mui/material/Tooltip";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { KpiCard } from "@/components/shared/kpi-card";
 import { ErrorState } from "@/components/shared/error-state";
 import { MotionFadeIn } from "@/components/shared/motion-fade-in";
@@ -20,7 +18,7 @@ import {
   MotionStagger,
   MotionStaggerItem,
 } from "@/components/shared/motion-stagger";
-import { cn, formatCurrency } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import { toErrorKind } from "@/lib/errors";
 import {
   getInventoryItemCount,
@@ -34,10 +32,9 @@ type DashboardKpisProps = {
 };
 
 /**
- * Renders the four KPI cards from live data (phase2b.md). Fetches each
- * metric independently via `Promise.allSettled` so one query failing
- * (e.g. Supabase unreachable) only takes down its own card, not the
- * whole row - see phase2b.md #11.
+ * Renders the four KPI cards from live data. Fetches each metric
+ * independently via `Promise.allSettled` so one query failing (e.g.
+ * Supabase unreachable) only takes down its own card, not the whole row.
  */
 async function DashboardKpis({ showValue }: DashboardKpisProps) {
   const [itemCountResult, valueResult, lowStockResult, outOfStockResult] =
@@ -52,23 +49,24 @@ async function DashboardKpis({ showValue }: DashboardKpisProps) {
     itemCountResult.status === "fulfilled" && itemCountResult.value === 0;
 
   return (
-    <MotionFadeIn className="space-y-6">
+    <MotionFadeIn sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       {isEmpty ? (
-        <Alert>
-          <InfoIcon />
+        <Alert severity="info" icon={<InfoIcon size={18} />}>
           <AlertTitle>No data yet</AlertTitle>
-          <AlertDescription>
-            These numbers will populate once inventory and stock movements
-            exist.
-          </AlertDescription>
+          These numbers will populate once inventory and stock movements exist.
         </Alert>
       ) : null}
 
       <MotionStagger
-        className={cn(
-          "grid grid-cols-1 gap-4 sm:grid-cols-2",
-          showValue ? "lg:grid-cols-4" : "lg:grid-cols-3",
-        )}
+        sx={{
+          display: "grid",
+          gap: 2,
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "1fr 1fr",
+            lg: showValue ? "repeat(4, 1fr)" : "repeat(3, 1fr)",
+          },
+        }}
       >
         <MotionStaggerItem>
           {renderKpi(itemCountResult, (count) => (
@@ -88,23 +86,29 @@ async function DashboardKpis({ showValue }: DashboardKpisProps) {
                 <KpiCard
                   label="Inventory value"
                   value={
-                    <span className="inline-flex items-center gap-1.5">
+                    <Box
+                      component="span"
+                      sx={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 0.75,
+                      }}
+                    >
                       {formatCurrency(value.value)}
                       {value.excludedCount > 0 ? (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <InfoIcon
-                              aria-label={`${value.excludedCount} item(s) missing cost data, not included in this total`}
-                              className="size-3.5 text-muted-foreground"
-                            />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            {value.excludedCount} item(s) missing cost data, not
-                            included
-                          </TooltipContent>
+                        <Tooltip
+                          title={`${value.excludedCount} item(s) missing cost data, not included`}
+                        >
+                          <InfoIcon
+                            aria-label={`${value.excludedCount} item(s) missing cost data, not included in this total`}
+                            size={14}
+                            style={{
+                              color: "var(--mui-palette-text-secondary)",
+                            }}
+                          />
                         </Tooltip>
                       ) : null}
-                    </span>
+                    </Box>
                   }
                   icon={WalletIcon}
                   tone="success"
@@ -148,7 +152,7 @@ function renderKpi<T>(
     return (
       <ErrorState
         kind={toErrorKind(result.reason)}
-        className="h-full justify-center gap-2 rounded-lg py-6"
+        sx={{ height: "100%", justifyContent: "center", gap: 1, py: 3 }}
       />
     );
   }

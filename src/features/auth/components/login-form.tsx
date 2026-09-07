@@ -14,6 +14,7 @@ import {
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { MagneticButton } from "@/components/premium/magnetic-button";
 import { Input } from "@/components/ui/input";
 import {
   Form,
@@ -132,8 +133,9 @@ function LoginForm() {
           )}
         />
 
-        <Button
+        <MagneticButton
           type="submit"
+          variant="gradient"
           className="w-full"
           disabled={form.formState.isSubmitting}
         >
@@ -145,7 +147,7 @@ function LoginForm() {
           ) : (
             "Sign in"
           )}
-        </Button>
+        </MagneticButton>
       </form>
     </Form>
   );

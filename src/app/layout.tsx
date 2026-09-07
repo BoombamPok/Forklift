@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
+import {
+  IBM_Plex_Sans,
+  IBM_Plex_Mono,
+  Bricolage_Grotesque,
+} from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
@@ -16,6 +20,12 @@ const plexMono = IBM_Plex_Mono({
   subsets: ["latin"],
 });
 
+const displayFont = Bricolage_Grotesque({
+  variable: "--font-display",
+  weight: "variable",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: {
     default: "ForkStock",
@@ -29,7 +39,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${plexSans.variable} ${plexMono.variable} h-full antialiased`}
+      className={`dark ${plexSans.variable} ${plexMono.variable} ${displayFont.variable} h-full antialiased`}
     >
       <body className="bg-grain flex min-h-full flex-col">
         <TooltipProvider delayDuration={200}>{children}</TooltipProvider>

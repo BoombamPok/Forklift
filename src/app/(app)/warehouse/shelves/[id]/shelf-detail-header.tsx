@@ -3,8 +3,9 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { PencilIcon } from "lucide-react";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
 
-import { Button } from "@/components/ui/button";
 import { deleteShelf, updateShelf } from "@/features/warehouse/actions";
 import { CodeFormDialog } from "../../code-form-dialog";
 import { LocationDeleteAction } from "../../location-delete-action";
@@ -29,9 +30,16 @@ function ShelfDetailHeader({
   if (!canManage) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <Button type="button" variant="outline" onClick={() => setEditOpen(true)}>
-        <PencilIcon /> Edit
+    <Box
+      sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1 }}
+    >
+      <Button
+        type="button"
+        variant="outlined"
+        startIcon={<PencilIcon size={16} />}
+        onClick={() => setEditOpen(true)}
+      >
+        Edit
       </Button>
       <LocationDeleteAction
         entityLabel="Shelf"
@@ -47,7 +55,7 @@ function ShelfDetailHeader({
         defaultCode={code}
         onSubmit={(values) => updateShelf(shelfId, rackId, values)}
       />
-    </div>
+    </Box>
   );
 }
 

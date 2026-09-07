@@ -5,8 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ColumnDef } from "@tanstack/react-table";
 import { PencilIcon, PlusIcon } from "lucide-react";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import MuiLink from "@mui/material/Link";
+import Typography from "@mui/material/Typography";
 
-import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/shared/data-table";
 import { OccupancyBadge } from "@/components/shared/occupancy-badge";
 import { IconButton } from "@/components/shared/icon-button";
@@ -36,12 +39,13 @@ function WarehouseTable({ rows, canManage }: WarehouseTableProps) {
       accessorKey: "name",
       header: "Warehouse",
       cell: ({ row }) => (
-        <Link
+        <MuiLink
+          component={Link}
           href={`/warehouse/${row.original.id}`}
-          className="font-medium text-foreground hover:underline"
+          sx={{ fontWeight: 500, color: "text.primary" }}
         >
           {row.original.name}
-        </Link>
+        </MuiLink>
       ),
     },
     {
@@ -56,7 +60,12 @@ function WarehouseTable({ rows, canManage }: WarehouseTableProps) {
       accessorKey: "rackCount",
       header: "Racks",
       cell: ({ row }) => (
-        <span className="font-mono tabular-nums">{row.original.rackCount}</span>
+        <Typography
+          sx={{ fontFamily: "var(--font-roboto-mono)" }}
+          variant="body2"
+        >
+          {row.original.rackCount}
+        </Typography>
       ),
     },
     {
@@ -77,12 +86,14 @@ function WarehouseTable({ rows, canManage }: WarehouseTableProps) {
             header: "",
             enableSorting: false,
             cell: ({ row }: { row: { original: WarehouseListRow } }) => (
-              <div className="flex justify-end gap-1">
+              <Box
+                sx={{ display: "flex", justifyContent: "flex-end", gap: 0.5 }}
+              >
                 <IconButton
                   label="Edit warehouse"
                   onClick={() => setEditing(row.original)}
                 >
-                  <PencilIcon />
+                  <PencilIcon size={16} />
                 </IconButton>
                 <LocationDeleteAction
                   entityLabel="Warehouse"
@@ -90,7 +101,7 @@ function WarehouseTable({ rows, canManage }: WarehouseTableProps) {
                   onDelete={() => deleteWarehouse(row.original.id)}
                   onDeleted={() => router.refresh()}
                 />
-              </div>
+              </Box>
             ),
           } satisfies ColumnDef<WarehouseListRow, unknown>,
         ]
@@ -98,17 +109,18 @@ function WarehouseTable({ rows, canManage }: WarehouseTableProps) {
   ];
 
   return (
-    <div className="space-y-4">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       {canManage ? (
-        <div className="flex justify-end">
+        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
           <Button
             type="button"
-            variant="gradient"
+            variant="contained"
+            startIcon={<PlusIcon size={16} />}
             onClick={() => setCreateOpen(true)}
           >
-            <PlusIcon /> Add warehouse
+            Add warehouse
           </Button>
-        </div>
+        </Box>
       ) : null}
 
       <DataTable
@@ -141,7 +153,7 @@ function WarehouseTable({ rows, canManage }: WarehouseTableProps) {
           />
         </>
       ) : null}
-    </div>
+    </Box>
   );
 }
 

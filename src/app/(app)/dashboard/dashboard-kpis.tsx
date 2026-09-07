@@ -31,8 +31,7 @@ type DashboardKpisProps = {
  * readings slide sideways and a person reads the wrong number under the
  * wrong label. Flattened to sit flush inside the cluster's own frame. */
 const CELL_ERROR_SX = {
-  border: "none",
-  borderRadius: 0,
+  borderRadius: "var(--radius-panel)",
   bgcolor: "background.paper",
   height: "100%",
   gap: 1,

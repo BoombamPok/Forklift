@@ -1,8 +1,11 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
 import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import { ArrowRightIcon } from "lucide-react";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Typography from "@mui/material/Typography";
@@ -78,6 +81,29 @@ const columns: ColumnDef<LowStockRow, unknown>[] = [
         label={STATUS_LABEL[row.original.status]}
         tone={STATUS_TONE[row.original.status]}
       />
+    ),
+  },
+  {
+    id: "action",
+    header: "",
+    enableSorting: false,
+    // "Restock" navigates to the part, where stock movements are actually
+    // recorded. It deliberately does not adjust quantity from here: a
+    // movement needs a type and a reason, and a one-click increment from
+    // a dashboard would write an unattributable row into a ledger that
+    // has no UPDATE or DELETE policy.
+    cell: ({ row }) => (
+      <Button
+        component={Link}
+        href={`/inventory/${row.original.id}`}
+        size="small"
+        variant="outlined"
+        endIcon={<ArrowRightIcon size={14} />}
+        aria-label={`Restock ${row.original.name}`}
+        sx={{ whiteSpace: "nowrap" }}
+      >
+        Restock
+      </Button>
     ),
   },
 ];

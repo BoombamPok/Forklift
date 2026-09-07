@@ -1,4 +1,7 @@
+import Link from "next/link";
 import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import { ArrowRightIcon } from "lucide-react";
 
 import { ErrorState } from "@/components/shared/error-state";
 import { MotionFadeIn } from "@/components/shared/motion-fade-in";
@@ -32,7 +35,21 @@ async function LowStockWidget() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-      <SectionLabel>Needs attention</SectionLabel>
+      <SectionLabel
+        action={
+          <Button
+            component={Link}
+            href="/inventory"
+            size="small"
+            variant="text"
+            endIcon={<ArrowRightIcon size={14} />}
+          >
+            View all
+          </Button>
+        }
+      >
+        Needs attention
+      </SectionLabel>
       <MotionFadeIn>
         <LowStockTable rows={rows} />
       </MotionFadeIn>

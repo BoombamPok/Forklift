@@ -1429,9 +1429,40 @@ e2e test independently confirmed to fail identically on unmodified
   admin), full warehouse/admin e2e suites green (same pre-existing
   CSV-import flake), 251 unit tests, clean build.
 
+**Post-Batch-4 fix (2026-09-07)**: user feedback that the result so far
+read as "just dark mode and a few gradients" was correct - the
+dashboard/hub 3D hero scenes were real but too conservative (a ~100px
+strip, tiny geometry, heavy overlay) to actually register. Fixed: hero
+containers grew to a real banner height (min-h-56/64) anchored
+bottom-up, geometry ~40% bigger, emissive/light/bloom intensity roughly
+doubled across all three scenes. This also surfaced a real (if
+intermittent) contrast bug the brightness increase exposed - the text
+scrim was a smooth 3-stop gradient, so legibility depended on
+animation phase - fixed with a hard color stop
+(`from-background from-50% to-transparent`) so the text zone is always
+fully opaque. Verified clean across 15+ repeated axe scans post-fix.
+Separately found (not fixed, out of scope): an intermittent axe
+failure on the dashboard's "Out of stock" KPI card is a timing race
+between the pre-existing `MotionStagger` entrance animation and an
+immediate axe scan (0ms wait: intermittent; 1.2s settle: consistently
+clean) - not a real defect in the settled UI, not touched by this
+redesign, and predates it.
+
 **Not started yet** — Batch 5 (7 report sub-pages), Batch 6 (admin
 sub-pages + `/accept-invite`, which still has the pre-redesign light
 full-bleed layout and will look inconsistent with `/login` until then).
+
+**MAJOR PIVOT (2026-09-07)**: the user then asked to abandon the
+shadcn/Tailwind component layer entirely and rebuild the UI on MUI
+(Material UI), resetting the visual direction to Material Design's own
+language rather than continuing the amber/electric dark-glass concept.
+Confirmed via clarifying questions: full MUI (drop Tailwind entirely,
+not a hybrid), full visual reset to Material Design's look, on a **new
+branch off `redesign/maximalist`** (not this branch directly) so this
+checkpoint stays intact as a fallback/comparison point. See the next
+section for that work once it starts - check `git branch -a` /
+`git log` for the actual branch name, since this file may not be
+updated in perfect lockstep with which branch is checked out.
 
 **Do not merge `redesign/maximalist` to `main` without the user's
 explicit, informed go-ahead** — main auto-deploys via Vercel

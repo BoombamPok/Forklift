@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer } from "@/components/shared/chart-container";
 import { LoadingState } from "@/components/shared/loading-state";
+import { SceneLoader } from "@/components/three/scene-loader";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { canViewInventoryValue } from "@/lib/permissions";
 import { DashboardGreeting } from "./dashboard-greeting";
@@ -28,7 +29,22 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {user ? <DashboardGreeting name={user.name} /> : null}
+      {user ? (
+        <div className="glass-panel relative overflow-hidden rounded-2xl px-6 py-6 shadow-lg sm:px-8">
+          <SceneLoader
+            variant="dashboard"
+            posterTone="dual"
+            className="absolute inset-0 z-0"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-r from-background via-background/30 to-background/5"
+          />
+          <div className="relative z-10">
+            <DashboardGreeting name={user.name} />
+          </div>
+        </div>
+      ) : null}
 
       <Suspense
         fallback={

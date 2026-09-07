@@ -1660,6 +1660,35 @@ freeing port 3000 (`fuser -k 3000/tcp`) and confirming the new
 production build - a `curl` 200 alone doesn't prove which build
 answered.
 
+**Inventory fully converted**: list + filters, the create/edit form
+(`part-form.tsx`, ~9 fields + two Combobox pickers), the detail page
+(quantity/location, catalogue link, images gallery, movement
+history), and `part-actions.tsx`. `StockMovementDialog` was already
+converted in the catalogue batch (see above - it had to be, since
+`ConfirmDialog`'s own MUI conversion broke it when still nested
+inside the Radix version).
+
+One e2e selector had to change, not just be preserved:
+`e2e/inventory.spec.ts` asserted the quantity display via
+`page.locator("p.text-3xl")`, a Tailwind-class selector that doesn't
+survive a visual rewrite by design. Swapped to
+`page.getByTestId("part-quantity")`, with the matching `data-testid`
+added to the quantity `Typography` in `inventory/[id]/page.tsx` -
+the first `data-testid` used in this codebase's e2e suite (every
+other assertion so far has stayed role/label/text-based, which
+remains the default; this one is a legitimate exception since a
+bare numeric quantity has no accessible role or label of its own to
+hook into, and reusing the movement-history text next to it would be
+even more fragile).
+
+Verified: typecheck, lint, format, 251/251 vitest, production build,
+full Playwright suite (29/31, same two pre-existing/confirmed flakes
+as the catalogue batch). Also re-hit the stale-port issue from the
+catalogue batch's own verification - `fuser -k 3000/tcp` needed a
+*second* attempt before `ss -ltnp` actually showed the port free;
+the first kill silently didn't take. Always re-check `ss -ltnp`
+after killing, never assume the first attempt worked.
+
 **Not started yet**: warehouse (4-level hierarchy), reports
 sub-pages (7), admin sub-pages (users, import-export) still render
 old shadcn/Tailwind content inside the new MUI shell+DataTable. Final
@@ -1674,14 +1703,13 @@ some still shadcn/Tailwind.
 
 ## Next steps
 
-The MUI rehaul above is the active thread — continue with
-inventory's pages next (list/detail/forms/actions/images/movement
-history - `StockMovementDialog` is already converted, see above),
-then warehouse, then reports/admin sub-pages, per the user's "yes,
-continue in that order." Confirm scope with the user if resuming
-after a long gap, since this overrides documented project direction
-and its own plan file may have drifted from reality — reconcile
-against the actual repo/branch state first.
+The MUI rehaul above is the active thread — continue with warehouse
+(4-level hierarchy: warehouse/rack/shelf/box) next, then reports/
+admin sub-pages, per the user's "yes, continue in that order."
+Confirm scope with the user if resuming after a long gap, since this
+overrides documented project direction and its own plan file may
+have drifted from reality — reconcile against the actual repo/branch
+state first.
 
 Separately, unrelated to the redesign: ForkStock V1 (the pre-redesign
 feature set) is feature-complete, reviewed, hardened, and documented.

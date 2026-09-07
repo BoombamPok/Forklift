@@ -3,26 +3,18 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import Select from "@mui/material/Select";
+import TextField from "@mui/material/TextField";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Combobox, type ComboboxOption } from "@/components/shared/combobox";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { recordStockMovement } from "@/features/inventory/actions";
@@ -187,125 +179,98 @@ function StockMovementDialog({
     <>
       <Dialog
         open={open}
-        onOpenChange={(next) => {
-          if (!next) resetFields();
-          onOpenChange(next);
+        onClose={() => {
+          resetFields();
+          onOpenChange(false);
         }}
+        maxWidth="sm"
+        fullWidth
       >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Record a stock movement</DialogTitle>
-            <DialogDescription>
-              Currently {currentQuantity} in stock.
-            </DialogDescription>
-          </DialogHeader>
+        <DialogTitle>Record a stock movement</DialogTitle>
+        <DialogContent
+          sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+        >
+          <DialogContentText>
+            Currently {currentQuantity} in stock.
+          </DialogContentText>
 
-          <div className="space-y-4">
-            <div className="space-y-1.5">
-              <Label>Movement type</Label>
-              <Select
-                value={movementType}
-                onValueChange={(v) => {
-                  setMovementType(v as MovementType);
-                  setFieldErrors({});
-                }}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {(Object.keys(MOVEMENT_LABEL) as MovementType[]).map(
-                    (type) => (
-                      <SelectItem key={type} value={type}>
-                        {MOVEMENT_LABEL[type]}
-                      </SelectItem>
-                    ),
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
+          <Box>
+            <InputLabel id="movement-type-label">Movement type</InputLabel>
+            <Select
+              labelId="movement-type-label"
+              fullWidth
+              value={movementType}
+              onChange={(event) => {
+                setMovementType(event.target.value as MovementType);
+                setFieldErrors({});
+              }}
+            >
+              {(Object.keys(MOVEMENT_LABEL) as MovementType[]).map((type) => (
+                <MenuItem key={type} value={type}>
+                  {MOVEMENT_LABEL[type]}
+                </MenuItem>
+              ))}
+            </Select>
+          </Box>
 
-            {movementType === "adjust" ? (
-              <div className="space-y-1.5">
-                <Label>Quantity change (signed, e.g. -3 or 5)</Label>
-                <Input
-                  type="number"
-                  value={quantityChange}
-                  onChange={(e) => setQuantityChange(e.target.value)}
-                />
-                {fieldErrors.quantityChange ? (
-                  <p className="text-sm font-medium text-destructive">
-                    {fieldErrors.quantityChange}
-                  </p>
-                ) : null}
-              </div>
-            ) : movementType === "transfer" ? (
-              <div className="space-y-1.5">
-                <Label>Destination box</Label>
-                <Combobox
-                  options={boxOptions.filter((b) => b.value !== currentBoxId)}
-                  value={toBoxId}
-                  onChange={setToBoxId}
-                  placeholder="Choose a box"
-                />
-                {fieldErrors.toBoxId ? (
-                  <p className="text-sm font-medium text-destructive">
-                    {fieldErrors.toBoxId}
-                  </p>
-                ) : null}
-              </div>
-            ) : (
-              <div className="space-y-1.5">
-                <Label>Quantity</Label>
-                <Input
-                  type="number"
-                  min={1}
-                  value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
-                />
-                {fieldErrors.quantity ? (
-                  <p className="text-sm font-medium text-destructive">
-                    {fieldErrors.quantity}
-                  </p>
-                ) : null}
-              </div>
-            )}
-
-            {movementType === "in" ? (
-              <div className="space-y-1.5">
-                <Label>Box (optional - defaults to current location)</Label>
-                <Combobox
-                  options={boxOptions}
-                  value={boxId}
-                  onChange={setBoxId}
-                  placeholder="Use current box"
-                />
-              </div>
-            ) : null}
-
-            <div className="space-y-1.5">
-              <Label>
-                Reason{movementType === "adjust" ? "" : " (optional)"}
-              </Label>
-              <Textarea
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                rows={2}
+          {movementType === "adjust" ? (
+            <TextField
+              type="number"
+              label="Quantity change (signed, e.g. -3 or 5)"
+              value={quantityChange}
+              onChange={(e) => setQuantityChange(e.target.value)}
+              error={!!fieldErrors.quantityChange}
+              helperText={fieldErrors.quantityChange}
+            />
+          ) : movementType === "transfer" ? (
+            <Box>
+              <Combobox
+                label="Destination box"
+                options={boxOptions.filter((b) => b.value !== currentBoxId)}
+                value={toBoxId}
+                onChange={setToBoxId}
+                placeholder="Choose a box"
+                error={!!fieldErrors.toBoxId}
+                helperText={fieldErrors.toBoxId}
               />
-              {fieldErrors.reason ? (
-                <p className="text-sm font-medium text-destructive">
-                  {fieldErrors.reason}
-                </p>
-              ) : null}
-            </div>
-          </div>
+            </Box>
+          ) : (
+            <TextField
+              type="number"
+              label="Quantity"
+              slotProps={{ htmlInput: { min: 1 } }}
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              error={!!fieldErrors.quantity}
+              helperText={fieldErrors.quantity}
+            />
+          )}
 
-          <DialogFooter>
-            <Button type="button" onClick={handleReviewClick}>
-              Review
-            </Button>
-          </DialogFooter>
+          {movementType === "in" ? (
+            <Combobox
+              label="Box (optional - defaults to current location)"
+              options={boxOptions}
+              value={boxId}
+              onChange={setBoxId}
+              placeholder="Use current box"
+            />
+          ) : null}
+
+          <TextField
+            label={`Reason${movementType === "adjust" ? "" : " (optional)"}`}
+            multiline
+            rows={2}
+            value={reason}
+            onChange={(e) => setReason(e.target.value)}
+            error={!!fieldErrors.reason}
+            helperText={fieldErrors.reason}
+          />
         </DialogContent>
+        <DialogActions>
+          <Button type="button" variant="contained" onClick={handleReviewClick}>
+            Review
+          </Button>
+        </DialogActions>
       </Dialog>
 
       <ConfirmDialog

@@ -1,12 +1,13 @@
-import Link from "next/link";
 import { PlusIcon } from "lucide-react";
+import Box from "@mui/material/Box";
 
 import { requireRole } from "@/lib/auth/require-role";
 import { can } from "@/lib/permissions";
 import { toErrorKind } from "@/lib/errors";
 import { firstParam } from "@/lib/search-params";
-import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/shared/error-state";
+import { PageHeader } from "@/components/shared/page-header";
+import { NavLinkButton } from "@/components/shared/nav-link-button";
 import {
   getBrandOptions,
   getCataloguePartList,
@@ -83,25 +84,22 @@ export default async function CataloguePartsPage(
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="space-y-1.5">
-          <h2 className="font-heading text-lg font-semibold tracking-tight">
-            Parts
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            The master catalogue - part numbers, OEM references, and
-            cross-references.
-          </p>
-        </div>
-        {can(user.role, "catalogue.manage") ? (
-          <Button asChild variant="gradient">
-            <Link href="/catalogue/parts/new">
-              <PlusIcon /> Add part
-            </Link>
-          </Button>
-        ) : null}
-      </div>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+      <PageHeader
+        title="Parts"
+        description="The master catalogue - part numbers, OEM references, and cross-references."
+        action={
+          can(user.role, "catalogue.manage") ? (
+            <NavLinkButton
+              href="/catalogue/parts/new"
+              variant="contained"
+              startIcon={<PlusIcon size={16} />}
+            >
+              Add part
+            </NavLinkButton>
+          ) : null
+        }
+      />
 
       <PartsFilters
         brandOptions={brandOptions}
@@ -121,6 +119,6 @@ export default async function CataloguePartsPage(
         sortBy={sortBy}
         sortDir={sortDir}
       />
-    </div>
+    </Box>
   );
 }

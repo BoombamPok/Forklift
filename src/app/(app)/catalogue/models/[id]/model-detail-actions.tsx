@@ -4,8 +4,9 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { PencilIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
 
-import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import type { ComboboxOption } from "@/components/shared/combobox";
 import { softDeleteModel } from "@/features/catalogue/actions";
@@ -45,16 +46,22 @@ function ModelDetailActions({
   }
 
   return (
-    <div className="flex gap-2">
-      <Button type="button" variant="outline" onClick={() => setEditOpen(true)}>
-        <PencilIcon /> Edit
+    <Box sx={{ display: "flex", gap: 1 }}>
+      <Button
+        type="button"
+        variant="outlined"
+        startIcon={<PencilIcon size={16} />}
+        onClick={() => setEditOpen(true)}
+      >
+        Edit
       </Button>
       <Button
         type="button"
-        variant="outline"
+        variant="outlined"
+        startIcon={<Trash2Icon size={16} />}
         onClick={() => setDeleteOpen(true)}
       >
-        <Trash2Icon /> Delete
+        Delete
       </Button>
 
       <ModelFormDialog
@@ -75,7 +82,7 @@ function ModelDetailActions({
         loading={deleteLoading}
         onConfirm={handleConfirmDelete}
       />
-    </div>
+    </Box>
   );
 }
 

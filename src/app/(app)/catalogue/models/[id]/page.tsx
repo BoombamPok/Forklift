@@ -1,3 +1,9 @@
+import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import CardHeader from "@mui/material/CardHeader";
+import Typography from "@mui/material/Typography";
+
 import { requireRole } from "@/lib/auth/require-role";
 import { can } from "@/lib/permissions";
 import { toErrorKind } from "@/lib/errors";
@@ -5,7 +11,6 @@ import { ErrorState } from "@/components/shared/error-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { HierarchyBreadcrumb } from "@/components/shared/hierarchy-breadcrumb";
 import type { ComboboxOption } from "@/components/shared/combobox";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   getBrandOptions,
   getModelDetail,
@@ -43,7 +48,7 @@ export default async function CatalogueModelDetailPage(
   }
 
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       <HierarchyBreadcrumb
         items={[
           { label: "Catalogue", href: "/catalogue" },
@@ -56,22 +61,37 @@ export default async function CatalogueModelDetailPage(
         ]}
       />
 
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-1.5">
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="font-heading text-lg font-semibold tracking-tight">
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: 2,
+        }}
+      >
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            <Typography variant="h6" component="h2" sx={{ fontWeight: 600 }}>
               {detail.name}
-            </h2>
+            </Typography>
             {detail.deletedAt ? (
               <StatusBadge label="Deleted" tone="destructive" />
             ) : null}
-          </div>
-          <p className="text-sm text-muted-foreground">
+          </Box>
+          <Typography variant="body2" color="text.secondary">
             {detail.brand.name}
             {detail.modelCode ? ` · ${detail.modelCode}` : ""}
             {detail.fuelType ? ` · ${detail.fuelType}` : ""}
-          </p>
-        </div>
+          </Typography>
+        </Box>
 
         {canManage ? (
           <ModelDetailActions
@@ -87,16 +107,17 @@ export default async function CatalogueModelDetailPage(
             }}
           />
         ) : null}
-      </div>
+      </Box>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Compatible parts</CardTitle>
-        </CardHeader>
+        <CardHeader
+          title="Compatible parts"
+          slotProps={{ title: { component: "h3" } }}
+        />
         <CardContent>
           <CompatiblePartsTable parts={detail.compatibleParts} />
         </CardContent>
       </Card>
-    </div>
+    </Box>
   );
 }

@@ -2,23 +2,19 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusIcon, XIcon } from "lucide-react";
 import { toast } from "sonner";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Paper from "@mui/material/Paper";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { IconButton } from "@/components/shared/icon-button";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/shared/form";
 import { addCrossRef, deleteCrossRef } from "@/features/catalogue/actions";
 import {
   crossRefFormSchema,
@@ -78,85 +74,113 @@ function CrossRefList({ partId, crossRefs, canEdit }: CrossRefListProps) {
   }
 
   return (
-    <div className="space-y-3">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
       {crossRefs.length === 0 ? (
         <EmptyState title="No cross-references recorded" />
       ) : (
-        <ul className="space-y-1.5 text-sm">
+        <Box
+          component="ul"
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 1,
+            m: 0,
+            p: 0,
+            listStyle: "none",
+          }}
+        >
           {crossRefs.map((ref) => (
-            <li
+            <Paper
+              component="li"
+              variant="outlined"
               key={ref.id}
-              className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-1.5"
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 1,
+                px: 1.5,
+                py: 0.75,
+              }}
             >
-              <span>
-                <span className="font-mono">{ref.crossReferenceNumber}</span>
+              <Typography variant="body2">
+                <Box
+                  component="span"
+                  sx={{ fontFamily: "var(--font-roboto-mono)" }}
+                >
+                  {ref.crossReferenceNumber}
+                </Box>
                 {ref.source ? (
-                  <span className="text-muted-foreground"> · {ref.source}</span>
+                  <Box component="span" sx={{ color: "text.secondary" }}>
+                    {" "}
+                    · {ref.source}
+                  </Box>
                 ) : null}
-              </span>
+              </Typography>
               {canEdit ? (
                 <IconButton
                   label="Remove cross-reference"
                   size="icon-sm"
                   onClick={() => setPendingDeleteId(ref.id)}
                 >
-                  <XIcon />
+                  <XIcon size={16} />
                 </IconButton>
               ) : null}
-            </li>
+            </Paper>
           ))}
-        </ul>
+        </Box>
       )}
 
       {canEdit ? (
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleAdd)}
-            className="flex flex-wrap items-start gap-2"
+        <Box
+          component="form"
+          onSubmit={form.handleSubmit(handleAdd)}
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "flex-start",
+            gap: 1,
+          }}
+        >
+          <Controller
+            control={form.control}
+            name="crossReferenceNumber"
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                placeholder="Reference number"
+                size="small"
+                sx={{ width: 160 }}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+              />
+            )}
+          />
+          <Controller
+            control={form.control}
+            name="source"
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                value={field.value ?? ""}
+                placeholder="Source (optional)"
+                size="small"
+                sx={{ width: 160 }}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+              />
+            )}
+          />
+          <Button
+            type="submit"
+            variant="outlined"
+            size="small"
+            startIcon={<PlusIcon size={16} />}
+            disabled={form.formState.isSubmitting}
           >
-            <FormField
-              control={form.control}
-              name="crossReferenceNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      placeholder="Reference number"
-                      className="w-40"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="source"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Input
-                      {...field}
-                      value={field.value ?? ""}
-                      placeholder="Source (optional)"
-                      className="w-40"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button
-              type="submit"
-              variant="outline"
-              size="sm"
-              disabled={form.formState.isSubmitting}
-            >
-              <PlusIcon /> Add
-            </Button>
-          </form>
-        </Form>
+            Add
+          </Button>
+        </Box>
       ) : null}
 
       <ConfirmDialog
@@ -168,7 +192,7 @@ function CrossRefList({ partId, crossRefs, canEdit }: CrossRefListProps) {
         loading={deleting}
         onConfirm={handleConfirmDelete}
       />
-    </div>
+    </Box>
   );
 }
 

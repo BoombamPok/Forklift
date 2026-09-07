@@ -3,40 +3,28 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useForm, type Resolver } from "react-hook-form";
+import { Controller, useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PencilIcon, PlusIcon, XIcon } from "lucide-react";
 import { toast } from "sonner";
+import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import MenuItem from "@mui/material/MenuItem";
+import MuiLink from "@mui/material/Link";
+import Paper from "@mui/material/Paper";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
 
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { IconButton } from "@/components/shared/icon-button";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { VerificationBadge } from "@/components/shared/verification-badge";
 import type { ComboboxOption } from "@/components/shared/combobox";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/shared/form";
 import {
   removeCompatibility,
   updateCompatibility,
@@ -98,79 +86,70 @@ function CompatibilityEditDialog({
   }
 
   return (
-    <Dialog open={row !== null} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>
-            {row ? `${row.brandName} ${row.modelName}` : ""}
-          </DialogTitle>
-        </DialogHeader>
+    <Dialog
+      open={row !== null}
+      onClose={() => onOpenChange(false)}
+      maxWidth="sm"
+      fullWidth
+    >
+      <Box component="form" onSubmit={form.handleSubmit(handleSubmit)}>
+        <DialogTitle>
+          {row ? `${row.brandName} ${row.modelName}` : ""}
+        </DialogTitle>
+        <DialogContent
+          sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+        >
+          {formError ? <Alert severity="error">{formError}</Alert> : null}
 
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4"
-          >
-            {formError ? (
-              <p className="text-sm font-medium text-destructive">
-                {formError}
-              </p>
-            ) : null}
-
-            <FormField
-              control={form.control}
-              name="verificationStatus"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Verification status</FormLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {VERIFICATION_STATUSES.map((status) => (
-                        <SelectItem key={status} value={status}>
-                          {VERIFICATION_LABEL[status]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Notes (optional)</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} value={field.value ?? ""} rows={2} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
+          <Controller
+            control={form.control}
+            name="verificationStatus"
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                select
+                label="Verification status"
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
               >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? "Saving…" : "Save"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
-      </DialogContent>
+                {VERIFICATION_STATUSES.map((status) => (
+                  <MenuItem key={status} value={status}>
+                    {VERIFICATION_LABEL[status]}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+          />
+
+          <Controller
+            control={form.control}
+            name="notes"
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                value={field.value ?? ""}
+                label="Notes (optional)"
+                multiline
+                rows={2}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+              />
+            )}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button variant="outlined" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            variant="contained"
+            disabled={form.formState.isSubmitting}
+          >
+            {form.formState.isSubmitting ? "Saving…" : "Save"}
+          </Button>
+        </DialogActions>
+      </Box>
     </Dialog>
   );
 }
@@ -221,33 +200,69 @@ function CompatibilityList({
   }
 
   return (
-    <div className="space-y-3">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
       {rows.length === 0 ? (
         <EmptyState
           title="No compatible models recorded yet"
           description="Add a model this part fits."
         />
       ) : (
-        <ul className="space-y-1.5 text-sm">
+        <Box
+          component="ul"
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 1,
+            m: 0,
+            p: 0,
+            listStyle: "none",
+          }}
+        >
           {rows.map((row) => (
-            <li
+            <Paper
+              component="li"
+              variant="outlined"
               key={row.id}
-              className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2"
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 1,
+                px: 1.5,
+                py: 1,
+              }}
             >
-              <div className="min-w-0">
-                <Link
+              <Box sx={{ minWidth: 0 }}>
+                <MuiLink
+                  component={Link}
                   href={`/catalogue/models/${row.modelId}`}
-                  className="font-medium text-foreground hover:underline"
+                  sx={{ fontWeight: 500, color: "text.primary" }}
                 >
                   {row.brandName} {row.modelName}
-                </Link>
+                </MuiLink>
                 {row.notes ? (
-                  <p className="truncate text-xs text-muted-foreground">
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{
+                      display: "block",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
                     {row.notes}
-                  </p>
+                  </Typography>
                 ) : null}
-              </div>
-              <div className="flex shrink-0 items-center gap-1">
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexShrink: 0,
+                  alignItems: "center",
+                  gap: 0.5,
+                }}
+              >
                 <VerificationBadge status={row.verificationStatus} />
                 {canEdit ? (
                   <>
@@ -256,31 +271,33 @@ function CompatibilityList({
                       size="icon-sm"
                       onClick={() => setEditing(row)}
                     >
-                      <PencilIcon />
+                      <PencilIcon size={16} />
                     </IconButton>
                     <IconButton
                       label="Remove compatibility"
                       size="icon-sm"
                       onClick={() => setRemoving(row)}
                     >
-                      <XIcon />
+                      <XIcon size={16} />
                     </IconButton>
                   </>
                 ) : null}
-              </div>
-            </li>
+              </Box>
+            </Paper>
           ))}
-        </ul>
+        </Box>
       )}
 
       {canEdit ? (
         <Button
           type="button"
-          variant="outline"
-          size="sm"
+          variant="outlined"
+          size="small"
+          startIcon={<PlusIcon size={16} />}
           onClick={() => setAddOpen(true)}
+          sx={{ alignSelf: "flex-start" }}
         >
-          <PlusIcon /> Add compatible model
+          Add compatible model
         </Button>
       ) : null}
 
@@ -315,7 +332,7 @@ function CompatibilityList({
           />
         </>
       ) : null}
-    </div>
+    </Box>
   );
 }
 

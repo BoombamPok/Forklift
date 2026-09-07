@@ -1,6 +1,9 @@
+import Box from "@mui/material/Box";
+
 import { requireRole } from "@/lib/auth/require-role";
 import { toErrorKind } from "@/lib/errors";
 import { ErrorState } from "@/components/shared/error-state";
+import { PageHeader } from "@/components/shared/page-header";
 import {
   getBrandOptions,
   getCataloguePartDetail,
@@ -26,10 +29,8 @@ export default async function EditCataloguePartPage(
   }
 
   return (
-    <div className="space-y-4">
-      <h2 className="font-heading text-lg font-semibold tracking-tight">
-        Edit catalogue part
-      </h2>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <PageHeader title="Edit catalogue part" />
       <CataloguePartForm
         mode="edit"
         partId={id}
@@ -49,6 +50,6 @@ export default async function EditCataloguePartPage(
           verificationStatus: detail.verificationStatus,
         }}
       />
-    </div>
+    </Box>
   );
 }

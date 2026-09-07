@@ -2,22 +2,20 @@
 
 import * as React from "react";
 import Link from "next/link";
+import Box from "@mui/material/Box";
+import Avatar from "@mui/material/Avatar";
+import Typography from "@mui/material/Typography";
+import ButtonBase from "@mui/material/ButtonBase";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import Divider from "@mui/material/Divider";
 import {
   ChevronsUpDownIcon,
   LogOutIcon,
   SettingsIcon,
   UserIcon,
 } from "lucide-react";
-
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 type AccountUser = { name: string; email: string };
 
@@ -31,44 +29,75 @@ type AccountMenuProps = {
  * shows a neutral placeholder rather than fabricating a name/email.
  */
 function AccountMenu({ user, onSignOut }: AccountMenuProps) {
+  const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
+  const open = Boolean(anchorEl);
+
   return (
-    <div className="border-t border-sidebar-border p-3">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            type="button"
-            variant="ghost"
-            className="h-auto w-full justify-start gap-2.5 px-2 py-1.5 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-          >
-            <Avatar size="sm">
-              <AvatarFallback className="bg-sidebar-accent text-sidebar-accent-foreground">
-                <UserIcon className="size-3.5" />
-              </AvatarFallback>
-            </Avatar>
-            <span className="flex-1 truncate text-left text-sm">
-              {user?.name ?? "Account"}
-            </span>
-            <ChevronsUpDownIcon className="size-4 shrink-0 text-sidebar-foreground/50" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-56">
-          {user ? (
-            <div className="px-1.5 py-1 text-xs text-muted-foreground">
+    <Box sx={{ p: 1.5 }}>
+      <ButtonBase
+        onClick={(event) => setAnchorEl(event.currentTarget)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        sx={{
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          gap: 1.25,
+          borderRadius: 2,
+          px: 1,
+          py: 0.75,
+          "&:hover": { bgcolor: "action.hover" },
+        }}
+      >
+        <Avatar sx={{ width: 28, height: 28, bgcolor: "action.selected" }}>
+          <UserIcon size={15} />
+        </Avatar>
+        <Typography variant="body2" noWrap sx={{ flex: 1, textAlign: "left" }}>
+          {user?.name ?? "Account"}
+        </Typography>
+        <ChevronsUpDownIcon size={16} style={{ opacity: 0.5, flexShrink: 0 }} />
+      </ButtonBase>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={() => setAnchorEl(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "left" }}
+        transformOrigin={{ vertical: "bottom", horizontal: "left" }}
+        slotProps={{ paper: { sx: { minWidth: 224 } } }}
+      >
+        {user ? (
+          <Box sx={{ px: 2, py: 1 }}>
+            <Typography variant="caption" color="text.secondary">
               {user.email}
-            </div>
-          ) : null}
-          <DropdownMenuItem asChild>
-            <Link href="/admin">
-              <SettingsIcon /> Administration
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive" onSelect={onSignOut}>
-            <LogOutIcon /> Sign out
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
+            </Typography>
+          </Box>
+        ) : null}
+        <MenuItem
+          component={Link}
+          href="/admin"
+          onClick={() => setAnchorEl(null)}
+        >
+          <ListItemIcon>
+            <SettingsIcon size={16} />
+          </ListItemIcon>
+          Administration
+        </MenuItem>
+        <Divider />
+        <MenuItem
+          onClick={() => {
+            setAnchorEl(null);
+            onSignOut?.();
+          }}
+          sx={{ color: "error.main" }}
+        >
+          <ListItemIcon sx={{ color: "error.main" }}>
+            <LogOutIcon size={16} />
+          </ListItemIcon>
+          Sign out
+        </MenuItem>
+      </Menu>
+    </Box>
   );
 }
 

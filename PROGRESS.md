@@ -1416,10 +1416,22 @@ e2e test independently confirmed to fail identically on unmodified
   sign-in timing, CSV-import strict-mode violation — are the same
   flakes already confirmed unrelated, both pass in isolation).
 
-**Not started yet** — Batch 4 (warehouse hierarchy, 4 levels), Batch 5
-(7 report sub-pages), Batch 6 (admin sub-pages + `/accept-invite`,
-which still has the pre-redesign light full-bleed layout and will look
-inconsistent with `/login` until then).
+- **Batch 4 (warehouse hierarchy, no 3D)** — same narrow pattern as
+  Batch 3: the one primary "Add X" CTA at each of the four hierarchy
+  levels (`warehouse-table.tsx`, `rack-list.tsx`, `shelf-list.tsx`,
+  `box-list.tsx`) got `variant="gradient"`. "Edit" buttons and the
+  per-row "Transfer" action were already `variant="outline"` and were
+  left alone - secondary/contextual, not the page's one primary action.
+  No hero-stat cards exist at this level (unlike inventory's quantity
+  number), so no `tone="glass"` additions were needed - these pages
+  inherit the full dark theme from Batch 0 with nothing else changed.
+  Verified: 0 axe violations on warehouse list/detail (checked as
+  admin), full warehouse/admin e2e suites green (same pre-existing
+  CSV-import flake), 251 unit tests, clean build.
+
+**Not started yet** — Batch 5 (7 report sub-pages), Batch 6 (admin
+sub-pages + `/accept-invite`, which still has the pre-redesign light
+full-bleed layout and will look inconsistent with `/login` until then).
 
 **Do not merge `redesign/maximalist` to `main` without the user's
 explicit, informed go-ahead** — main auto-deploys via Vercel

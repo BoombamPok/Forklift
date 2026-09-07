@@ -1558,27 +1558,74 @@ entirely (a genuine simplification). Verified: 251 unit tests, full
 e2e suite (29/31, same two pre-existing flakes, both pass on retry in
 isolation), clean build.
 
-**Not started yet**: hub pages (catalogue/reports/admin index),
-inventory, catalogue, warehouse, reports, admin pages themselves still
-render old shadcn/Tailwind content inside the new MUI shell+DataTable
-(functional but visually mixed - the table chrome is now MUI, but
-page headers/filters/forms around it aren't yet). Final cleanup batch
-(remove Tailwind/shadcn/radix-ui/cva, delete `src/components/ui/*`)
-can't happen until all pages are migrated.
+**Hub pages converted (catalogue/reports/admin index pages)**:
+`hub-hero.tsx` (the shared 3D-banner header used by all three) plus
+`catalogue/page.tsx`, `reports/page.tsx`, `admin/page.tsx` rewritten
+to MUI Card/Box/Typography grids. `CategoryTable` (rendered inside
+`catalogue/page.tsx`) is deliberately left unconverted - it pulls in
+Dialog/ConfirmDialog/NameFormDialog, out of scope for a link-grid
+batch.
 
-**Do not merge `redesign/maximalist` to `main` without the user's
-explicit, informed go-ahead** — main auto-deploys via Vercel
-(`docs/LAUNCH_CHECKLIST.md`), and merging now would ship a real business
-tool's login/dashboard in a completely different visual language from
-every other page mid-redesign.
+New `NavLinkButton` (`src/components/shared/nav-link-button.tsx`) -
+same pattern as `NavLinkBox`, but wrapping `<Button component={Link}>`.
+Discovered this batch that the "component reference is a function"
+RSC gotcha isn't unique to `Box` - any MUI component's `component`
+prop hits it the same way. `catalogue/page.tsx` needed three of these
+(top action buttons + the per-brand "View models" link).
+
+**The function-valued `sx`/`bgcolor` RSC gotcha recurred** in
+`admin/page.tsx` (`bgcolor: (theme) => alpha(theme.palette.primary.main,
+0.1)`) despite having just documented it in the DataTable batch above -
+caught via a deliberate `grep -rn "(theme) =>"` sweep run *before*
+typechecking, now standard practice for every batch. Fixed to the
+same static `color-mix(in srgb, var(--mui-palette-primary-main) 10%,
+transparent)` pattern.
+
+**One real regression caught by the e2e suite, not by typecheck/lint/
+build**: `e2e/reports.spec.ts` asserts `getByRole("heading", {name:
+"Reports", level: 2})`, but MUI's `Typography variant="h4"` renders an
+actual `<h4>` by default - visual size and semantic heading level are
+the same prop unless you override `component` separately. Fixed with
+`variant="h4" component="h2"` on `HubHero`'s title. This is the same
+category of "build succeeds, e2e catches what typecheck can't" risk as
+the RSC gotchas above, just surfaced through accessible-role assertions
+instead of a runtime crash - full Playwright suite (not just axe) is
+load-bearing here, not optional.
+
+Verified: typecheck, lint, format, 251/251 vitest, production build,
+dev-mode page loads with no pageerror events (Playwright +
+`page.on('pageerror')`), axe-core 0 violations on all three hub
+routes, full Playwright suite 30/31 (the one failure is the
+pre-existing `admin.spec.ts` CSV-import strict-mode flake, confirmed
+to reproduce identically on unmodified `main`).
+
+**Not started yet**: inventory, catalogue (parts/brands/models
+sub-pages + `CategoryTable`), warehouse, reports sub-pages (7),
+admin sub-pages (users, import-export) still render old
+shadcn/Tailwind content inside the new MUI shell+DataTable
+(functional but visually mixed - the table chrome is now MUI, but
+page headers/filters/forms/dialogs around it aren't yet). Final
+cleanup batch (remove Tailwind/shadcn/radix-ui/cva, delete
+`src/components/ui/*`) can't happen until all pages are migrated.
+
+**Do not merge `redesign/mui-rehaul` (or `redesign/maximalist`) to
+`main` without the user's explicit, informed go-ahead** — main
+auto-deploys via Vercel (`docs/LAUNCH_CHECKLIST.md`), and merging now
+would ship a real business tool mid-migration, with some pages MUI and
+some still shadcn/Tailwind.
 
 ## Next steps
 
-The maximalist redesign above is the active thread — continue with
-Batch 2 (hub pages) per the plan file, then Batches 3-6. Confirm scope
-with the user if resuming after a long gap, since this overrides
-documented project direction and its own plan file may have drifted
-from reality — reconcile against the actual repo/branch state first.
+The MUI rehaul above is the active thread — continue with inventory +
+catalogue's remaining pages next (per the user's "yes, continue in
+that order" - hub pages done, inventory/catalogue next, then
+warehouse, then reports/admin sub-pages), including the dialog-heavy
+components deferred from this batch and the DataTable batch
+(`CategoryTable`'s `NameFormDialog`/`ConfirmDialog`, and any other
+Dialog/Form/AlertDialog usages on those pages). Confirm scope with the
+user if resuming after a long gap, since this overrides documented
+project direction and its own plan file may have drifted from
+reality — reconcile against the actual repo/branch state first.
 
 Separately, unrelated to the redesign: ForkStock V1 (the pre-redesign
 feature set) is feature-complete, reviewed, hardened, and documented.

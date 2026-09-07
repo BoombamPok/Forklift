@@ -1394,12 +1394,32 @@ e2e test independently confirmed to fail identically on unmodified
   (same pre-existing CSV-import flake as before, still unrelated), 251
   unit tests, clean build.
 
-**Not started yet** — Batch 3 (inventory + catalogue data pages — 2D
-glass/gradient refinement only, no 3D, since these are dense working
-screens), Batch 4 (warehouse hierarchy, 4 levels), Batch 5 (7 report
-sub-pages), Batch 6 (admin sub-pages + `/accept-invite`, which still has
-the pre-redesign light full-bleed layout and will look inconsistent
-with `/login` until then).
+- **Batch 3 (inventory + catalogue parts, no 3D)** — dense working
+  pages get narrow, targeted refinement rather than uniform decoration:
+  `/inventory/[id]`'s single hero-stat (the quantity number) got
+  `tone="glass"` + a glow shadow; the one primary page-level CTA on
+  each of `/inventory`, `/inventory/new`+`/inventory/[id]/edit`
+  (shared `part-form.tsx`), `/catalogue/parts`, and
+  `/catalogue/parts/new`+`/catalogue/parts/[id]/edit` (shared
+  `catalogue-part-form.tsx`) got `variant="gradient"`. Every
+  dialog-internal button (brand/category/model tables, compatibility
+  editors, cross-refs, etc. — ~20 call sites surveyed) was deliberately
+  left alone: gradient-ing every button in the app is exactly the "AI
+  slop" look this redesign is trying to avoid. `/catalogue/parts/[id]`,
+  `/catalogue/brands`, `/catalogue/models`, `/catalogue/models/[id]`
+  needed no changes beyond what Batch 0's token flip already gives
+  every page for free. Confirmed the e2e-critical
+  `page.locator("p.text-3xl")` on the inventory detail page still
+  resolves. Verified: 0 axe violations, full
+  inventory/catalogue/search e2e suites green, 251 unit tests, clean
+  build (the two failures seen in a full-suite run — dashboard axe
+  sign-in timing, CSV-import strict-mode violation — are the same
+  flakes already confirmed unrelated, both pass in isolation).
+
+**Not started yet** — Batch 4 (warehouse hierarchy, 4 levels), Batch 5
+(7 report sub-pages), Batch 6 (admin sub-pages + `/accept-invite`,
+which still has the pre-redesign light full-bleed layout and will look
+inconsistent with `/login` until then).
 
 **Do not merge `redesign/maximalist` to `main` without the user's
 explicit, informed go-ahead** — main auto-deploys via Vercel

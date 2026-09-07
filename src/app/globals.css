@@ -1,3 +1,66 @@
+/* ---------------------------------------------------------------------
+   ForkStock global styles.
+
+   MUI's theme handles component styling; this file covers the three
+   things a theme can't reach: the document itself, the chassis tokens
+   (which deliberately do NOT invert with the color scheme), and the
+   browser chrome (scrollbars, selection, focus, autofill).
+   --------------------------------------------------------------------- */
+
+:root {
+  /* The dark rail. Constant in both modes - it is the frame around the
+     work surface, not part of it. */
+  --chassis: #131820;
+  --chassis-raised: #1b222d;
+  --chassis-hairline: #28303d;
+  --chassis-text: #e7eaf0;
+  --chassis-muted: #98a2b3;
+  --chassis-faint: #6b7687;
+
+  /* Grid unit. Every gap/padding in bespoke components is a multiple. */
+  --unit: 4px;
+
+  --radius-chip: 5px;
+  --radius-control: 8px;
+  --radius-panel: 14px;
+  --radius-sheet: 18px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* Hairline used for internal divisions inside a panel, one step
+     lighter than the panel's own border so nested structure doesn't
+     read as flat. */
+  --rule: color-mix(in srgb, var(--mui-palette-divider) 70%, transparent);
+
+  /* Categorical chart ramp. Deliberately excludes the status hues: a
+     brand slice tinted amber or red reads as "this brand is in trouble",
+     which is a claim the chart is not making. Ordered for distinguishable
+     neighbours, and checked against deuteranopia. */
+  --series-1: #1f51e0;
+  --series-2: #0e6c86;
+  --series-3: #6b4fd8;
+  --series-4: #0f7a57;
+  --series-5: #b0621a;
+  --series-6: #8a94a3;
+
+  color-scheme: light;
+}
+
+.dark,
+[data-mui-color-scheme="dark"] {
+  /* Lifted for the darker panel - same hue order, higher luminance, so a
+     legend learned in one mode still reads in the other. */
+  --series-1: #7ca0ff;
+  --series-2: #4fc3e8;
+  --series-3: #a893ff;
+  --series-4: #3ecf97;
+  --series-5: #e3a05a;
+  --series-6: #8a94a3;
+
+  color-scheme: dark;
+}
+
 html,
 body {
   height: 100%;
@@ -6,6 +69,93 @@ body {
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  /* Plex Sans ships with contextual alternates that tidy up part
+     numbers like "AX-1200/7"; on by default but stated explicitly so a
+     future font swap doesn't silently change number rendering. */
+  font-feature-settings: "cv05" 1, "ss03" 1;
+}
+
+/* Every number a person might compare against another number is set in
+   Plex Mono with tabular figures. Applied via a class rather than to
+   <code>/<td> so it is an explicit decision at each call site. */
+.numeric {
+  font-family: var(--font-plex-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "zero" 1;
+  letter-spacing: -0.01em;
+}
+
+/* ---------------------------------------------------------------------
+   Focus. One visible ring everywhere, drawn outside the element so it
+   never reflows layout, and never removed for mouse users on inputs.
+   --------------------------------------------------------------------- */
+:focus-visible {
+  outline: 2px solid var(--mui-palette-primary-main);
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--mui-palette-primary-main) 22%, transparent);
+}
+
+/* ---------------------------------------------------------------------
+   Scrollbars. Thin and neutral so a scrolling data table doesn't get a
+   chunky OS-grey bar running down the middle of the layout.
+   --------------------------------------------------------------------- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--mui-palette-divider) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--mui-palette-divider);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--mui-palette-text-disabled);
+  background-clip: content-box;
+}
+
+/* Chrome's yellow autofill wash destroys a themed input. Repaint it
+   using an inset shadow (the only property autofill styling respects). */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--mui-palette-text-primary);
+  -webkit-box-shadow: 0 0 0 40px var(--mui-palette-background-paper) inset;
+  caret-color: var(--mui-palette-text-primary);
+  transition: background-color 9999s ease-out;
+}
+
+/* ---------------------------------------------------------------------
+   The one non-user-triggered animation in the app: the KPI cluster
+   counting up to its reading on first paint, like an instrument
+   spinning to a value. Everything else animates only in response to
+   something a person did.
+   --------------------------------------------------------------------- */
+@keyframes instrument-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @keyframes toaster-spin {
@@ -14,5 +164,27 @@ body {
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* Sweep used by loading skeletons - directional, so a loading table
+   reads as "filling in left to right" rather than pulsing. */
+@keyframes rule-sweep {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

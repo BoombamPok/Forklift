@@ -1770,11 +1770,49 @@ earlier this session and untouched by this batch - passed cleanly in
 rather than a real contrast defect). Worth a dedicated look someday,
 not in scope here.
 
-**Not started yet**: the final cleanup batch (remove Tailwind/
-shadcn/radix-ui/class-variance-authority, delete
-`src/components/ui/*`) - now possible since every page has migrated,
-but not yet done. This is a separate, more mechanical pass (dead-code
-removal + dependency pruning) rather than more page conversion.
+**The final cleanup batch is done. The MUI rehaul is complete.**
+Deleted `src/components/ui/*` (all 24 shadcn primitive files),
+3 dead premium components with zero callers (`MagneticButton`,
+`ScrollReveal`, `GradientText` - built during the earlier maximalist
+redesign, never ported to MUI), `src/components/shared/form.tsx`
+(confirmed dead - every caller had already moved to RHF's
+`Controller` feeding MUI directly), `components.json`, and
+`postcss.config.mjs`.
+
+Rewrote `src/app/globals.css` from a 285-line Tailwind/shadcn theme
+file down to a ~15-line plain reset (nothing left read any of its
+custom properties). Rewrote `src/app/layout.tsx`: dropped the
+vestigial Radix `TooltipProvider` (MUI Tooltip needs no provider)
+and the three now-unused legacy Google fonts (IBM Plex Sans/Mono,
+Bricolage Grotesque). New `src/components/shared/toaster.tsx`
+replaces `src/components/ui/sonner.tsx`, restyled with MUI theme CSS
+variables. Converted the last live Tailwind utility classNames still
+sitting in already-"MUI-converted" files: the entire 3D hero-scene
+positioning chain (`SceneLoader`/`SceneCanvas`/`HeroScene*`/
+`PosterFallback` switched from `className` to `sx`/`style` props),
+`GlobalSearch`'s `animate-spin` (now MUI `CircularProgress`) and
+`shrink-0` (now a `Box` wrapper), and a stray `StatusBadge`
+`className` prop (removed - `VerificationBadge`'s pass-through
+`className` too, unused by any caller). Removed 5 vestigial
+`TooltipProvider` test wrappers. `package.json`: removed
+`class-variance-authority`, `cmdk`, `cn`, `radix-ui`,
+`tw-animate-css`, `tailwindcss`, `@tailwindcss/postcss`, and the
+`shadcn` CLI devDependency - 304 packages removed from
+`node_modules`. Removed the now-dead `cn` re-export from
+`src/lib/utils.ts`.
+
+Verified: typecheck (clean), lint (clean, one pre-existing unrelated
+TanStack Table React Compiler warning), format, 251/251 vitest,
+production build, a manual pageerror-listening pass across every 3D-
+scene page (0 errors, confirmed correct rendering via screenshot),
+and the full Playwright suite (30/31, then 31/31 on a clean rerun -
+the one intermittent failure is the already-documented login-page
+3D-scene contrast flake, confirmed non-deterministic and unrelated
+to this batch - this batch only changed `className`→`sx`/`style`
+mechanics on the scene chain, not its rendering logic).
+
+**The app now has zero Tailwind/shadcn/radix-ui footprint. Every
+page runs on MUI.**
 
 **Do not merge `redesign/mui-rehaul` (or `redesign/maximalist`) to
 `main` without the user's explicit, informed go-ahead** — main
@@ -1782,20 +1820,15 @@ auto-deploys via Vercel (`docs/LAUNCH_CHECKLIST.md`).
 
 ## Next steps
 
-Every page is converted - the MUI rehaul's remaining work is the
-final cleanup batch: confirm no page/component still imports from
-`@/components/ui/*` or `class-variance-authority`, remove Tailwind
-CSS/PostCSS config and its dependencies, remove `radix-ui` and `cva`
-from package.json, delete `src/components/ui/*` and any now-dead
-Tailwind-only utility files, then run the full verification sequence
-once more (typecheck/lint/format/vitest/build/e2e) to confirm nothing
-broke. This has not been started - check with the user before
-starting it, since it wasn't explicitly part of "continue in that
-order" and removing dependencies is a more consequential step than
-page-by-page conversion. Confirm scope with the user if resuming
-after a long gap, since this overrides documented project direction
-and its own plan file may have drifted from reality — reconcile
-against the actual repo/branch state first.
+The MUI rehaul is finished. If/when the user gives the go-ahead to
+merge `redesign/mui-rehaul` into `main`, do a final sanity pass first
+(fresh `npm install`, full verification sequence, a manual walkthrough
+of a few pages) since main auto-deploys via Vercel. Until then, no
+further work is pending on this thread - confirm with the user before
+starting anything new here. The still-open, non-blocking item is the
+login-page 3D-scene contrast flake (intermittent, not reliably
+reproducible) - worth a dedicated investigation sometime, but it's
+never blocked a batch and isn't launch-critical.
 
 Separately, unrelated to the redesign: ForkStock V1 (the pre-redesign
 feature set) is feature-complete, reviewed, hardened, and documented.

@@ -1,16 +1,16 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
+import Box from "@mui/material/Box";
 
 import { DataTable } from "@/components/shared/data-table";
 import { formatRelativeTime } from "@/lib/utils";
-import { cn } from "@/lib/utils";
 import type { PartMovementHistoryItem } from "@/features/inventory/queries";
 
-const DIRECTION_DOT: Record<PartMovementHistoryItem["direction"], string> = {
-  in: "bg-success",
-  out: "bg-destructive",
-  none: "bg-muted-foreground/40",
+const DIRECTION_COLOR: Record<PartMovementHistoryItem["direction"], string> = {
+  in: "var(--mui-palette-success-main)",
+  out: "var(--mui-palette-error-main)",
+  none: "var(--mui-palette-text-disabled)",
 };
 
 const columns: ColumnDef<PartMovementHistoryItem, unknown>[] = [
@@ -18,16 +18,19 @@ const columns: ColumnDef<PartMovementHistoryItem, unknown>[] = [
     accessorKey: "description",
     header: "Movement",
     cell: ({ row }) => (
-      <div className="flex items-center gap-2.5">
-        <span
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
+        <Box
           aria-hidden
-          className={cn(
-            "size-1.5 shrink-0 rounded-full",
-            DIRECTION_DOT[row.original.direction],
-          )}
+          sx={{
+            width: 6,
+            height: 6,
+            flexShrink: 0,
+            borderRadius: "50%",
+            bgcolor: DIRECTION_COLOR[row.original.direction],
+          }}
         />
         {row.original.description}
-      </div>
+      </Box>
     ),
   },
   {

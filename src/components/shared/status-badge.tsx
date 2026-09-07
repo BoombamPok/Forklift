@@ -1,4 +1,3 @@
-import * as React from "react";
 import Chip from "@mui/material/Chip";
 
 type StatusTone =
@@ -13,7 +12,6 @@ type StatusTone =
 type StatusBadgeProps = {
   label: string;
   tone: StatusTone;
-  className?: string;
 };
 
 // Static objects (no theme-callback functions) - these get rendered from
@@ -62,12 +60,11 @@ const TONE_SX: Record<StatusTone, object> = {
  * should go through this so tone usage stays consistent app-wide instead of
  * each feature inventing its own color choice for "in stock" vs "low stock".
  */
-function StatusBadge({ label, tone, className }: StatusBadgeProps) {
+function StatusBadge({ label, tone }: StatusBadgeProps) {
   return (
     <Chip
       label={label}
       size="small"
-      className={className}
       data-variant={tone}
       sx={{ fontWeight: 600, ...TONE_SX[tone] }}
     />

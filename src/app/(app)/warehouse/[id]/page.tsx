@@ -1,3 +1,6 @@
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+
 import { requireRole } from "@/lib/auth/require-role";
 import { can } from "@/lib/permissions";
 import { toErrorKind } from "@/lib/errors";
@@ -24,7 +27,7 @@ export default async function WarehouseDetailPage(
   const canManage = can(user.role, "warehouse.manage");
 
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       <HierarchyBreadcrumb
         items={[
           { label: "Warehouse", href: "/warehouse" },
@@ -32,20 +35,37 @@ export default async function WarehouseDetailPage(
         ]}
       />
 
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-1.5">
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="font-heading text-lg font-semibold tracking-tight">
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: 2,
+        }}
+      >
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            <Typography variant="h6" component="h2" sx={{ fontWeight: 600 }}>
               {detail.name}
-            </h2>
+            </Typography>
             {detail.deletedAt ? (
               <StatusBadge label="Deleted" tone="destructive" />
             ) : null}
-          </div>
+          </Box>
           {detail.address ? (
-            <p className="text-sm text-muted-foreground">{detail.address}</p>
+            <Typography variant="body2" color="text.secondary">
+              {detail.address}
+            </Typography>
           ) : null}
-        </div>
+        </Box>
 
         {!detail.deletedAt ? (
           <WarehouseDetailHeader
@@ -55,13 +75,13 @@ export default async function WarehouseDetailPage(
             canManage={canManage}
           />
         ) : null}
-      </div>
+      </Box>
 
       <RackList
         warehouseId={detail.id}
         racks={detail.racks}
         canManage={canManage}
       />
-    </div>
+    </Box>
   );
 }

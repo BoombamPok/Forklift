@@ -4,8 +4,10 @@ import * as React from "react";
 import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
 import { ArrowLeftRightIcon } from "lucide-react";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
 
-import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/shared/data-table";
 import { StatusBadge, type StatusTone } from "@/components/shared/status-badge";
 import type { ComboboxOption } from "@/components/shared/combobox";
@@ -57,12 +59,18 @@ function BoxPartsTable({
       cell: ({ row }) => (
         <Link
           href={`/inventory/${row.original.id}`}
-          className="block hover:underline"
+          style={{ display: "block", textDecoration: "none" }}
         >
-          <p className="font-medium text-foreground">{row.original.name}</p>
-          <p className="font-mono text-xs text-muted-foreground">
+          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+            {row.original.name}
+          </Typography>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ fontFamily: "var(--font-roboto-mono)" }}
+          >
             {row.original.partNumber}
-          </p>
+          </Typography>
         </Link>
       ),
     },
@@ -71,7 +79,12 @@ function BoxPartsTable({
       accessorKey: "quantity",
       header: "Quantity",
       cell: ({ row }) => (
-        <span className="font-mono tabular-nums">{row.original.quantity}</span>
+        <Typography
+          sx={{ fontFamily: "var(--font-roboto-mono)" }}
+          variant="body2"
+        >
+          {row.original.quantity}
+        </Typography>
       ),
     },
     {
@@ -92,16 +105,17 @@ function BoxPartsTable({
             header: "",
             enableSorting: false,
             cell: ({ row }: { row: { original: BoxPartRow } }) => (
-              <div className="flex justify-end">
+              <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
                 <Button
                   type="button"
-                  variant="outline"
-                  size="sm"
+                  variant="outlined"
+                  size="small"
+                  startIcon={<ArrowLeftRightIcon size={16} />}
                   onClick={() => setTransferring(row.original)}
                 >
-                  <ArrowLeftRightIcon /> Transfer
+                  Transfer
                 </Button>
-              </div>
+              </Box>
             ),
           } satisfies ColumnDef<BoxPartRow, unknown>,
         ]

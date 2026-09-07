@@ -1,4 +1,8 @@
-import Link from "next/link";
+import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import CardHeader from "@mui/material/CardHeader";
+import Typography from "@mui/material/Typography";
 
 import { requireRole } from "@/lib/auth/require-role";
 import { can } from "@/lib/permissions";
@@ -6,8 +10,8 @@ import { toErrorKind } from "@/lib/errors";
 import { ErrorState } from "@/components/shared/error-state";
 import { StatusBadge } from "@/components/shared/status-badge";
 import { VerificationBadge } from "@/components/shared/verification-badge";
+import { NavLinkText } from "@/components/shared/nav-link-text";
 import type { ComboboxOption } from "@/components/shared/combobox";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   getCataloguePartDetail,
   getModelOptions,
@@ -38,13 +42,28 @@ export default async function CataloguePartDetailPage(
   if (canManage) modelOptions = await getModelOptions();
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-1.5">
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="font-heading text-lg font-semibold tracking-tight">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: 2,
+        }}
+      >
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            <Typography variant="h6" component="h2" sx={{ fontWeight: 600 }}>
               {detail.name}
-            </h2>
+            </Typography>
             <VerificationBadge status={detail.verificationStatus} />
             {detail.isFastener ? (
               <StatusBadge label="Fastener" tone="outline" />
@@ -52,11 +71,15 @@ export default async function CataloguePartDetailPage(
             {detail.deletedAt ? (
               <StatusBadge label="Deleted" tone="destructive" />
             ) : null}
-          </div>
-          <p className="font-mono text-sm text-muted-foreground">
+          </Box>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ fontFamily: "var(--font-roboto-mono)" }}
+          >
             {detail.partNumber}
-          </p>
-        </div>
+          </Typography>
+        </Box>
 
         <CataloguePartActions
           partId={detail.id}
@@ -66,91 +89,134 @@ export default async function CataloguePartDetailPage(
           canPromote={canPromote}
           isDeleted={detail.deletedAt !== null}
         />
-      </div>
+      </Box>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" },
+          gap: 2,
+        }}
+      >
         <Card>
-          <CardHeader>
-            <CardTitle>Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <p>
-              <span className="text-muted-foreground">Brand: </span>
+          <CardHeader
+            title="Details"
+            slotProps={{ title: { component: "h3" } }}
+          />
+          <CardContent
+            sx={{ display: "flex", flexDirection: "column", gap: 1 }}
+          >
+            <Typography variant="body2">
+              <Box component="span" sx={{ color: "text.secondary" }}>
+                Brand:{" "}
+              </Box>
               {detail.brand?.name ?? "—"}
-            </p>
-            <p>
-              <span className="text-muted-foreground">Category: </span>
+            </Typography>
+            <Typography variant="body2">
+              <Box component="span" sx={{ color: "text.secondary" }}>
+                Category:{" "}
+              </Box>
               {detail.category?.name ?? "—"}
-            </p>
+            </Typography>
             {detail.subCategory ? (
-              <p>
-                <span className="text-muted-foreground">Sub-category: </span>
+              <Typography variant="body2">
+                <Box component="span" sx={{ color: "text.secondary" }}>
+                  Sub-category:{" "}
+                </Box>
                 {detail.subCategory}
-              </p>
+              </Typography>
             ) : null}
             {detail.assemblyGroup ? (
-              <p>
-                <span className="text-muted-foreground">Assembly group: </span>
+              <Typography variant="body2">
+                <Box component="span" sx={{ color: "text.secondary" }}>
+                  Assembly group:{" "}
+                </Box>
                 {detail.assemblyGroup}
-              </p>
+              </Typography>
             ) : null}
-            <p>
-              <span className="text-muted-foreground">OEM reference: </span>
+            <Typography variant="body2">
+              <Box component="span" sx={{ color: "text.secondary" }}>
+                OEM reference:{" "}
+              </Box>
               {detail.oemReference ?? "—"}
-            </p>
-            <p>
-              <span className="text-muted-foreground">Capacity range: </span>
+            </Typography>
+            <Typography variant="body2">
+              <Box component="span" sx={{ color: "text.secondary" }}>
+                Capacity range:{" "}
+              </Box>
               {detail.capacityRangeKg ?? "—"}
-            </p>
+            </Typography>
             {detail.sources.length > 0 ? (
-              <p>
-                <span className="text-muted-foreground">Source(s): </span>
+              <Typography variant="body2">
+                <Box component="span" sx={{ color: "text.secondary" }}>
+                  Source(s):{" "}
+                </Box>
                 {detail.sources.join(", ")}
-              </p>
+              </Typography>
             ) : null}
             {detail.description ? (
-              <p className="text-muted-foreground">{detail.description}</p>
+              <Typography variant="body2" color="text.secondary">
+                {detail.description}
+              </Typography>
             ) : null}
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Inventory</CardTitle>
-          </CardHeader>
+          <CardHeader
+            title="Inventory"
+            slotProps={{ title: { component: "h3" } }}
+          />
           <CardContent>
             {detail.linkedInventoryParts.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
+              <Typography variant="body2" color="text.secondary">
                 Catalogue only - not currently stocked.
-              </p>
+              </Typography>
             ) : (
-              <ul className="space-y-1.5 text-sm">
+              <Box
+                component="ul"
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 0.75,
+                  m: 0,
+                  pl: 0,
+                  listStyle: "none",
+                }}
+              >
                 {detail.linkedInventoryParts.map((part) => (
-                  <li key={part.id}>
-                    <Link
+                  <Typography component="li" variant="body2" key={part.id}>
+                    <NavLinkText
                       href={`/inventory/${part.id}`}
-                      className="font-medium text-foreground hover:underline"
+                      sx={{ fontWeight: 500, color: "text.primary" }}
                     >
                       {part.name}
-                    </Link>{" "}
-                    <span className="font-mono text-muted-foreground">
+                    </NavLinkText>{" "}
+                    <Box
+                      component="span"
+                      sx={{
+                        color: "text.secondary",
+                        fontFamily: "var(--font-roboto-mono)",
+                      }}
+                    >
                       ({part.partNumber})
-                    </span>{" "}
-                    <span className="text-muted-foreground">
+                    </Box>{" "}
+                    <Box component="span" sx={{ color: "text.secondary" }}>
                       · qty {part.quantity}
-                    </span>
-                  </li>
+                    </Box>
+                  </Typography>
                 ))}
-              </ul>
+              </Box>
             )}
           </CardContent>
         </Card>
-      </div>
+      </Box>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Cross-references</CardTitle>
-        </CardHeader>
+        <CardHeader
+          title="Cross-references"
+          slotProps={{ title: { component: "h3" } }}
+        />
         <CardContent>
           <CrossRefList
             partId={detail.id}
@@ -161,9 +227,10 @@ export default async function CataloguePartDetailPage(
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Compatible models</CardTitle>
-        </CardHeader>
+        <CardHeader
+          title="Compatible models"
+          slotProps={{ title: { component: "h3" } }}
+        />
         <CardContent>
           <CompatibilityList
             cataloguePartId={detail.id}
@@ -173,6 +240,6 @@ export default async function CataloguePartDetailPage(
           />
         </CardContent>
       </Card>
-    </div>
+    </Box>
   );
 }

@@ -6,8 +6,11 @@ import { useRouter } from "next/navigation";
 import type { ColumnDef } from "@tanstack/react-table";
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import MuiLink from "@mui/material/Link";
+import Typography from "@mui/material/Typography";
 
-import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/shared/data-table";
 import { IconButton } from "@/components/shared/icon-button";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -58,12 +61,13 @@ function BrandTable({ rows, canManage }: BrandTableProps) {
       accessorKey: "name",
       header: "Brand",
       cell: ({ row }) => (
-        <Link
+        <MuiLink
+          component={Link}
           href={`/catalogue/models?brandId=${row.original.id}`}
-          className="font-medium text-foreground hover:underline"
+          sx={{ fontWeight: 500, color: "text.primary" }}
         >
           {row.original.name}
-        </Link>
+        </MuiLink>
       ),
     },
     {
@@ -71,9 +75,12 @@ function BrandTable({ rows, canManage }: BrandTableProps) {
       accessorKey: "modelCount",
       header: "Models",
       cell: ({ row }) => (
-        <span className="font-mono tabular-nums">
+        <Typography
+          sx={{ fontFamily: "var(--font-roboto-mono)" }}
+          variant="body2"
+        >
           {row.original.modelCount}
-        </span>
+        </Typography>
       ),
     },
     {
@@ -81,7 +88,12 @@ function BrandTable({ rows, canManage }: BrandTableProps) {
       accessorKey: "partCount",
       header: "Parts",
       cell: ({ row }) => (
-        <span className="font-mono tabular-nums">{row.original.partCount}</span>
+        <Typography
+          sx={{ fontFamily: "var(--font-roboto-mono)" }}
+          variant="body2"
+        >
+          {row.original.partCount}
+        </Typography>
       ),
     },
     ...(canManage
@@ -91,20 +103,22 @@ function BrandTable({ rows, canManage }: BrandTableProps) {
             header: "",
             enableSorting: false,
             cell: ({ row }: { row: { original: BrandListRow } }) => (
-              <div className="flex justify-end gap-1">
+              <Box
+                sx={{ display: "flex", justifyContent: "flex-end", gap: 0.5 }}
+              >
                 <IconButton
                   label="Edit brand"
                   onClick={() => setEditing(row.original)}
                 >
-                  <PencilIcon />
+                  <PencilIcon size={16} />
                 </IconButton>
                 <IconButton
                   label="Delete brand"
                   onClick={() => setDeleting(row.original)}
                 >
-                  <Trash2Icon />
+                  <Trash2Icon size={16} />
                 </IconButton>
-              </div>
+              </Box>
             ),
           } satisfies ColumnDef<BrandListRow, unknown>,
         ]
@@ -112,13 +126,18 @@ function BrandTable({ rows, canManage }: BrandTableProps) {
   ];
 
   return (
-    <div className="space-y-4">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       {canManage ? (
-        <div className="flex justify-end">
-          <Button type="button" onClick={() => setCreateOpen(true)}>
-            <PlusIcon /> Add brand
+        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+          <Button
+            type="button"
+            variant="contained"
+            startIcon={<PlusIcon size={16} />}
+            onClick={() => setCreateOpen(true)}
+          >
+            Add brand
           </Button>
-        </div>
+        </Box>
       ) : null}
 
       <DataTable
@@ -162,7 +181,7 @@ function BrandTable({ rows, canManage }: BrandTableProps) {
           />
         </>
       ) : null}
-    </div>
+    </Box>
   );
 }
 

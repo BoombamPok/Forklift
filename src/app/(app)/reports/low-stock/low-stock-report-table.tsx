@@ -2,17 +2,15 @@
 
 import * as React from "react";
 import type { ColumnDef } from "@tanstack/react-table";
+import Box from "@mui/material/Box";
+import MenuItem from "@mui/material/MenuItem";
+import Select, { type SelectChangeEvent } from "@mui/material/Select";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
+import Typography from "@mui/material/Typography";
 
 import { DataTable } from "@/components/shared/data-table";
 import { StatusBadge, type StatusTone } from "@/components/shared/status-badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import type {
   LowStockRow,
   LowStockStatus,
@@ -37,12 +35,18 @@ const columns: ColumnDef<LowStockRow, unknown>[] = [
     accessorKey: "name",
     header: "Part",
     cell: ({ row }) => (
-      <div>
-        <p className="font-medium text-foreground">{row.original.name}</p>
-        <p className="font-mono text-xs text-muted-foreground">
+      <Box>
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          {row.original.name}
+        </Typography>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: "block", fontFamily: "var(--font-roboto-mono)" }}
+        >
           {row.original.partNumber}
-        </p>
-      </div>
+        </Typography>
+      </Box>
     ),
   },
   {
@@ -59,16 +63,24 @@ const columns: ColumnDef<LowStockRow, unknown>[] = [
     accessorKey: "quantity",
     header: "Quantity",
     cell: ({ row }) => (
-      <span className="font-mono tabular-nums">{row.original.quantity}</span>
+      <Typography
+        sx={{ fontFamily: "var(--font-roboto-mono)" }}
+        variant="body2"
+      >
+        {row.original.quantity}
+      </Typography>
     ),
   },
   {
     accessorKey: "minStock",
     header: "Min. stock",
     cell: ({ row }) => (
-      <span className="font-mono tabular-nums">
+      <Typography
+        sx={{ fontFamily: "var(--font-roboto-mono)" }}
+        variant="body2"
+      >
         {row.original.minStock ?? "—"}
-      </span>
+      </Typography>
     ),
   },
   {
@@ -137,69 +149,68 @@ function LowStockReportTable({ rows }: LowStockReportTableProps) {
     rows.filter((row) => row.status === status).length;
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 1,
+        }}
+      >
         <Tabs
           value={statusFilter}
-          onValueChange={(value) => setStatusFilter(value as StatusFilter)}
+          onChange={(_, value: StatusFilter) => setStatusFilter(value)}
+          variant="scrollable"
+          scrollButtons="auto"
+          sx={{ minHeight: 36, "& .MuiTab-root": { minHeight: 36, py: 0.5 } }}
         >
-          <TabsList>
-            <TabsTrigger value="all">All ({rows.length})</TabsTrigger>
-            <TabsTrigger value="out_of_stock">
-              Out of Stock ({countFor("out_of_stock")})
-            </TabsTrigger>
-            <TabsTrigger value="critical">
-              Critical ({countFor("critical")})
-            </TabsTrigger>
-            <TabsTrigger value="low">Low ({countFor("low")})</TabsTrigger>
-          </TabsList>
-          {/* See the identical comment in dashboard/low-stock-table.tsx -
-              these tabs filter the table below, so each needs an empty
-              same-value TabsContent to keep aria-controls valid. */}
-          <TabsContent value="all" forceMount className="hidden" />
-          <TabsContent value="out_of_stock" forceMount className="hidden" />
-          <TabsContent value="critical" forceMount className="hidden" />
-          <TabsContent value="low" forceMount className="hidden" />
+          <Tab value="all" label={`All (${rows.length})`} />
+          <Tab
+            value="out_of_stock"
+            label={`Out of Stock (${countFor("out_of_stock")})`}
+          />
+          <Tab value="critical" label={`Critical (${countFor("critical")})`} />
+          <Tab value="low" label={`Low (${countFor("low")})`} />
         </Tabs>
 
-        <div className="flex gap-2">
-          <Select value={brandFilter} onValueChange={setBrandFilter}>
-            <SelectTrigger
-              size="sm"
-              className="w-40"
-              aria-label="Filter by brand"
-            >
-              <SelectValue placeholder="All brands" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All brands</SelectItem>
-              {brandOptions.map((brand) => (
-                <SelectItem key={brand} value={brand}>
-                  {brand}
-                </SelectItem>
-              ))}
-            </SelectContent>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Select
+            size="small"
+            value={brandFilter}
+            onChange={(event: SelectChangeEvent) =>
+              setBrandFilter(event.target.value)
+            }
+            aria-label="Filter by brand"
+            sx={{ width: 160 }}
+          >
+            <MenuItem value="all">All brands</MenuItem>
+            {brandOptions.map((brand) => (
+              <MenuItem key={brand} value={brand}>
+                {brand}
+              </MenuItem>
+            ))}
           </Select>
 
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger
-              size="sm"
-              className="w-40"
-              aria-label="Filter by category"
-            >
-              <SelectValue placeholder="All categories" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All categories</SelectItem>
-              {categoryOptions.map((category) => (
-                <SelectItem key={category} value={category}>
-                  {category}
-                </SelectItem>
-              ))}
-            </SelectContent>
+          <Select
+            size="small"
+            value={categoryFilter}
+            onChange={(event: SelectChangeEvent) =>
+              setCategoryFilter(event.target.value)
+            }
+            aria-label="Filter by category"
+            sx={{ width: 160 }}
+          >
+            <MenuItem value="all">All categories</MenuItem>
+            {categoryOptions.map((category) => (
+              <MenuItem key={category} value={category}>
+                {category}
+              </MenuItem>
+            ))}
           </Select>
-        </div>
-      </div>
+        </Box>
+      </Box>
 
       <DataTable
         columns={columns}
@@ -210,7 +221,7 @@ function LowStockReportTable({ rows }: LowStockReportTableProps) {
           description: "Try a different status, brand, or category above.",
         }}
       />
-    </div>
+    </Box>
   );
 }
 

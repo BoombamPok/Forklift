@@ -1,14 +1,9 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import MenuItem from "@mui/material/MenuItem";
+import Select, { type SelectChangeEvent } from "@mui/material/Select";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import type { ComboboxOption } from "@/components/shared/combobox";
 
 type ModelFiltersProps = {
@@ -23,7 +18,8 @@ function ModelFilters({ brandOptions, brandId }: ModelFiltersProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  function setBrand(value: string) {
+  function setBrand(event: SelectChangeEvent) {
+    const value = event.target.value;
     const params = new URLSearchParams(searchParams.toString());
     if (value === "all") params.delete("brandId");
     else params.set("brandId", value);
@@ -31,18 +27,19 @@ function ModelFilters({ brandOptions, brandId }: ModelFiltersProps) {
   }
 
   return (
-    <Select value={brandId ?? "all"} onValueChange={setBrand}>
-      <SelectTrigger size="sm" className="w-48" aria-label="Filter by brand">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="all">All brands</SelectItem>
-        {brandOptions.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
-            {option.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
+    <Select
+      size="small"
+      value={brandId ?? "all"}
+      onChange={setBrand}
+      aria-label="Filter by brand"
+      sx={{ width: 192 }}
+    >
+      <MenuItem value="all">All brands</MenuItem>
+      {brandOptions.map((option) => (
+        <MenuItem key={option.value} value={option.value}>
+          {option.label}
+        </MenuItem>
+      ))}
     </Select>
   );
 }

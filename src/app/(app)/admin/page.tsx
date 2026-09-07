@@ -1,14 +1,17 @@
-import Link from "next/link";
 import {
   ChevronRightIcon,
   FileSpreadsheetIcon,
   UsersIcon,
   WarehouseIcon,
 } from "lucide-react";
+import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Typography from "@mui/material/Typography";
 
 import { requireRole } from "@/lib/auth/require-role";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HubHero } from "@/components/premium/hub-hero";
+import { NavLinkBox } from "@/components/shared/nav-link-box";
 
 const ADMIN_SECTIONS = [
   {
@@ -35,43 +38,91 @@ export default async function AdminPage() {
   await requireRole("users.manage");
 
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       <HubHero
         title="Administration"
         description="Users, roles, warehouse configuration, and catalogue import/export."
         leadHue="electric"
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <Box
+        sx={{
+          display: "grid",
+          gap: 2,
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "1fr 1fr",
+            lg: "repeat(3, 1fr)",
+          },
+        }}
+      >
         {ADMIN_SECTIONS.map((section) => {
           const Icon = section.icon;
           return (
-            <Link key={section.href} href={section.href} className="group">
-              <Card interactive tone="glass" className="h-full">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span className="flex items-center gap-2.5">
-                      <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                        <Icon aria-hidden className="size-4" />
-                      </span>
-                      {section.label}
-                    </span>
+            <NavLinkBox
+              key={section.href}
+              href={section.href}
+              className="group"
+              sx={{ display: "block", height: "100%", textDecoration: "none" }}
+            >
+              <Card
+                sx={{
+                  height: "100%",
+                  transition: "transform 150ms, box-shadow 150ms",
+                  ".group:hover &": {
+                    transform: "translateY(-3px)",
+                    boxShadow: 6,
+                  },
+                }}
+              >
+                <CardContent>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <Box
+                      sx={{ display: "flex", alignItems: "center", gap: 1.5 }}
+                    >
+                      <Box
+                        sx={{
+                          display: "flex",
+                          width: 32,
+                          height: 32,
+                          flexShrink: 0,
+                          alignItems: "center",
+                          justifyContent: "center",
+                          borderRadius: 1.5,
+                          bgcolor:
+                            "color-mix(in srgb, var(--mui-palette-primary-main) 10%, transparent)",
+                          color: "primary.main",
+                        }}
+                      >
+                        <Icon aria-hidden size={16} />
+                      </Box>
+                      <Typography variant="h6">{section.label}</Typography>
+                    </Box>
                     <ChevronRightIcon
                       aria-hidden
-                      className="size-4 shrink-0 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5 group-hover:text-primary"
+                      size={16}
+                      style={{ flexShrink: 0, opacity: 0.5 }}
                     />
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
+                  </Box>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mt: 1.5 }}
+                  >
                     {section.description}
-                  </p>
+                  </Typography>
                 </CardContent>
               </Card>
-            </Link>
+            </NavLinkBox>
           );
         })}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

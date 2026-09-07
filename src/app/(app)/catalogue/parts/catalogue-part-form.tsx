@@ -2,32 +2,21 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { useForm, type Resolver } from "react-hook-form";
+import { Controller, useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
+import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import MenuItem from "@mui/material/MenuItem";
+import Paper from "@mui/material/Paper";
+import Switch from "@mui/material/Switch";
+import TextField from "@mui/material/TextField";
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Combobox, type ComboboxOption } from "@/components/shared/combobox";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/shared/form";
 import {
   createCataloguePart,
   updateCataloguePart,
@@ -107,224 +96,228 @@ function CataloguePartForm({
   }
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="max-w-2xl space-y-6"
-      >
-        {formError ? (
-          <Alert variant="destructive">
-            <AlertDescription>{formError}</AlertDescription>
-          </Alert>
-        ) : null}
+    <Box
+      component="form"
+      onSubmit={form.handleSubmit(onSubmit)}
+      sx={{ display: "flex", flexDirection: "column", gap: 3, maxWidth: 720 }}
+    >
+      {formError ? <Alert severity="error">{formError}</Alert> : null}
 
-        <Card>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="partNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Part number</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="brandId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Brand (optional)</FormLabel>
-                    <FormControl>
-                      <Combobox
-                        options={brandOptions}
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="No brand"
-                        searchPlaceholder="Search brands…"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="categoryId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Category (optional)</FormLabel>
-                    <FormControl>
-                      <Combobox
-                        options={categoryOptions}
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="No category"
-                        searchPlaceholder="Search categories…"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="subCategory"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Sub-category (optional)</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value ?? ""} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="assemblyGroup"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Assembly group (optional)</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value ?? ""} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="oemReference"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>OEM reference (optional)</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value ?? ""} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="capacityRangeKg"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Capacity range (optional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        value={field.value ?? ""}
-                        placeholder="e.g. 2000-3000 kg"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="verificationStatus"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Verification status</FormLabel>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <FormControl>
-                        <SelectTrigger className="w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {VERIFICATION_STATUSES.map((status) => (
-                          <SelectItem key={status} value={status}>
-                            {VERIFICATION_LABEL[status]}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="isFastener"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-md border border-border px-3 py-2">
-                    <FormLabel className="font-normal">Is a fastener</FormLabel>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
+      <Card>
+        <CardContent sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+              gap: 2,
+            }}
+          >
+            <Controller
               control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description (optional)</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} value={field.value ?? ""} rows={3} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              name="partNumber"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  label="Part number"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                />
               )}
             />
-          </CardContent>
-        </Card>
 
-        <div className="flex gap-2">
-          <Button
-            type="submit"
-            variant="gradient"
-            disabled={form.formState.isSubmitting}
-          >
-            {form.formState.isSubmitting
-              ? "Saving…"
-              : mode === "create"
-                ? "Create part"
-                : "Save changes"}
-          </Button>
-          <Button type="button" variant="outline" onClick={() => router.back()}>
-            Cancel
-          </Button>
-        </div>
-      </form>
-    </Form>
+            <Controller
+              control={form.control}
+              name="name"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  label="Name"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                />
+              )}
+            />
+
+            <Controller
+              control={form.control}
+              name="brandId"
+              render={({ field, fieldState }) => (
+                <Combobox
+                  label="Brand (optional)"
+                  options={brandOptions}
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="No brand"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                />
+              )}
+            />
+
+            <Controller
+              control={form.control}
+              name="categoryId"
+              render={({ field, fieldState }) => (
+                <Combobox
+                  label="Category (optional)"
+                  options={categoryOptions}
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="No category"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                />
+              )}
+            />
+
+            <Controller
+              control={form.control}
+              name="subCategory"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  value={field.value ?? ""}
+                  label="Sub-category (optional)"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                />
+              )}
+            />
+
+            <Controller
+              control={form.control}
+              name="assemblyGroup"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  value={field.value ?? ""}
+                  label="Assembly group (optional)"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                />
+              )}
+            />
+
+            <Controller
+              control={form.control}
+              name="oemReference"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  value={field.value ?? ""}
+                  label="OEM reference (optional)"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                />
+              )}
+            />
+
+            <Controller
+              control={form.control}
+              name="capacityRangeKg"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  value={field.value ?? ""}
+                  label="Capacity range (optional)"
+                  placeholder="e.g. 2000-3000 kg"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                />
+              )}
+            />
+
+            <Controller
+              control={form.control}
+              name="verificationStatus"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  select
+                  label="Verification status"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                >
+                  {VERIFICATION_STATUSES.map((status) => (
+                    <MenuItem key={status} value={status}>
+                      {VERIFICATION_LABEL[status]}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+            />
+
+            <Controller
+              control={form.control}
+              name="isFastener"
+              render={({ field }) => (
+                <Paper
+                  variant="outlined"
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    px: 1.5,
+                    py: 0.5,
+                  }}
+                >
+                  <FormControlLabel
+                    label="Is a fastener"
+                    labelPlacement="start"
+                    sx={{
+                      ml: 0,
+                      width: "100%",
+                      justifyContent: "space-between",
+                    }}
+                    control={
+                      <Switch
+                        checked={field.value}
+                        onChange={(event) =>
+                          field.onChange(event.target.checked)
+                        }
+                      />
+                    }
+                  />
+                </Paper>
+              )}
+            />
+          </Box>
+
+          <Controller
+            control={form.control}
+            name="description"
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                value={field.value ?? ""}
+                label="Description (optional)"
+                multiline
+                rows={3}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+              />
+            )}
+          />
+        </CardContent>
+      </Card>
+
+      <Box sx={{ display: "flex", gap: 1 }}>
+        <Button
+          type="submit"
+          variant="contained"
+          disabled={form.formState.isSubmitting}
+        >
+          {form.formState.isSubmitting
+            ? "Saving…"
+            : mode === "create"
+              ? "Create part"
+              : "Save changes"}
+        </Button>
+        <Button type="button" variant="outlined" onClick={() => router.back()}>
+          Cancel
+        </Button>
+      </Box>
+    </Box>
   );
 }
 

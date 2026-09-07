@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { SceneCanvas } from "@/components/three/scene-canvas";
 import {
@@ -9,7 +10,7 @@ import {
 } from "@/components/three/scene-primitives";
 
 type HeroSceneHubProps = {
-  className?: string;
+  style?: CSSProperties;
   /** Lets catalogue/reports/admin each lead with a different hue so the
    * three hub pages don't look identical. */
   leadHue?: "amber" | "electric";
@@ -17,9 +18,9 @@ type HeroSceneHubProps = {
 
 /** Shared hub-page hero - used by the catalogue, reports, and admin index
  * pages, which are plain link grids today and have no dense data to protect. */
-function HeroSceneHub({ className, leadHue = "amber" }: HeroSceneHubProps) {
+function HeroSceneHub({ style, leadHue = "amber" }: HeroSceneHubProps) {
   return (
-    <SceneCanvas className={className}>
+    <SceneCanvas style={style}>
       <SceneLights />
       <FloatingCluster density="slim" leadHue={leadHue} />
       <ParallaxRig strength={0.4} />

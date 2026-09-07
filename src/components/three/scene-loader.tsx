@@ -2,10 +2,11 @@
 
 import * as React from "react";
 import dynamic from "next/dynamic";
+import Box from "@mui/material/Box";
+import type { SxProps, Theme } from "@mui/material/styles";
 import { useReducedMotion } from "@/lib/hooks/use-reduced-motion";
 import { useInViewMount } from "@/components/three/use-in-view-mount";
 import { PosterFallback } from "@/components/three/poster-fallback";
-import { cn } from "@/lib/utils";
 
 // The only file in the app allowed to call next/dynamic(..., { ssr: false })
 // for a 3D scene - this keeps the ~350-500KB three.js/@react-three chunk
@@ -32,7 +33,7 @@ type SceneVariant = "login" | "dashboard" | "hub";
 
 type SceneLoaderProps = {
   variant: SceneVariant;
-  className?: string;
+  sx?: SxProps<Theme>;
   /** Only used by the "hub" variant, to vary catalogue/reports/admin. */
   leadHue?: "amber" | "electric";
   posterTone?: "primary" | "electric" | "dual";
@@ -64,7 +65,7 @@ function useIsDesktopViewport() {
  */
 function SceneLoader({
   variant,
-  className,
+  sx,
   leadHue,
   posterTone = "dual",
 }: SceneLoaderProps) {
@@ -73,23 +74,25 @@ function SceneLoader({
   const [ref, isInView] = useInViewMount<HTMLDivElement>();
 
   const shouldRenderScene = isDesktop && !prefersReducedMotion && isInView;
+  const fullSize = { width: "100%", height: "100%" };
 
   return (
-    <div ref={ref} className={cn("relative", className)}>
+    <Box
+      ref={ref}
+      sx={[{ position: "relative" }, ...(Array.isArray(sx) ? sx : [sx])]}
+    >
       {shouldRenderScene ? (
         <React.Suspense fallback={<PosterFallback tone={posterTone} />}>
-          {variant === "login" && <HeroSceneLogin className="size-full" />}
-          {variant === "dashboard" && (
-            <HeroSceneDashboard className="size-full" />
-          )}
+          {variant === "login" && <HeroSceneLogin style={fullSize} />}
+          {variant === "dashboard" && <HeroSceneDashboard style={fullSize} />}
           {variant === "hub" && (
-            <HeroSceneHub className="size-full" leadHue={leadHue} />
+            <HeroSceneHub style={fullSize} leadHue={leadHue} />
           )}
         </React.Suspense>
       ) : (
         <PosterFallback tone={posterTone} />
       )}
-    </div>
+    </Box>
   );
 }
 

@@ -2,15 +2,12 @@
 
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import Box from "@mui/material/Box";
+import MenuItem from "@mui/material/MenuItem";
+import Select, { type SelectChangeEvent } from "@mui/material/Select";
+import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { DAY_PRESETS, type DayPreset } from "@/features/reports/schema";
 
 const PRESET_OPTIONS: { value: string; label: string }[] = [
@@ -55,7 +52,8 @@ function DateRangePicker({ preset, from, to }: DateRangePickerProps) {
     router.push(`${pathname}?${params.toString()}`);
   }
 
-  function handlePresetChange(value: string) {
+  function handlePresetChange(event: SelectChangeEvent) {
+    const value = event.target.value;
     if (value === "custom") {
       setShowCustom(true);
       return;
@@ -72,46 +70,58 @@ function DateRangePicker({ preset, from, to }: DateRangePickerProps) {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <Box
+      sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1 }}
+    >
       <Select
+        size="small"
         value={showCustom ? "custom" : String(preset)}
-        onValueChange={handlePresetChange}
+        onChange={handlePresetChange}
+        aria-label="Date range"
+        sx={{ width: 160 }}
       >
-        <SelectTrigger size="sm" className="w-40" aria-label="Date range">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {PRESET_OPTIONS.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
+        {PRESET_OPTIONS.map((option) => (
+          <MenuItem key={option.value} value={option.value}>
+            {option.label}
+          </MenuItem>
+        ))}
       </Select>
 
       {showCustom ? (
-        <div className="flex items-center gap-1.5">
-          <Input
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <TextField
             type="date"
-            aria-label="Start date"
-            className="w-36"
+            size="small"
+            sx={{ width: 152 }}
             value={customFrom}
-            max={customTo || undefined}
+            slotProps={{
+              htmlInput: {
+                "aria-label": "Start date",
+                max: customTo || undefined,
+              },
+            }}
             onChange={(e) => handleCustomChange(e.target.value, customTo)}
           />
-          <span className="text-sm text-muted-foreground">to</span>
-          <Input
+          <Typography variant="body2" color="text.secondary">
+            to
+          </Typography>
+          <TextField
             type="date"
-            aria-label="End date"
-            className="w-36"
+            size="small"
+            sx={{ width: 152 }}
             value={customTo}
-            min={customFrom || undefined}
-            max={new Date().toISOString().slice(0, 10)}
+            slotProps={{
+              htmlInput: {
+                "aria-label": "End date",
+                min: customFrom || undefined,
+                max: new Date().toISOString().slice(0, 10),
+              },
+            }}
             onChange={(e) => handleCustomChange(customFrom, e.target.value)}
           />
-        </div>
+        </Box>
       ) : null}
-    </div>
+    </Box>
   );
 }
 

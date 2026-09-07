@@ -1,6 +1,7 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
+import Typography from "@mui/material/Typography";
 
 import { DataTable } from "@/components/shared/data-table";
 import type { MovementTypeSummaryRow } from "@/features/reports/movements";
@@ -25,18 +26,24 @@ const columns: ColumnDef<MovementTypeSummaryRow, unknown>[] = [
     accessorKey: "totalQuantity",
     header: "Total quantity",
     cell: ({ row }) => (
-      <span className="font-mono tabular-nums">
+      <Typography
+        sx={{ fontFamily: "var(--font-roboto-mono)" }}
+        variant="body2"
+      >
         {row.original.totalQuantity}
-      </span>
+      </Typography>
     ),
   },
   {
     accessorKey: "movementCount",
     header: "Movements",
     cell: ({ row }) => (
-      <span className="font-mono tabular-nums">
+      <Typography
+        sx={{ fontFamily: "var(--font-roboto-mono)" }}
+        variant="body2"
+      >
         {row.original.movementCount}
-      </span>
+      </Typography>
     ),
   },
 ];

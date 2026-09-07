@@ -1,6 +1,8 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 
 import { DataTable } from "@/components/shared/data-table";
 import { formatCurrency } from "@/lib/utils";
@@ -12,21 +14,31 @@ const columns: ColumnDef<ValuationBreakdownRow, unknown>[] = [
     accessorKey: "itemCount",
     header: "Items",
     cell: ({ row }) => (
-      <span className="font-mono tabular-nums">{row.original.itemCount}</span>
+      <Typography
+        sx={{ fontFamily: "var(--font-roboto-mono)" }}
+        variant="body2"
+      >
+        {row.original.itemCount}
+      </Typography>
     ),
   },
   {
     accessorKey: "value",
     header: "Value",
     cell: ({ row }) => (
-      <span className="font-mono tabular-nums">
-        {formatCurrency(row.original.value)}
+      <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
+        <Typography
+          sx={{ fontFamily: "var(--font-roboto-mono)" }}
+          variant="body2"
+        >
+          {formatCurrency(row.original.value)}
+        </Typography>
         {row.original.excludedCount > 0 ? (
-          <span className="ml-1.5 text-xs text-muted-foreground">
+          <Typography variant="caption" color="text.secondary">
             ({row.original.excludedCount} missing cost)
-          </span>
+          </Typography>
         ) : null}
-      </span>
+      </Box>
     ),
   },
 ];

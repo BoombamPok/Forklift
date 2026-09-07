@@ -1,4 +1,7 @@
+import Box from "@mui/material/Box";
+
 import { requireRole } from "@/lib/auth/require-role";
+import { PageHeader } from "@/components/shared/page-header";
 import {
   getBrandOptions,
   getCategoryOptions,
@@ -14,15 +17,13 @@ export default async function NewCataloguePartPage() {
   ]);
 
   return (
-    <div className="space-y-4">
-      <h2 className="font-heading text-lg font-semibold tracking-tight">
-        Add catalogue part
-      </h2>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <PageHeader title="Add catalogue part" />
       <CataloguePartForm
         mode="create"
         brandOptions={brandOptions}
         categoryOptions={categoryOptions}
       />
-    </div>
+    </Box>
   );
 }

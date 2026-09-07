@@ -1,10 +1,11 @@
-import { cn } from "@/lib/utils";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+
 import { StatusBadge } from "@/components/shared/status-badge";
 
 type OccupancyBadgeProps = {
   boxesOccupied: number;
   boxesTotal: number;
-  className?: string;
 };
 
 /**
@@ -14,11 +15,7 @@ type OccupancyBadgeProps = {
  * shows current occupancy, not trends - that's Phase 6). The meter is a
  * direct visualization of that same ratio, not a separate metric.
  */
-function OccupancyBadge({
-  boxesOccupied,
-  boxesTotal,
-  className,
-}: OccupancyBadgeProps) {
+function OccupancyBadge({ boxesOccupied, boxesTotal }: OccupancyBadgeProps) {
   if (boxesTotal === 0) {
     return <StatusBadge label="No boxes yet" tone="secondary" />;
   }
@@ -26,24 +23,42 @@ function OccupancyBadge({
   const percentage = Math.round((boxesOccupied / boxesTotal) * 100);
 
   return (
-    <div
+    <Box
       role="img"
       aria-label={`${boxesOccupied} of ${boxesTotal} boxes occupied`}
-      className={cn("flex items-center gap-2", className)}
+      sx={{ display: "flex", alignItems: "center", gap: 1 }}
     >
-      <div className="h-1.5 w-14 shrink-0 overflow-hidden rounded-full bg-muted">
-        <div
-          className={cn(
-            "h-full rounded-full transition-[width]",
-            boxesOccupied === 0 ? "bg-transparent" : "bg-foreground/60",
-          )}
-          style={{ width: `${percentage}%` }}
+      <Box
+        sx={{
+          width: 56,
+          height: 6,
+          flexShrink: 0,
+          overflow: "hidden",
+          borderRadius: 999,
+          bgcolor: "action.hover",
+        }}
+      >
+        <Box
+          sx={{
+            height: "100%",
+            width: `${percentage}%`,
+            borderRadius: 999,
+            transition: "width 150ms",
+            bgcolor:
+              boxesOccupied === 0
+                ? "transparent"
+                : "color-mix(in srgb, var(--mui-palette-text-primary) 60%, transparent)",
+          }}
         />
-      </div>
-      <span className="font-mono text-xs tabular-nums text-muted-foreground">
+      </Box>
+      <Typography
+        variant="caption"
+        color="text.secondary"
+        sx={{ fontFamily: "var(--font-roboto-mono)" }}
+      >
         {boxesOccupied}/{boxesTotal}
-      </span>
-    </div>
+      </Typography>
+    </Box>
   );
 }
 

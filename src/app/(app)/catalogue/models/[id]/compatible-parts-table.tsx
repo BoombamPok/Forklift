@@ -1,15 +1,14 @@
 import Link from "next/link";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Typography from "@mui/material/Typography";
 
 import { EmptyState } from "@/components/shared/empty-state";
 import { VerificationBadge } from "@/components/shared/verification-badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import type { ModelCompatiblePart } from "@/features/catalogue/queries";
 
 type CompatiblePartsTableProps = {
@@ -34,36 +33,44 @@ function CompatiblePartsTable({ parts }: CompatiblePartsTableProps) {
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Part</TableHead>
-          <TableHead>Capacity range</TableHead>
-          <TableHead>Verification</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {parts.map((part) => (
-          <TableRow key={part.compatibilityId}>
-            <TableCell>
-              <Link
-                href={`/catalogue/parts/${part.partId}`}
-                className="block hover:underline"
-              >
-                <p className="font-medium text-foreground">{part.partName}</p>
-                <p className="font-mono text-xs text-muted-foreground">
-                  {part.partNumber}
-                </p>
-              </Link>
-            </TableCell>
-            <TableCell>{part.capacityRangeKg ?? "—"}</TableCell>
-            <TableCell>
-              <VerificationBadge status={part.verificationStatus} />
-            </TableCell>
+    <TableContainer>
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell>Part</TableCell>
+            <TableCell>Capacity range</TableCell>
+            <TableCell>Verification</TableCell>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHead>
+        <TableBody>
+          {parts.map((part) => (
+            <TableRow key={part.compatibilityId}>
+              <TableCell>
+                <Link
+                  href={`/catalogue/parts/${part.partId}`}
+                  style={{ display: "block", textDecoration: "none" }}
+                >
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    {part.partName}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ fontFamily: "var(--font-roboto-mono)" }}
+                  >
+                    {part.partNumber}
+                  </Typography>
+                </Link>
+              </TableCell>
+              <TableCell>{part.capacityRangeKg ?? "—"}</TableCell>
+              <TableCell>
+                <VerificationBadge status={part.verificationStatus} />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 }
 

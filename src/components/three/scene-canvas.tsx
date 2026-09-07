@@ -6,7 +6,7 @@ import { AdaptiveDpr, AdaptiveEvents } from "@react-three/drei";
 
 type SceneCanvasProps = {
   children: React.ReactNode;
-  className?: string;
+  style?: React.CSSProperties;
 };
 
 /**
@@ -15,10 +15,10 @@ type SceneCanvasProps = {
  * its own slow idle-tick invalidation (see hero-scene-*.tsx) instead of
  * running a perpetual 60fps loop, keeping idle CPU/GPU near zero.
  */
-function SceneCanvas({ children, className }: SceneCanvasProps) {
+function SceneCanvas({ children, style }: SceneCanvasProps) {
   return (
     <Canvas
-      className={className}
+      style={style}
       frameloop="demand"
       dpr={[1, 1.75]}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}

@@ -4,16 +4,16 @@ import * as React from "react";
 import Link from "next/link";
 import { Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import MuiLink from "@mui/material/Link";
+import Typography from "@mui/material/Typography";
 
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { IconButton } from "@/components/shared/icon-button";
 import type { ActionResult } from "@/lib/errors";
@@ -77,15 +77,17 @@ function LocationDeleteAction({
           label={`Delete ${entityLabel.toLowerCase()}`}
           onClick={() => setConfirmOpen(true)}
         >
-          <Trash2Icon />
+          <Trash2Icon size={16} />
         </IconButton>
       ) : (
         <Button
           type="button"
-          variant="destructive"
+          variant="outlined"
+          color="error"
+          startIcon={<Trash2Icon size={16} />}
           onClick={() => setConfirmOpen(true)}
         >
-          <Trash2Icon /> Delete
+          Delete
         </Button>
       )}
 
@@ -99,39 +101,63 @@ function LocationDeleteAction({
         onConfirm={handleConfirm}
       />
 
-      <Dialog open={blockedOpen} onOpenChange={setBlockedOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              Can&apos;t delete this {entityLabel.toLowerCase()} yet
-            </DialogTitle>
-            <DialogDescription>
-              {blockedBy.length} part{blockedBy.length === 1 ? "" : "s"} still
-              stored here or beneath it. Move or reassign{" "}
-              {blockedBy.length === 1 ? "it" : "them"} first, then try again.
-            </DialogDescription>
-          </DialogHeader>
-          <ul className="max-h-64 space-y-2 overflow-y-auto text-sm">
+      <Dialog
+        open={blockedOpen}
+        onClose={() => setBlockedOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>
+          Can&apos;t delete this {entityLabel.toLowerCase()} yet
+        </DialogTitle>
+        <DialogContent
+          sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}
+        >
+          <DialogContentText>
+            {blockedBy.length} part{blockedBy.length === 1 ? "" : "s"} still
+            stored here or beneath it. Move or reassign{" "}
+            {blockedBy.length === 1 ? "it" : "them"} first, then try again.
+          </DialogContentText>
+          <Box
+            component="ul"
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 1,
+              m: 0,
+              p: 0,
+              listStyle: "none",
+              maxHeight: 256,
+              overflowY: "auto",
+            }}
+          >
             {blockedBy.map((part) => (
-              <li key={part.id}>
-                <Link
-                  href={`/inventory/${part.id}`}
-                  className="text-foreground hover:underline"
-                >
+              <Typography component="li" variant="body2" key={part.id}>
+                <MuiLink component={Link} href={`/inventory/${part.id}`}>
                   {part.name}{" "}
-                  <span className="font-mono text-muted-foreground">
+                  <Box
+                    component="span"
+                    sx={{
+                      color: "text.secondary",
+                      fontFamily: "var(--font-roboto-mono)",
+                    }}
+                  >
                     ({part.partNumber})
-                  </span>
-                </Link>
-              </li>
+                  </Box>
+                </MuiLink>
+              </Typography>
             ))}
-          </ul>
-          <DialogFooter>
-            <Button type="button" onClick={() => setBlockedOpen(false)}>
-              Close
-            </Button>
-          </DialogFooter>
+          </Box>
         </DialogContent>
+        <DialogActions>
+          <Button
+            type="button"
+            variant="contained"
+            onClick={() => setBlockedOpen(false)}
+          >
+            Close
+          </Button>
+        </DialogActions>
       </Dialog>
     </>
   );

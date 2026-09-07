@@ -5,8 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ColumnDef } from "@tanstack/react-table";
 import { PencilIcon, PlusIcon } from "lucide-react";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import MuiLink from "@mui/material/Link";
+import Typography from "@mui/material/Typography";
 
-import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/shared/data-table";
 import { OccupancyBadge } from "@/components/shared/occupancy-badge";
 import { IconButton } from "@/components/shared/icon-button";
@@ -37,12 +40,13 @@ function ShelfList({ rackId, shelves, canManage }: ShelfListProps) {
       accessorKey: "code",
       header: "Shelf",
       cell: ({ row }) => (
-        <Link
+        <MuiLink
+          component={Link}
           href={`/warehouse/shelves/${row.original.id}`}
-          className="font-medium text-foreground hover:underline"
+          sx={{ fontWeight: 500, color: "text.primary" }}
         >
           {row.original.code}
-        </Link>
+        </MuiLink>
       ),
     },
     {
@@ -63,12 +67,14 @@ function ShelfList({ rackId, shelves, canManage }: ShelfListProps) {
             header: "",
             enableSorting: false,
             cell: ({ row }: { row: { original: ShelfSummary } }) => (
-              <div className="flex justify-end gap-1">
+              <Box
+                sx={{ display: "flex", justifyContent: "flex-end", gap: 0.5 }}
+              >
                 <IconButton
                   label="Edit shelf"
                   onClick={() => setEditing(row.original)}
                 >
-                  <PencilIcon />
+                  <PencilIcon size={16} />
                 </IconButton>
                 <LocationDeleteAction
                   entityLabel="Shelf"
@@ -76,7 +82,7 @@ function ShelfList({ rackId, shelves, canManage }: ShelfListProps) {
                   onDelete={() => deleteShelf(row.original.id, rackId)}
                   onDeleted={() => router.refresh()}
                 />
-              </div>
+              </Box>
             ),
           } satisfies ColumnDef<ShelfSummary, unknown>,
         ]
@@ -84,19 +90,28 @@ function ShelfList({ rackId, shelves, canManage }: ShelfListProps) {
   ];
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-heading text-base font-semibold">Shelves</h3>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+          Shelves
+        </Typography>
         {canManage ? (
           <Button
             type="button"
-            variant="gradient"
+            variant="contained"
+            startIcon={<PlusIcon size={16} />}
             onClick={() => setCreateOpen(true)}
           >
-            <PlusIcon /> Add shelf
+            Add shelf
           </Button>
         ) : null}
-      </div>
+      </Box>
 
       <DataTable
         columns={columns}
@@ -131,7 +146,7 @@ function ShelfList({ rackId, shelves, canManage }: ShelfListProps) {
           />
         </>
       ) : null}
-    </div>
+    </Box>
   );
 }
 

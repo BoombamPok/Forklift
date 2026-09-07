@@ -2,14 +2,10 @@
 
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import Box from "@mui/material/Box";
+import MenuItem from "@mui/material/MenuItem";
+import Select, { type SelectChangeEvent } from "@mui/material/Select";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { SearchInput } from "@/components/shared/search-input";
 import type { ComboboxOption } from "@/components/shared/combobox";
 
@@ -77,8 +73,14 @@ function PartsFilters({
     );
   }
 
+  function selectHandler(key: string) {
+    return (event: SelectChangeEvent) => setParam(key, event.target.value);
+  }
+
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <Box
+      sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1 }}
+    >
       <SearchInput
         value={searchValue}
         onChange={(event) => handleSearchChange(event.target.value)}
@@ -88,87 +90,67 @@ function PartsFilters({
           setParam("q", undefined);
         }}
         placeholder="Search part number, name, OEM ref, cross-ref…"
-        className="w-72"
+        sx={{ width: 288 }}
       />
 
       <Select
+        size="small"
         value={brandId ?? "all"}
-        onValueChange={(v) => setParam("brandId", v)}
+        onChange={selectHandler("brandId")}
+        aria-label="Filter by brand"
+        sx={{ width: 160 }}
       >
-        <SelectTrigger size="sm" className="w-40" aria-label="Filter by brand">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All brands</SelectItem>
-          {brandOptions.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
+        <MenuItem value="all">All brands</MenuItem>
+        {brandOptions.map((option) => (
+          <MenuItem key={option.value} value={option.value}>
+            {option.label}
+          </MenuItem>
+        ))}
       </Select>
 
       <Select
+        size="small"
         value={categoryId ?? "all"}
-        onValueChange={(v) => setParam("categoryId", v)}
+        onChange={selectHandler("categoryId")}
+        aria-label="Filter by category"
+        sx={{ width: 176 }}
       >
-        <SelectTrigger
-          size="sm"
-          className="w-44"
-          aria-label="Filter by category"
-        >
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All categories</SelectItem>
-          {categoryOptions.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
+        <MenuItem value="all">All categories</MenuItem>
+        {categoryOptions.map((option) => (
+          <MenuItem key={option.value} value={option.value}>
+            {option.label}
+          </MenuItem>
+        ))}
       </Select>
 
       <Select
+        size="small"
         value={fastener ?? "all"}
-        onValueChange={(v) => setParam("fastener", v)}
+        onChange={selectHandler("fastener")}
+        aria-label="Filter by fastener"
+        sx={{ width: 176 }}
       >
-        <SelectTrigger
-          size="sm"
-          className="w-44"
-          aria-label="Filter by fastener"
-        >
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {FASTENER_OPTIONS.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
+        {FASTENER_OPTIONS.map((option) => (
+          <MenuItem key={option.value} value={option.value}>
+            {option.label}
+          </MenuItem>
+        ))}
       </Select>
 
       <Select
+        size="small"
         value={verificationStatus ?? "all"}
-        onValueChange={(v) => setParam("verification", v)}
+        onChange={selectHandler("verification")}
+        aria-label="Filter by verification status"
+        sx={{ width: 176 }}
       >
-        <SelectTrigger
-          size="sm"
-          className="w-44"
-          aria-label="Filter by verification status"
-        >
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {VERIFICATION_OPTIONS.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
+        {VERIFICATION_OPTIONS.map((option) => (
+          <MenuItem key={option.value} value={option.value}>
+            {option.label}
+          </MenuItem>
+        ))}
       </Select>
-    </div>
+    </Box>
   );
 }
 

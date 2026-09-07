@@ -1,8 +1,12 @@
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+
 import { requireRole } from "@/lib/auth/require-role";
 import { can } from "@/lib/permissions";
 import { toErrorKind } from "@/lib/errors";
 import { firstParam } from "@/lib/search-params";
 import { ErrorState } from "@/components/shared/error-state";
+import { PageHeader } from "@/components/shared/page-header";
 import type { ComboboxOption } from "@/components/shared/combobox";
 import {
   getBrandOptions,
@@ -43,17 +47,13 @@ export default async function CatalogueModelsPage(
   );
 
   return (
-    <div className="space-y-8">
-      <div className="space-y-1.5">
-        <h2 className="font-heading text-lg font-semibold tracking-tight">
-          Models
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Forklift models and the parts known to be compatible with them.
-        </p>
-      </div>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 5 }}>
+      <PageHeader
+        title="Models"
+        description="Forklift models and the parts known to be compatible with them."
+      />
 
-      <div className="space-y-3">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
         <ModelFilters brandOptions={brandOptions} brandId={brandId} />
         <ModelTable
           rows={models}
@@ -61,18 +61,18 @@ export default async function CatalogueModelsPage(
           modelFamilyOptionsByBrand={modelFamilyOptionsByBrand}
           canManage={canManage}
         />
-      </div>
+      </Box>
 
-      <div className="space-y-3">
-        <h3 className="font-heading text-base font-semibold tracking-tight">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
           Model families
-        </h3>
+        </Typography>
         <ModelFamilyTable
           rows={families}
           brandOptions={brandOptions}
           canManage={canManage}
         />
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

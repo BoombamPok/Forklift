@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import type { ColumnDef } from "@tanstack/react-table";
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
 
-import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/shared/data-table";
 import { IconButton } from "@/components/shared/icon-button";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -57,9 +59,12 @@ function ModelFamilyTable({
       accessorKey: "modelCount",
       header: "Models",
       cell: ({ row }) => (
-        <span className="font-mono tabular-nums">
+        <Typography
+          sx={{ fontFamily: "var(--font-roboto-mono)" }}
+          variant="body2"
+        >
           {row.original.modelCount}
-        </span>
+        </Typography>
       ),
     },
     ...(canManage
@@ -69,20 +74,22 @@ function ModelFamilyTable({
             header: "",
             enableSorting: false,
             cell: ({ row }: { row: { original: ModelFamilyListRow } }) => (
-              <div className="flex justify-end gap-1">
+              <Box
+                sx={{ display: "flex", justifyContent: "flex-end", gap: 0.5 }}
+              >
                 <IconButton
                   label="Edit model family"
                   onClick={() => setEditing(row.original)}
                 >
-                  <PencilIcon />
+                  <PencilIcon size={16} />
                 </IconButton>
                 <IconButton
                   label="Delete model family"
                   onClick={() => setDeleting(row.original)}
                 >
-                  <Trash2Icon />
+                  <Trash2Icon size={16} />
                 </IconButton>
-              </div>
+              </Box>
             ),
           } satisfies ColumnDef<ModelFamilyListRow, unknown>,
         ]
@@ -90,18 +97,19 @@ function ModelFamilyTable({
   ];
 
   return (
-    <div className="space-y-4">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       {canManage ? (
-        <div className="flex justify-end">
+        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
           <Button
             type="button"
-            variant="outline"
-            size="sm"
+            variant="outlined"
+            size="small"
+            startIcon={<PlusIcon size={16} />}
             onClick={() => setCreateOpen(true)}
           >
-            <PlusIcon /> Add model family
+            Add model family
           </Button>
-        </div>
+        </Box>
       ) : null}
 
       <DataTable
@@ -143,7 +151,7 @@ function ModelFamilyTable({
           />
         </>
       ) : null}
-    </div>
+    </Box>
   );
 }
 

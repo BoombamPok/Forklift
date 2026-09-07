@@ -1,5 +1,8 @@
+import Box from "@mui/material/Box";
+
 import { requireRole } from "@/lib/auth/require-role";
 import { firstParam } from "@/lib/search-params";
+import { PageHeader } from "@/components/shared/page-header";
 import {
   getBoxOptions,
   getCatalogueOptions,
@@ -36,16 +39,14 @@ export default async function NewInventoryPartPage(
   if (name) promotedDefaults.name = name;
 
   return (
-    <div className="space-y-4">
-      <h2 className="font-heading text-lg font-semibold tracking-tight">
-        Add part
-      </h2>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <PageHeader title="Add part" />
       <PartForm
         mode="create"
         boxOptions={boxOptions}
         catalogueOptions={catalogueOptions}
         defaultValues={promotedDefaults}
       />
-    </div>
+    </Box>
   );
 }

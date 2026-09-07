@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import type { ColumnDef } from "@tanstack/react-table";
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
 
-import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/shared/data-table";
 import { IconButton } from "@/components/shared/icon-button";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -53,7 +55,12 @@ function CategoryTable({ rows, canManage }: CategoryTableProps) {
       accessorKey: "partCount",
       header: "Parts",
       cell: ({ row }) => (
-        <span className="font-mono tabular-nums">{row.original.partCount}</span>
+        <Typography
+          sx={{ fontFamily: "var(--font-roboto-mono)" }}
+          variant="body2"
+        >
+          {row.original.partCount}
+        </Typography>
       ),
     },
     ...(canManage
@@ -63,20 +70,22 @@ function CategoryTable({ rows, canManage }: CategoryTableProps) {
             header: "",
             enableSorting: false,
             cell: ({ row }: { row: { original: CategoryListRow } }) => (
-              <div className="flex justify-end gap-1">
+              <Box
+                sx={{ display: "flex", justifyContent: "flex-end", gap: 0.5 }}
+              >
                 <IconButton
                   label="Edit category"
                   onClick={() => setEditing(row.original)}
                 >
-                  <PencilIcon />
+                  <PencilIcon size={16} />
                 </IconButton>
                 <IconButton
                   label="Delete category"
                   onClick={() => setDeleting(row.original)}
                 >
-                  <Trash2Icon />
+                  <Trash2Icon size={16} />
                 </IconButton>
-              </div>
+              </Box>
             ),
           } satisfies ColumnDef<CategoryListRow, unknown>,
         ]
@@ -84,13 +93,18 @@ function CategoryTable({ rows, canManage }: CategoryTableProps) {
   ];
 
   return (
-    <div className="space-y-4">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       {canManage ? (
-        <div className="flex justify-end">
-          <Button type="button" onClick={() => setCreateOpen(true)}>
-            <PlusIcon /> Add category
+        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+          <Button
+            type="button"
+            variant="contained"
+            startIcon={<PlusIcon size={16} />}
+            onClick={() => setCreateOpen(true)}
+          >
+            Add category
           </Button>
-        </div>
+        </Box>
       ) : null}
 
       <DataTable
@@ -134,7 +148,7 @@ function CategoryTable({ rows, canManage }: CategoryTableProps) {
           />
         </>
       ) : null}
-    </div>
+    </Box>
   );
 }
 

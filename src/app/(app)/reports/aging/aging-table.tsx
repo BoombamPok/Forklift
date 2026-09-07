@@ -1,6 +1,8 @@
 "use client";
 
 import type { ColumnDef } from "@tanstack/react-table";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 
 import { DataTable } from "@/components/shared/data-table";
 import { formatRelativeTime } from "@/lib/utils";
@@ -11,12 +13,18 @@ const columns: ColumnDef<StockAgingRow, unknown>[] = [
     accessorKey: "name",
     header: "Part",
     cell: ({ row }) => (
-      <div>
-        <p className="font-medium text-foreground">{row.original.name}</p>
-        <p className="font-mono text-xs text-muted-foreground">
+      <Box>
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          {row.original.name}
+        </Typography>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: "block", fontFamily: "var(--font-roboto-mono)" }}
+        >
           {row.original.partNumber}
-        </p>
-      </div>
+        </Typography>
+      </Box>
     ),
   },
   {
@@ -28,21 +36,31 @@ const columns: ColumnDef<StockAgingRow, unknown>[] = [
     accessorKey: "quantity",
     header: "Quantity",
     cell: ({ row }) => (
-      <span className="font-mono tabular-nums">{row.original.quantity}</span>
+      <Typography
+        sx={{ fontFamily: "var(--font-roboto-mono)" }}
+        variant="body2"
+      >
+        {row.original.quantity}
+      </Typography>
     ),
   },
   {
     accessorKey: "lastActivityAt",
     header: "Idle since",
     cell: ({ row }) => (
-      <span>
+      <Typography variant="body2">
         {formatRelativeTime(row.original.lastActivityAt)}
         {!row.original.hasMovementHistory ? (
-          <span className="ml-1.5 text-xs text-muted-foreground">
+          <Typography
+            component="span"
+            variant="caption"
+            color="text.secondary"
+            sx={{ ml: 0.75 }}
+          >
             (never moved)
-          </span>
+          </Typography>
         ) : null}
-      </span>
+      </Typography>
     ),
   },
 ];

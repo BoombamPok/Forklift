@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { SceneCanvas } from "@/components/three/scene-canvas";
 import {
@@ -13,9 +14,9 @@ import {
  * a full-viewport takeover, since the KPIs below it are the actual point
  * of the page and need to stay primary.
  */
-function HeroSceneDashboard({ className }: { className?: string }) {
+function HeroSceneDashboard({ style }: { style?: CSSProperties }) {
   return (
-    <SceneCanvas className={className}>
+    <SceneCanvas style={style}>
       <SceneLights />
       <FloatingCluster density="slim" leadHue="amber" />
       <ParallaxRig strength={0.35} />

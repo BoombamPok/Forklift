@@ -1,17 +1,12 @@
-import * as React from "react";
+"use client";
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import type { buttonVariants } from "@/components/ui/button";
-import type { VariantProps } from "class-variance-authority";
+import * as React from "react";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
 
 type ConfirmDialogProps = {
   open: boolean;
@@ -20,7 +15,7 @@ type ConfirmDialogProps = {
   description: string;
   confirmLabel?: string;
   cancelLabel?: string;
-  variant?: VariantProps<typeof buttonVariants>["variant"];
+  variant?: "default" | "destructive";
   loading?: boolean;
   onConfirm: () => void;
 };
@@ -43,26 +38,35 @@ function ConfirmDialog({
   onConfirm,
 }: ConfirmDialogProps) {
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={loading}>
-            {cancelLabel}
-          </AlertDialogCancel>
-          <AlertDialogAction
-            variant={variant}
-            disabled={loading}
-            onClick={onConfirm}
-          >
-            {loading ? "Working…" : confirmLabel}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <Dialog
+      open={open}
+      onClose={() => onOpenChange(false)}
+      role="alertdialog"
+      maxWidth="xs"
+      fullWidth
+    >
+      <DialogTitle>{title}</DialogTitle>
+      <DialogContent>
+        <DialogContentText>{description}</DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button
+          variant="outlined"
+          disabled={loading}
+          onClick={() => onOpenChange(false)}
+        >
+          {cancelLabel}
+        </Button>
+        <Button
+          variant="contained"
+          color={variant === "destructive" ? "error" : "primary"}
+          disabled={loading}
+          onClick={onConfirm}
+        >
+          {loading ? "Working…" : confirmLabel}
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 }
 

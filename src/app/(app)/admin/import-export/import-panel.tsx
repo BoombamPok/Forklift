@@ -4,10 +4,12 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { AlertCircleIcon, UploadIcon } from "lucide-react";
 import { toast } from "sonner";
+import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Paper from "@mui/material/Paper";
+import Typography from "@mui/material/Typography";
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   importCatalogueParts,
   type ImportReport,
@@ -44,66 +46,83 @@ function ImportPanel() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <Input
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <input
           ref={inputRef}
           type="file"
           accept=".csv,text/csv"
           disabled={loading}
           onChange={handleFileChange}
-          className="max-w-sm"
+          hidden
         />
         {loading ? (
-          <span className="text-sm text-muted-foreground">Importing…</span>
+          <Typography variant="body2" color="text.secondary">
+            Importing…
+          </Typography>
         ) : (
           <Button
             type="button"
-            variant="outline"
-            size="sm"
+            variant="outlined"
+            size="small"
+            startIcon={<UploadIcon size={16} />}
             disabled={loading}
             onClick={() => inputRef.current?.click()}
           >
-            <UploadIcon /> Choose file
+            Choose file
           </Button>
         )}
-      </div>
+      </Box>
 
       {error ? (
-        <Alert variant="destructive">
-          <AlertCircleIcon />
-          <AlertDescription>{error}</AlertDescription>
+        <Alert severity="error" icon={<AlertCircleIcon size={18} />}>
+          {error}
         </Alert>
       ) : null}
 
       {report ? (
-        <div className="space-y-2 rounded-lg border border-border/70 bg-muted/30 p-4 text-sm">
-          <p>
-            <span className="font-medium text-foreground">
+        <Paper
+          variant="outlined"
+          sx={{ display: "flex", flexDirection: "column", gap: 1, p: 2 }}
+        >
+          <Typography variant="body2">
+            <Box component="span" sx={{ fontWeight: 500 }}>
               {report.inserted}
-            </span>{" "}
+            </Box>{" "}
             imported,{" "}
-            <span className="font-medium text-foreground">
+            <Box component="span" sx={{ fontWeight: 500 }}>
               {report.skipped}
-            </span>{" "}
+            </Box>{" "}
             skipped (already existed),{" "}
-            <span className="font-medium text-foreground">
+            <Box component="span" sx={{ fontWeight: 500 }}>
               {report.errors.length}
-            </span>{" "}
+            </Box>{" "}
             row error(s).
-          </p>
+          </Typography>
           {report.errors.length > 0 ? (
-            <ul className="max-h-40 space-y-1 overflow-y-auto text-muted-foreground">
+            <Box
+              component="ul"
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 0.5,
+                m: 0,
+                pl: 2.5,
+                maxHeight: 160,
+                overflowY: "auto",
+                color: "text.secondary",
+              }}
+            >
               {report.errors.map((e, i) => (
-                <li key={i}>
+                <Typography component="li" variant="body2" key={i}>
                   Row {e.row}: {e.message}
-                </li>
+                </Typography>
               ))}
-            </ul>
+            </Box>
           ) : null}
-        </div>
+        </Paper>
       ) : null}
-    </div>
+    </Box>
   );
 }
 

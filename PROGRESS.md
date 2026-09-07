@@ -1558,27 +1558,277 @@ entirely (a genuine simplification). Verified: 251 unit tests, full
 e2e suite (29/31, same two pre-existing flakes, both pass on retry in
 isolation), clean build.
 
-**Not started yet**: hub pages (catalogue/reports/admin index),
-inventory, catalogue, warehouse, reports, admin pages themselves still
-render old shadcn/Tailwind content inside the new MUI shell+DataTable
-(functional but visually mixed - the table chrome is now MUI, but
-page headers/filters/forms around it aren't yet). Final cleanup batch
-(remove Tailwind/shadcn/radix-ui/cva, delete `src/components/ui/*`)
-can't happen until all pages are migrated.
+**Hub pages converted (catalogue/reports/admin index pages)**:
+`hub-hero.tsx` (the shared 3D-banner header used by all three) plus
+`catalogue/page.tsx`, `reports/page.tsx`, `admin/page.tsx` rewritten
+to MUI Card/Box/Typography grids. `CategoryTable` (rendered inside
+`catalogue/page.tsx`) is deliberately left unconverted - it pulls in
+Dialog/ConfirmDialog/NameFormDialog, out of scope for a link-grid
+batch.
 
-**Do not merge `redesign/maximalist` to `main` without the user's
-explicit, informed go-ahead** — main auto-deploys via Vercel
-(`docs/LAUNCH_CHECKLIST.md`), and merging now would ship a real business
-tool's login/dashboard in a completely different visual language from
-every other page mid-redesign.
+New `NavLinkButton` (`src/components/shared/nav-link-button.tsx`) -
+same pattern as `NavLinkBox`, but wrapping `<Button component={Link}>`.
+Discovered this batch that the "component reference is a function"
+RSC gotcha isn't unique to `Box` - any MUI component's `component`
+prop hits it the same way. `catalogue/page.tsx` needed three of these
+(top action buttons + the per-brand "View models" link).
+
+**The function-valued `sx`/`bgcolor` RSC gotcha recurred** in
+`admin/page.tsx` (`bgcolor: (theme) => alpha(theme.palette.primary.main,
+0.1)`) despite having just documented it in the DataTable batch above -
+caught via a deliberate `grep -rn "(theme) =>"` sweep run *before*
+typechecking, now standard practice for every batch. Fixed to the
+same static `color-mix(in srgb, var(--mui-palette-primary-main) 10%,
+transparent)` pattern.
+
+**One real regression caught by the e2e suite, not by typecheck/lint/
+build**: `e2e/reports.spec.ts` asserts `getByRole("heading", {name:
+"Reports", level: 2})`, but MUI's `Typography variant="h4"` renders an
+actual `<h4>` by default - visual size and semantic heading level are
+the same prop unless you override `component` separately. Fixed with
+`variant="h4" component="h2"` on `HubHero`'s title. This is the same
+category of "build succeeds, e2e catches what typecheck can't" risk as
+the RSC gotchas above, just surfaced through accessible-role assertions
+instead of a runtime crash - full Playwright suite (not just axe) is
+load-bearing here, not optional.
+
+Verified: typecheck, lint, format, 251/251 vitest, production build,
+dev-mode page loads with no pageerror events (Playwright +
+`page.on('pageerror')`), axe-core 0 violations on all three hub
+routes, full Playwright suite 30/31 (the one failure is the
+pre-existing `admin.spec.ts` CSV-import strict-mode flake, confirmed
+to reproduce identically on unmodified `main`).
+
+**Catalogue fully converted** (brands, models + model families +
+compatible-parts + detail actions, parts + cross-references +
+compatibility + detail actions + the 11-field create/edit form).
+Several broadly-used shared primitives were converted in this pass
+since they're used well beyond catalogue - each preserved its exact
+prop API so callers outside catalogue keep working unchanged:
+
+- `ConfirmDialog` (13 callers app-wide) -> MUI Dialog with
+  `role="alertdialog"` explicitly preserved (WAI-ARIA-correct for a
+  confirmation dialog, and required by existing unit tests asserting
+  `getByRole("alertdialog")`).
+- `Combobox` (17 callers app-wide) -> MUI Autocomplete, wrapped to
+  keep the existing plain-string `value`/`onChange` contract.
+- `IconButton` (14 callers) -> MUI IconButton + Tooltip.
+- `SearchInput`, `HierarchyBreadcrumb` -> MUI TextField/Breadcrumbs.
+- New `PageHeader` (`src/components/shared/page-header.tsx`) -
+  extracted the title+description+action row repeated across ~18
+  pages (only wired into catalogue's pages so far).
+- New `NavLinkText` (`src/components/shared/nav-link-text.tsx`) -
+  same `"use client"` wrapper pattern as `NavLinkBox`/`NavLinkButton`,
+  for MUI's inline `Link` rendered from a Server Component.
+- Retired `src/components/shared/form.tsx` (the shadcn-style RHF
+  `FormItem`/`FormLabel`/`FormControl`/`FormMessage` split) - MUI's
+  TextField/Combobox already take `label`/`error`/`helperText`
+  directly, so every field now uses RHF's `Controller` straight into
+  those props instead. No caller consumed `useFormContext` implicitly
+  (verified via grep before removing it), so this was a clean swap.
+
+**Two real bugs surfaced by the full verification pass, not by
+typecheck/lint/build**:
+1. Converting `ConfirmDialog` to MUI silently broke every place that
+   opens it from inside a still-shadcn (Radix) `Dialog` -
+   `StockMovementDialog` nested the old and new dialog systems, which
+   fight over `aria-hidden`/`pointer-events` on shared portal content
+   (surfaced as `vitest`'s "Unable to perform pointer interaction...
+   pointer-events: none" on the confirm button). Fixed by converting
+   `StockMovementDialog` to MUI in the same pass rather than leaving
+   it stranded with one foot in each dialog system. **This is a
+   general rule for the rest of the rehaul**: a shared dialog/overlay
+   primitive can't be converted in isolation from its callers still
+   using the old Dialog - Radix and MUI's portal/focus-trap systems
+   actively conflict when nested, not just visually inconsistent.
+2. `hierarchy-breadcrumb.test.tsx` needed `aria-current="page"`
+   preserved explicitly on the current-page segment - MUI's
+   `Breadcrumbs` doesn't add it automatically the way shadcn's
+   `BreadcrumbPage` did.
+
+Verified: typecheck, lint, format, 251/251 vitest (including the two
+fixes above), production build, full Playwright suite 29/31 (the two
+failures are both pre-existing/confirmed flakes: the `admin.spec.ts`
+CSV-import strict-mode violation, and `accessibility.spec.ts`'s
+dashboard sign-in timing, which passed on isolated retry). Also hit
+and fixed a **verification-process bug, not a code bug**: an earlier
+verification run gave a false "all clean" because a stale `next
+start` process from a previous batch was still bound to port 3000,
+so the e2e suite silently ran against old code. Fixed by force-
+freeing port 3000 (`fuser -k 3000/tcp`) and confirming the new
+`next-server` PID before trusting any e2e result against a
+production build - a `curl` 200 alone doesn't prove which build
+answered.
+
+**Inventory fully converted**: list + filters, the create/edit form
+(`part-form.tsx`, ~9 fields + two Combobox pickers), the detail page
+(quantity/location, catalogue link, images gallery, movement
+history), and `part-actions.tsx`. `StockMovementDialog` was already
+converted in the catalogue batch (see above - it had to be, since
+`ConfirmDialog`'s own MUI conversion broke it when still nested
+inside the Radix version).
+
+One e2e selector had to change, not just be preserved:
+`e2e/inventory.spec.ts` asserted the quantity display via
+`page.locator("p.text-3xl")`, a Tailwind-class selector that doesn't
+survive a visual rewrite by design. Swapped to
+`page.getByTestId("part-quantity")`, with the matching `data-testid`
+added to the quantity `Typography` in `inventory/[id]/page.tsx` -
+the first `data-testid` used in this codebase's e2e suite (every
+other assertion so far has stayed role/label/text-based, which
+remains the default; this one is a legitimate exception since a
+bare numeric quantity has no accessible role or label of its own to
+hook into, and reusing the movement-history text next to it would be
+even more fragile).
+
+Verified: typecheck, lint, format, 251/251 vitest, production build,
+full Playwright suite (29/31, same two pre-existing/confirmed flakes
+as the catalogue batch). Also re-hit the stale-port issue from the
+catalogue batch's own verification - `fuser -k 3000/tcp` needed a
+*second* attempt before `ss -ltnp` actually showed the port free;
+the first kill silently didn't take. Always re-check `ss -ltnp`
+after killing, never assume the first attempt worked.
+
+**Not started yet**: warehouse (4-level hierarchy), reports
+**Warehouse fully converted**: the list page, and all 4 hierarchy
+levels (warehouse/rack/shelf/box), each with its detail page +
+detail header + child-list table. `box-parts-table.tsx`'s "Transfer"
+shortcut reuses the already-MUI `StockMovementDialog` from the
+inventory batch. Shared dialogs converted: `WarehouseFormDialog`,
+`CodeFormDialog` (the single-field create/edit form racks/shelves/
+boxes all share), `LocationDeleteAction` (the cascade soft-delete
+trigger, including its "can't delete - blocked by these parts"
+secondary dialog). Also converted `OccupancyBadge` (shared with
+`reports/occupancy`).
+
+This batch converted every dialog it touched together, so the
+nested-Radix-inside-MUI-dialog bug from the catalogue batch didn't
+recur - confirmed explicitly since `accessibility.spec.ts`'s dialog-
+focus-trap test exercises the "Add warehouse" dialog specifically,
+and it passed cleanly, along with the full warehouse CRUD e2e flow.
+
+Verified: typecheck, lint, format, 251/251 vitest, production build,
+full Playwright suite (29/31, same two pre-existing/confirmed flakes
+as the catalogue and inventory batches).
+
+**Reports fully converted**: all 7 sub-pages - valuation (+ breakdown
+table), movements (+ `MovementTypeBarChart`, now themed via
+`useTheme()` like the dashboard's `StockMovementBarChart`, + summary
+table), low-stock (+ report table, reusing the dashboard's
+tabs-filter-the-table-below pattern with brand/category `Select`s
+added), movers (+ fast/slow tables), aging, occupancy, and
+catalogue-coverage. Also converted the shared `ReportHeader` (now
+`NavLinkText`-based for its "back to Reports" link, since it renders
+from Server Components) and `DateRangePicker` (shared by movements
+and movers).
+
+**A real but non-code issue investigated during verification**:
+`admin.spec.ts`'s brand create/delete test failed consistently (not
+a flake) right after this batch. Root cause: ~19 orphaned "E2E Admin
+Test Brand" rows had piled up across this session's own repeated e2e
+verification runs - each run's create step actually succeeded, but
+the new row landed past `DataTable`'s default `pageSize=20`, so the
+test's `expect(row).toBeVisible()` failed *before* ever reaching its
+own delete step, silently growing the pile on every subsequent run.
+Not a code regression from this batch - cleaned up via the app's own
+delete flow, which restored the test to passing. Worth flagging
+forward: any e2e test that creates a row in a table using
+`DataTable`'s default (non-manual) pagination is fragile to a table
+already holding ≥20 rows for unrelated reasons - not fixed here
+(out of scope for this batch), but worth remembering if a similar
+"row not visible after create" failure shows up again on some other
+table.
+
+Verified: typecheck, lint, format, 251/251 vitest, production build,
+full Playwright suite (30/31 - the one failure is the pre-existing
+`admin.spec.ts` CSV-import strict-mode flake).
+
+**Admin's sub-pages are fully converted** (users - table + invite
+dialog, import-export - export card + import panel). This was the
+last page-conversion batch: **every page in the app is now off
+shadcn/Tailwind/radix-ui.**
+
+Fixed a real pre-existing e2e flake while converting
+`import-panel.tsx`: the native `<input type="file">` was rendered
+visibly next to the custom "Choose file" trigger button, so both
+exposed the same "Choose file" accessible name - the cause of
+`admin.spec.ts`'s CSV-import strict-mode violation seen as "the one
+confirmed pre-existing flake" in every batch since the redesign
+began. Hid the native input (same pattern already used in
+`part-images-gallery.tsx`'s upload button) so only the custom button
+is in the accessibility tree. Confirmed fixed - passed cleanly
+across this batch's e2e runs.
+
+Verified: typecheck, lint, format, 251/251 vitest, production build,
+full Playwright suite (multiple runs, 29-31/31). Two flakes observed
+across reruns, both confirmed pre-existing/unrelated to this batch
+via isolated reruns: the known dashboard sign-in-timing flake, and a
+newly-surfaced intermittent contrast check on the login page's Sign
+In button (traced to the login page's animated 3D hero scene, built
+earlier this session and untouched by this batch - passed cleanly in
+2 of 4 reruns with identical code, confirming timing-dependence
+rather than a real contrast defect). Worth a dedicated look someday,
+not in scope here.
+
+**The final cleanup batch is done. The MUI rehaul is complete.**
+Deleted `src/components/ui/*` (all 24 shadcn primitive files),
+3 dead premium components with zero callers (`MagneticButton`,
+`ScrollReveal`, `GradientText` - built during the earlier maximalist
+redesign, never ported to MUI), `src/components/shared/form.tsx`
+(confirmed dead - every caller had already moved to RHF's
+`Controller` feeding MUI directly), `components.json`, and
+`postcss.config.mjs`.
+
+Rewrote `src/app/globals.css` from a 285-line Tailwind/shadcn theme
+file down to a ~15-line plain reset (nothing left read any of its
+custom properties). Rewrote `src/app/layout.tsx`: dropped the
+vestigial Radix `TooltipProvider` (MUI Tooltip needs no provider)
+and the three now-unused legacy Google fonts (IBM Plex Sans/Mono,
+Bricolage Grotesque). New `src/components/shared/toaster.tsx`
+replaces `src/components/ui/sonner.tsx`, restyled with MUI theme CSS
+variables. Converted the last live Tailwind utility classNames still
+sitting in already-"MUI-converted" files: the entire 3D hero-scene
+positioning chain (`SceneLoader`/`SceneCanvas`/`HeroScene*`/
+`PosterFallback` switched from `className` to `sx`/`style` props),
+`GlobalSearch`'s `animate-spin` (now MUI `CircularProgress`) and
+`shrink-0` (now a `Box` wrapper), and a stray `StatusBadge`
+`className` prop (removed - `VerificationBadge`'s pass-through
+`className` too, unused by any caller). Removed 5 vestigial
+`TooltipProvider` test wrappers. `package.json`: removed
+`class-variance-authority`, `cmdk`, `cn`, `radix-ui`,
+`tw-animate-css`, `tailwindcss`, `@tailwindcss/postcss`, and the
+`shadcn` CLI devDependency - 304 packages removed from
+`node_modules`. Removed the now-dead `cn` re-export from
+`src/lib/utils.ts`.
+
+Verified: typecheck (clean), lint (clean, one pre-existing unrelated
+TanStack Table React Compiler warning), format, 251/251 vitest,
+production build, a manual pageerror-listening pass across every 3D-
+scene page (0 errors, confirmed correct rendering via screenshot),
+and the full Playwright suite (30/31, then 31/31 on a clean rerun -
+the one intermittent failure is the already-documented login-page
+3D-scene contrast flake, confirmed non-deterministic and unrelated
+to this batch - this batch only changed `className`→`sx`/`style`
+mechanics on the scene chain, not its rendering logic).
+
+**The app now has zero Tailwind/shadcn/radix-ui footprint. Every
+page runs on MUI.**
+
+**Do not merge `redesign/mui-rehaul` (or `redesign/maximalist`) to
+`main` without the user's explicit, informed go-ahead** — main
+auto-deploys via Vercel (`docs/LAUNCH_CHECKLIST.md`).
 
 ## Next steps
 
-The maximalist redesign above is the active thread — continue with
-Batch 2 (hub pages) per the plan file, then Batches 3-6. Confirm scope
-with the user if resuming after a long gap, since this overrides
-documented project direction and its own plan file may have drifted
-from reality — reconcile against the actual repo/branch state first.
+The MUI rehaul is finished. If/when the user gives the go-ahead to
+merge `redesign/mui-rehaul` into `main`, do a final sanity pass first
+(fresh `npm install`, full verification sequence, a manual walkthrough
+of a few pages) since main auto-deploys via Vercel. Until then, no
+further work is pending on this thread - confirm with the user before
+starting anything new here. The still-open, non-blocking item is the
+login-page 3D-scene contrast flake (intermittent, not reliably
+reproducible) - worth a dedicated investigation sometime, but it's
+never blocked a batch and isn't launch-critical.
 
 Separately, unrelated to the redesign: ForkStock V1 (the pre-redesign
 feature set) is feature-complete, reviewed, hardened, and documented.

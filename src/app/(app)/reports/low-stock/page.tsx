@@ -1,3 +1,5 @@
+import Box from "@mui/material/Box";
+
 import { requireRole } from "@/lib/auth/require-role";
 import { toErrorKind } from "@/lib/errors";
 import { ErrorState } from "@/components/shared/error-state";
@@ -19,23 +21,23 @@ export default async function LowStockReportPage() {
     rows = await getLowStockRows();
   } catch (error) {
     return (
-      <div className="space-y-6">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
         <ReportHeader
           title="Low stock & out of stock"
           description="The full list of parts that need attention right now."
         />
         <ErrorState kind={toErrorKind(error)} />
-      </div>
+      </Box>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       <ReportHeader
         title="Low stock & out of stock"
         description="The full list of parts that need attention right now."
       />
       <LowStockReportTable rows={rows} />
-    </div>
+    </Box>
   );
 }

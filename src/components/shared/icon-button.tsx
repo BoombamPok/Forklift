@@ -1,18 +1,35 @@
+"use client";
+
 import * as React from "react";
+import MuiIconButton from "@mui/material/IconButton";
+import Tooltip from "@mui/material/Tooltip";
 
-import { Button, type buttonVariants } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import type { VariantProps } from "class-variance-authority";
+type IconButtonProps = Omit<
+  React.ComponentProps<typeof MuiIconButton>,
+  "size" | "color"
+> & {
+  label: string;
+  size?: "icon-xs" | "icon-sm" | "icon" | "icon-lg";
+  variant?: "ghost" | "destructive";
+};
 
-type IconButtonProps = Omit<React.ComponentProps<typeof Button>, "size"> &
-  Pick<VariantProps<typeof buttonVariants>, "variant"> & {
-    label: string;
-    size?: "icon-xs" | "icon-sm" | "icon" | "icon-lg";
-  };
+const SIZE_MAP: Record<
+  NonNullable<IconButtonProps["size"]>,
+  "small" | "medium"
+> = {
+  "icon-xs": "small",
+  "icon-sm": "small",
+  icon: "medium",
+  "icon-lg": "medium",
+};
+
+const COLOR_MAP: Record<
+  NonNullable<IconButtonProps["variant"]>,
+  "default" | "error"
+> = {
+  ghost: "default",
+  destructive: "error",
+};
 
 /**
  * A button that shows only an icon. `label` is required and doubles as the
@@ -27,19 +44,16 @@ function IconButton({
   ...props
 }: IconButtonProps) {
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button
-          type="button"
-          variant={variant}
-          size={size}
-          aria-label={label}
-          {...props}
-        >
-          {children}
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>{label}</TooltipContent>
+    <Tooltip title={label}>
+      <MuiIconButton
+        type="button"
+        size={SIZE_MAP[size]}
+        color={COLOR_MAP[variant]}
+        aria-label={label}
+        {...props}
+      >
+        {children}
+      </MuiIconButton>
     </Tooltip>
   );
 }

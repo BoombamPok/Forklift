@@ -1,4 +1,6 @@
 import { WalletIcon } from "lucide-react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 
 import { requireRole } from "@/lib/auth/require-role";
 import { canViewInventoryValue } from "@/lib/permissions";
@@ -29,13 +31,13 @@ export default async function ValuationReportPage() {
 
   if (!canViewInventoryValue(user.role)) {
     return (
-      <div className="space-y-6">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
         <ReportHeader
           title="Inventory valuation"
           description="Cost-basis value of stock on hand, by category and brand."
         />
         <ErrorState kind="permission" />
-      </div>
+      </Box>
     );
   }
 
@@ -47,13 +49,13 @@ export default async function ValuationReportPage() {
     ]);
   } catch (error) {
     return (
-      <div className="space-y-6">
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
         <ReportHeader
           title="Inventory valuation"
           description="Cost-basis value of stock on hand, by category and brand."
         />
         <ErrorState kind={toErrorKind(error)} />
-      </div>
+      </Box>
     );
   }
 
@@ -64,13 +66,22 @@ export default async function ValuationReportPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       <ReportHeader
         title="Inventory valuation"
         description="Cost-basis value of stock on hand, by category and brand."
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "1fr 1fr",
+            lg: "repeat(3, 1fr)",
+          },
+        }}
+      >
         <KpiCard
           label="Total inventory value"
           value={formatCurrency(total)}
@@ -85,7 +96,7 @@ export default async function ValuationReportPage() {
               : undefined
           }
         />
-      </div>
+      </Box>
 
       {total === 0 && excludedCount === 0 ? (
         <EmptyState
@@ -93,23 +104,33 @@ export default async function ValuationReportPage() {
           description="This will populate once inventory parts have a purchase cost."
         />
       ) : (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium text-foreground">By category</h3>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" },
+            gap: 2,
+          }}
+        >
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+              By category
+            </Typography>
             <ValuationBreakdownTable
               rows={byCategory}
               emptyTitle="No categorized value yet"
             />
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium text-foreground">By brand</h3>
+          </Box>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+              By brand
+            </Typography>
             <ValuationBreakdownTable
               rows={byBrand}
               emptyTitle="No branded value yet"
             />
-          </div>
-        </div>
+          </Box>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }

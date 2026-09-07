@@ -10,7 +10,6 @@ vi.mock("sonner", () => ({
   toast: { success: mocks.toastSuccess, error: mocks.toastError },
 }));
 
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { LocationDeleteAction } from "@/app/(app)/warehouse/location-delete-action";
 
 function renderAction(
@@ -19,15 +18,13 @@ function renderAction(
   const onDeleted = props.onDeleted ?? vi.fn();
   const onDelete = props.onDelete ?? vi.fn();
   render(
-    <TooltipProvider>
-      <LocationDeleteAction
-        entityLabel="Rack"
-        warningDescription="This also removes every shelf and box on this rack."
-        onDelete={onDelete}
-        onDeleted={onDeleted}
-        {...props}
-      />
-    </TooltipProvider>,
+    <LocationDeleteAction
+      entityLabel="Rack"
+      warningDescription="This also removes every shelf and box on this rack."
+      onDelete={onDelete}
+      onDeleted={onDeleted}
+      {...props}
+    />,
   );
   return { onDeleted, onDelete };
 }

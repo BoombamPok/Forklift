@@ -5,8 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ColumnDef } from "@tanstack/react-table";
 import { PencilIcon, PlusIcon } from "lucide-react";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import MuiLink from "@mui/material/Link";
+import Typography from "@mui/material/Typography";
 
-import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/shared/data-table";
 import { OccupancyBadge } from "@/components/shared/occupancy-badge";
 import { IconButton } from "@/components/shared/icon-button";
@@ -40,12 +43,13 @@ function RackList({ warehouseId, racks, canManage }: RackListProps) {
       accessorKey: "code",
       header: "Rack",
       cell: ({ row }) => (
-        <Link
+        <MuiLink
+          component={Link}
           href={`/warehouse/racks/${row.original.id}`}
-          className="font-medium text-foreground hover:underline"
+          sx={{ fontWeight: 500, color: "text.primary" }}
         >
           {row.original.code}
-        </Link>
+        </MuiLink>
       ),
     },
     {
@@ -53,9 +57,12 @@ function RackList({ warehouseId, racks, canManage }: RackListProps) {
       accessorKey: "shelfCount",
       header: "Shelves",
       cell: ({ row }) => (
-        <span className="font-mono tabular-nums">
+        <Typography
+          sx={{ fontFamily: "var(--font-roboto-mono)" }}
+          variant="body2"
+        >
           {row.original.shelfCount}
-        </span>
+        </Typography>
       ),
     },
     {
@@ -76,12 +83,14 @@ function RackList({ warehouseId, racks, canManage }: RackListProps) {
             header: "",
             enableSorting: false,
             cell: ({ row }: { row: { original: RackSummary } }) => (
-              <div className="flex justify-end gap-1">
+              <Box
+                sx={{ display: "flex", justifyContent: "flex-end", gap: 0.5 }}
+              >
                 <IconButton
                   label="Edit rack"
                   onClick={() => setEditing(row.original)}
                 >
-                  <PencilIcon />
+                  <PencilIcon size={16} />
                 </IconButton>
                 <LocationDeleteAction
                   entityLabel="Rack"
@@ -89,7 +98,7 @@ function RackList({ warehouseId, racks, canManage }: RackListProps) {
                   onDelete={() => deleteRack(row.original.id, warehouseId)}
                   onDeleted={() => router.refresh()}
                 />
-              </div>
+              </Box>
             ),
           } satisfies ColumnDef<RackSummary, unknown>,
         ]
@@ -97,19 +106,28 @@ function RackList({ warehouseId, racks, canManage }: RackListProps) {
   ];
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-heading text-base font-semibold">Racks</h3>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+          Racks
+        </Typography>
         {canManage ? (
           <Button
             type="button"
-            variant="gradient"
+            variant="contained"
+            startIcon={<PlusIcon size={16} />}
             onClick={() => setCreateOpen(true)}
           >
-            <PlusIcon /> Add rack
+            Add rack
           </Button>
         ) : null}
-      </div>
+      </Box>
 
       <DataTable
         columns={columns}
@@ -144,7 +162,7 @@ function RackList({ warehouseId, racks, canManage }: RackListProps) {
           />
         </>
       ) : null}
-    </div>
+    </Box>
   );
 }
 

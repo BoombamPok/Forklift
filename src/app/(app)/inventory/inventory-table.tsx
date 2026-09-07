@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ColumnDef, SortingState } from "@tanstack/react-table";
+import Typography from "@mui/material/Typography";
 
 import { DataTable } from "@/components/shared/data-table";
 import { StatusBadge, type StatusTone } from "@/components/shared/status-badge";
@@ -33,12 +34,18 @@ const columns: ColumnDef<InventoryListRow, unknown>[] = [
     cell: ({ row }) => (
       <Link
         href={`/inventory/${row.original.id}`}
-        className="block hover:underline"
+        style={{ display: "block", textDecoration: "none" }}
       >
-        <p className="font-medium text-foreground">{row.original.name}</p>
-        <p className="font-mono text-xs text-muted-foreground">
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          {row.original.name}
+        </Typography>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ fontFamily: "var(--font-roboto-mono)" }}
+        >
           {row.original.partNumber}
-        </p>
+        </Typography>
       </Link>
     ),
   },
@@ -54,7 +61,12 @@ const columns: ColumnDef<InventoryListRow, unknown>[] = [
     accessorKey: "quantity",
     header: "Quantity",
     cell: ({ row }) => (
-      <span className="font-mono tabular-nums">{row.original.quantity}</span>
+      <Typography
+        sx={{ fontFamily: "var(--font-roboto-mono)" }}
+        variant="body2"
+      >
+        {row.original.quantity}
+      </Typography>
     ),
   },
   {

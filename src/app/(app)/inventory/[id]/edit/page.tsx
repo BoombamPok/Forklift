@@ -1,6 +1,9 @@
+import Box from "@mui/material/Box";
+
 import { requireRole } from "@/lib/auth/require-role";
 import { toErrorKind } from "@/lib/errors";
 import { ErrorState } from "@/components/shared/error-state";
+import { PageHeader } from "@/components/shared/page-header";
 import {
   getBoxOptions,
   getCatalogueOptions,
@@ -27,10 +30,8 @@ export default async function EditInventoryPartPage(
   ]);
 
   return (
-    <div className="space-y-4">
-      <h2 className="font-heading text-lg font-semibold tracking-tight">
-        Edit {detail.name}
-      </h2>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <PageHeader title={`Edit ${detail.name}`} />
       <PartForm
         mode="edit"
         partId={detail.id}
@@ -48,6 +49,6 @@ export default async function EditInventoryPartPage(
           minStock: detail.minStock ?? undefined,
         }}
       />
-    </div>
+    </Box>
   );
 }

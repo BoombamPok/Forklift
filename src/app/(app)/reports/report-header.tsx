@@ -1,6 +1,9 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
 import { ArrowLeftIcon } from "lucide-react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+
+import { NavLinkText } from "@/components/shared/nav-link-text";
 
 type ReportHeaderProps = {
   title: string;
@@ -12,24 +15,41 @@ type ReportHeaderProps = {
  * one-line description, and a way back to the report index. */
 function ReportHeader({ title, description, action }: ReportHeaderProps) {
   return (
-    <div className="space-y-3">
-      <Link
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+      <NavLinkText
         href="/reports"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+        sx={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 0.75,
+          fontSize: "0.875rem",
+          color: "text.secondary",
+          "&:hover": { color: "text.primary" },
+        }}
       >
-        <ArrowLeftIcon className="size-3.5" />
+        <ArrowLeftIcon aria-hidden size={14} />
         Reports
-      </Link>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="space-y-1.5">
-          <h2 className="font-heading text-lg font-semibold tracking-tight">
+      </NavLinkText>
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: 1.5,
+        }}
+      >
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+          <Typography variant="h6" component="h2" sx={{ fontWeight: 600 }}>
             {title}
-          </h2>
-          <p className="text-sm text-muted-foreground">{description}</p>
-        </div>
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {description}
+          </Typography>
+        </Box>
         {action}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
 

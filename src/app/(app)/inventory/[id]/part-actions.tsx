@@ -5,8 +5,9 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PencilIcon, PlusCircleIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
 
-import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { softDeletePart } from "@/features/inventory/actions";
 import type { ComboboxOption } from "@/components/shared/combobox";
@@ -79,26 +80,38 @@ function PartActions({
   if (isDeleted) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <Box
+      sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1 }}
+    >
       {canRecordMovement ? (
-        <Button type="button" onClick={() => setMovementOpen(true)}>
-          <PlusCircleIcon /> Record movement
+        <Button
+          type="button"
+          variant="contained"
+          startIcon={<PlusCircleIcon size={16} />}
+          onClick={() => setMovementOpen(true)}
+        >
+          Record movement
         </Button>
       ) : null}
       {canEdit ? (
-        <Button asChild variant="outline">
-          <Link href={`/inventory/${partId}/edit`}>
-            <PencilIcon /> Edit
-          </Link>
+        <Button
+          component={Link}
+          href={`/inventory/${partId}/edit`}
+          variant="outlined"
+          startIcon={<PencilIcon size={16} />}
+        >
+          Edit
         </Button>
       ) : null}
       {canDelete ? (
         <Button
           type="button"
-          variant="destructive"
+          variant="outlined"
+          color="error"
+          startIcon={<Trash2Icon size={16} />}
           onClick={() => setDeleteOpen(true)}
         >
-          <Trash2Icon /> Delete
+          Delete
         </Button>
       ) : null}
 
@@ -125,7 +138,7 @@ function PartActions({
         loading={deleting}
         onConfirm={handleDelete}
       />
-    </div>
+    </Box>
   );
 }
 

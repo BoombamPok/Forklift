@@ -65,7 +65,7 @@ test("create a part, record Stock In and Stock Out, and confirm the staff permis
     .click();
 
   await expect(page.getByText("Stock In recorded")).toBeVisible();
-  await expect(page.locator("p.text-3xl")).toHaveText("10");
+  await expect(page.getByTestId("part-quantity")).toHaveText("10");
 
   await page.getByRole("button", { name: "Record movement" }).click();
   await movementDialog.getByRole("combobox").first().click();
@@ -78,7 +78,7 @@ test("create a part, record Stock In and Stock Out, and confirm the staff permis
     .click();
 
   await expect(page.getByText("Stock Out recorded")).toBeVisible();
-  await expect(page.locator("p.text-3xl")).toHaveText("6");
+  await expect(page.getByTestId("part-quantity")).toHaveText("6");
 
   await expect(page.getByText(`Received 10 × E2E Test Part`)).toBeVisible();
   await expect(page.getByText(`Shipped 4 × E2E Test Part`)).toBeVisible();

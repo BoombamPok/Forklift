@@ -5,8 +5,9 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ImagePlusIcon, XIcon } from "lucide-react";
 import { toast } from "sonner";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
 
-import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/shared/icon-button";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
@@ -67,7 +68,7 @@ function PartImagesGallery({
   }
 
   return (
-    <div className="space-y-3">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
       {images.length === 0 ? (
         <EmptyState
           icon={ImagePlusIcon}
@@ -75,17 +76,34 @@ function PartImagesGallery({
           description="Photos help staff confirm they've picked the right part."
         />
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+        <Box
+          sx={{
+            display: "grid",
+            gap: 1.5,
+            gridTemplateColumns: {
+              xs: "repeat(2, 1fr)",
+              sm: "repeat(3, 1fr)",
+              md: "repeat(4, 1fr)",
+            },
+          }}
+        >
           {images.map((image) => (
-            <div
+            <Box
               key={image.id}
-              className="group relative aspect-square overflow-hidden rounded-lg border border-border/70"
+              className="group"
+              sx={{
+                position: "relative",
+                aspectRatio: "1 / 1",
+                overflow: "hidden",
+                borderRadius: 2,
+                border: "1px solid var(--mui-palette-divider)",
+              }}
             >
               <Image
                 src={image.url}
                 alt="Part photo"
                 fill
-                className="object-cover"
+                style={{ objectFit: "cover" }}
                 sizes="200px"
                 unoptimized
               />
@@ -94,15 +112,23 @@ function PartImagesGallery({
                   label="Remove image"
                   variant="destructive"
                   size="icon-sm"
-                  className="absolute top-1.5 right-1.5 opacity-0 transition-opacity group-hover:opacity-100"
+                  sx={{
+                    position: "absolute",
+                    top: 6,
+                    right: 6,
+                    opacity: 0,
+                    transition: "opacity 150ms",
+                    bgcolor: "background.paper",
+                    ".group:hover &": { opacity: 1 },
+                  }}
                   onClick={() => setPendingDeleteId(image.id)}
                 >
-                  <XIcon />
+                  <XIcon size={16} />
                 </IconButton>
               ) : null}
-            </div>
+            </Box>
           ))}
-        </div>
+        </Box>
       )}
 
       {canEdit ? (
@@ -111,17 +137,18 @@ function PartImagesGallery({
             ref={fileInputRef}
             type="file"
             accept="image/*"
-            className="hidden"
+            hidden
             onChange={handleFileChange}
           />
           <Button
             type="button"
-            variant="outline"
-            size="sm"
+            variant="outlined"
+            size="small"
+            startIcon={<ImagePlusIcon size={16} />}
             disabled={uploading}
             onClick={() => fileInputRef.current?.click()}
+            sx={{ alignSelf: "flex-start" }}
           >
-            <ImagePlusIcon />
             {uploading ? "Uploading…" : "Upload image"}
           </Button>
         </>
@@ -136,7 +163,7 @@ function PartImagesGallery({
         loading={deleting}
         onConfirm={handleConfirmDelete}
       />
-    </div>
+    </Box>
   );
 }
 

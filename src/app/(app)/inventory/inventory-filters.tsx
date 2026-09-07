@@ -1,14 +1,9 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import Box from "@mui/material/Box";
+import MenuItem from "@mui/material/MenuItem";
+import Select, { type SelectChangeEvent } from "@mui/material/Select";
 
 const STATUS_OPTIONS = [
   { value: "all", label: "All statuses" },
@@ -60,64 +55,56 @@ function InventoryFilters({
     router.push(`${pathname}?${params.toString()}`);
   }
 
+  function selectHandler(key: string) {
+    return (event: SelectChangeEvent) => setParam(key, event.target.value);
+  }
+
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <Box
+      sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1 }}
+    >
       <Select
+        size="small"
         value={status ?? "all"}
-        onValueChange={(v) => setParam("status", v)}
+        onChange={selectHandler("status")}
+        aria-label="Filter by status"
+        sx={{ width: 160 }}
       >
-        <SelectTrigger size="sm" className="w-40" aria-label="Filter by status">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {STATUS_OPTIONS.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
+        {STATUS_OPTIONS.map((option) => (
+          <MenuItem key={option.value} value={option.value}>
+            {option.label}
+          </MenuItem>
+        ))}
       </Select>
 
       <Select
+        size="small"
         value={stockFilter ?? "all"}
-        onValueChange={(v) => setParam("stock", v)}
+        onChange={selectHandler("stock")}
+        aria-label="Filter by stock level"
+        sx={{ width: 176 }}
       >
-        <SelectTrigger
-          size="sm"
-          className="w-44"
-          aria-label="Filter by stock level"
-        >
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {STOCK_OPTIONS.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
+        {STOCK_OPTIONS.map((option) => (
+          <MenuItem key={option.value} value={option.value}>
+            {option.label}
+          </MenuItem>
+        ))}
       </Select>
 
       <Select
+        size="small"
         value={linked ?? "all"}
-        onValueChange={(v) => setParam("linked", v)}
+        onChange={selectHandler("linked")}
+        aria-label="Filter by catalogue link"
+        sx={{ width: 208 }}
       >
-        <SelectTrigger
-          size="sm"
-          className="w-52"
-          aria-label="Filter by catalogue link"
-        >
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {LINKED_OPTIONS.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
+        {LINKED_OPTIONS.map((option) => (
+          <MenuItem key={option.value} value={option.value}>
+            {option.label}
+          </MenuItem>
+        ))}
       </Select>
-    </div>
+    </Box>
   );
 }
 

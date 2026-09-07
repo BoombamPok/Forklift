@@ -3,32 +3,19 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useForm, type Resolver } from "react-hook-form";
+import { Controller, useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertTriangleIcon } from "lucide-react";
 import { toast } from "sonner";
+import Alert from "@mui/material/Alert";
+import AlertTitle from "@mui/material/AlertTitle";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import MenuItem from "@mui/material/MenuItem";
+import TextField from "@mui/material/TextField";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Combobox, type ComboboxOption } from "@/components/shared/combobox";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/shared/form";
 import {
   checkDuplicatePartNumber,
   createPart,
@@ -125,241 +112,208 @@ function PartForm({
   }
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={(event) => {
-          // Cancel any pending debounced duplicate check so a slow
-          // response can't land after submit and flag the record just
-          // created/saved as a duplicate of itself.
-          clearTimeout(duplicateTimerRef.current);
-          duplicateCheckRef.current++;
-          return form.handleSubmit(onSubmit)(event);
-        }}
-        className="max-w-2xl space-y-6"
-      >
-        {formError ? (
-          <Alert variant="destructive">
-            <AlertTriangleIcon />
-            <AlertDescription>{formError}</AlertDescription>
-          </Alert>
-        ) : null}
+    <Box
+      component="form"
+      onSubmit={(event) => {
+        // Cancel any pending debounced duplicate check so a slow
+        // response can't land after submit and flag the record just
+        // created/saved as a duplicate of itself.
+        clearTimeout(duplicateTimerRef.current);
+        duplicateCheckRef.current++;
+        return form.handleSubmit(onSubmit)(event);
+      }}
+      sx={{ display: "flex", flexDirection: "column", gap: 3, maxWidth: 720 }}
+    >
+      {formError ? <Alert severity="error">{formError}</Alert> : null}
 
-        {duplicate ? (
-          <Alert>
-            <AlertTriangleIcon className="text-warning" />
-            <AlertTitle>A part with this number already exists</AlertTitle>
-            <AlertDescription>
-              <Link href={`/inventory/${duplicate.id}`}>
-                {duplicate.name} — quantity {duplicate.quantity},{" "}
-                {duplicate.status}
-              </Link>
-              . You can still save this as a separate part, or go edit the
-              existing one instead.
-            </AlertDescription>
-          </Alert>
-        ) : null}
+      {duplicate ? (
+        <Alert severity="warning">
+          <AlertTitle>A part with this number already exists</AlertTitle>
+          <Link href={`/inventory/${duplicate.id}`}>
+            {duplicate.name} — quantity {duplicate.quantity}, {duplicate.status}
+          </Link>
+          . You can still save this as a separate part, or go edit the existing
+          one instead.
+        </Alert>
+      ) : null}
 
-        <Card>
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="partNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Part number</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        onBlur={(event) => {
-                          field.onBlur();
-                          clearTimeout(duplicateTimerRef.current);
-                          duplicateTimerRef.current = setTimeout(
-                            () => checkDuplicate(event.target.value),
-                            DUPLICATE_CHECK_DEBOUNCE_MS,
-                          );
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="boxId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Box</FormLabel>
-                    <FormControl>
-                      <Combobox
-                        options={boxOptions}
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="No box selected"
-                        searchPlaceholder="Search boxes…"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="catalogueId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Catalogue link (optional)</FormLabel>
-                    <FormControl>
-                      <Combobox
-                        options={catalogueOptions}
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder="Not linked to a catalogue part"
-                        searchPlaceholder="Search catalogue…"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <FormControl>
-                        <SelectTrigger className="w-full">
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="discontinued">
-                          Discontinued
-                        </SelectItem>
-                        <SelectItem value="damaged">Damaged</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="minStock"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Low-stock threshold (optional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min={0}
-                        step={1}
-                        {...field}
-                        value={field.value ?? ""}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="purchaseCost"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Purchase cost (optional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min={0}
-                        step={0.01}
-                        {...field}
-                        value={field.value ?? ""}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="sellingPrice"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Selling price (optional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min={0}
-                        step={0.01}
-                        {...field}
-                        value={field.value ?? ""}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
+      <Card>
+        <CardContent sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
+              gap: 2,
+            }}
+          >
+            <Controller
               control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Notes (optional)</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} value={field.value ?? ""} rows={3} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              name="partNumber"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  label="Part number"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                  onBlur={(event) => {
+                    field.onBlur();
+                    clearTimeout(duplicateTimerRef.current);
+                    duplicateTimerRef.current = setTimeout(
+                      () => checkDuplicate(event.target.value),
+                      DUPLICATE_CHECK_DEBOUNCE_MS,
+                    );
+                  }}
+                />
               )}
             />
-          </CardContent>
-        </Card>
 
-        <div className="flex gap-2">
-          <Button
-            type="submit"
-            variant="gradient"
-            disabled={form.formState.isSubmitting}
-          >
-            {form.formState.isSubmitting
-              ? "Saving…"
-              : mode === "create"
-                ? "Create part"
-                : "Save changes"}
-          </Button>
-          <Button type="button" variant="outline" onClick={() => router.back()}>
-            Cancel
-          </Button>
-        </div>
-      </form>
-    </Form>
+            <Controller
+              control={form.control}
+              name="name"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  label="Name"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                />
+              )}
+            />
+
+            <Controller
+              control={form.control}
+              name="boxId"
+              render={({ field, fieldState }) => (
+                <Combobox
+                  label="Box"
+                  options={boxOptions}
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="No box selected"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                />
+              )}
+            />
+
+            <Controller
+              control={form.control}
+              name="catalogueId"
+              render={({ field, fieldState }) => (
+                <Combobox
+                  label="Catalogue link (optional)"
+                  options={catalogueOptions}
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Not linked to a catalogue part"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                />
+              )}
+            />
+
+            <Controller
+              control={form.control}
+              name="status"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  select
+                  label="Status"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                >
+                  <MenuItem value="active">Active</MenuItem>
+                  <MenuItem value="discontinued">Discontinued</MenuItem>
+                  <MenuItem value="damaged">Damaged</MenuItem>
+                </TextField>
+              )}
+            />
+
+            <Controller
+              control={form.control}
+              name="minStock"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  type="number"
+                  slotProps={{ htmlInput: { min: 0, step: 1 } }}
+                  value={field.value ?? ""}
+                  label="Low-stock threshold (optional)"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                />
+              )}
+            />
+
+            <Controller
+              control={form.control}
+              name="purchaseCost"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  type="number"
+                  slotProps={{ htmlInput: { min: 0, step: 0.01 } }}
+                  value={field.value ?? ""}
+                  label="Purchase cost (optional)"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                />
+              )}
+            />
+
+            <Controller
+              control={form.control}
+              name="sellingPrice"
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  type="number"
+                  slotProps={{ htmlInput: { min: 0, step: 0.01 } }}
+                  value={field.value ?? ""}
+                  label="Selling price (optional)"
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message}
+                />
+              )}
+            />
+          </Box>
+
+          <Controller
+            control={form.control}
+            name="notes"
+            render={({ field, fieldState }) => (
+              <TextField
+                {...field}
+                value={field.value ?? ""}
+                label="Notes (optional)"
+                multiline
+                rows={3}
+                error={!!fieldState.error}
+                helperText={fieldState.error?.message}
+              />
+            )}
+          />
+        </CardContent>
+      </Card>
+
+      <Box sx={{ display: "flex", gap: 1 }}>
+        <Button
+          type="submit"
+          variant="contained"
+          disabled={form.formState.isSubmitting}
+        >
+          {form.formState.isSubmitting
+            ? "Saving…"
+            : mode === "create"
+              ? "Create part"
+              : "Save changes"}
+        </Button>
+        <Button type="button" variant="outlined" onClick={() => router.back()}>
+          Cancel
+        </Button>
+      </Box>
+    </Box>
   );
 }
 

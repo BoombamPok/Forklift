@@ -1,17 +1,15 @@
 import { MapPinIcon, PackageIcon } from "lucide-react";
+import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import CardHeader from "@mui/material/CardHeader";
+import Typography from "@mui/material/Typography";
 
 import { requireRole } from "@/lib/auth/require-role";
 import { can } from "@/lib/permissions";
 import { toErrorKind } from "@/lib/errors";
 import { ErrorState } from "@/components/shared/error-state";
 import { StatusBadge, type StatusTone } from "@/components/shared/status-badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   getBoxOptions,
   getInventoryPartDetail,
@@ -65,13 +63,28 @@ export default async function InventoryPartDetailPage(
     can(user.role, "inventory.transfer");
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-1.5">
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="font-heading text-lg font-semibold tracking-tight">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: 2,
+        }}
+      >
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            <Typography variant="h6" component="h2" sx={{ fontWeight: 600 }}>
               {detail.name}
-            </h2>
+            </Typography>
             <StatusBadge
               label={STATUS_LABEL[detail.status]}
               tone={STATUS_TONE[detail.status]}
@@ -79,11 +92,15 @@ export default async function InventoryPartDetailPage(
             {detail.deletedAt ? (
               <StatusBadge label="Deleted" tone="destructive" />
             ) : null}
-          </div>
-          <p className="font-mono text-sm text-muted-foreground">
+          </Box>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{ fontFamily: "var(--font-roboto-mono)" }}
+          >
             {detail.partNumber}
-          </p>
-        </div>
+          </Typography>
+        </Box>
 
         <PartActions
           partId={detail.id}
@@ -95,85 +112,120 @@ export default async function InventoryPartDetailPage(
           canRecordMovement={canRecordMovement}
           isDeleted={detail.deletedAt !== null}
         />
-      </div>
+      </Box>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Card tone="glass" className="shadow-glow-primary">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <PackageIcon aria-hidden className="size-4 text-info" />
-              Quantity &amp; location
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="font-mono text-3xl leading-none font-semibold tabular-nums">
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" },
+          gap: 2,
+        }}
+      >
+        <Card>
+          <CardHeader
+            title={
+              <Box
+                component="span"
+                sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}
+              >
+                <PackageIcon
+                  aria-hidden
+                  size={16}
+                  color="var(--mui-palette-info-main)"
+                />
+                Quantity &amp; location
+              </Box>
+            }
+            slotProps={{ title: { component: "h3" } }}
+          />
+          <CardContent
+            sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}
+          >
+            <Typography
+              data-testid="part-quantity"
+              sx={{
+                fontFamily: "var(--font-roboto-mono)",
+                fontSize: "1.875rem",
+                lineHeight: 1,
+                fontWeight: 600,
+              }}
+            >
               {detail.quantity}
-            </p>
-            <div className="flex items-start gap-2 text-sm text-muted-foreground">
-              <MapPinIcon aria-hidden className="mt-0.5 size-4 shrink-0" />
+            </Typography>
+            <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
+              <MapPinIcon
+                aria-hidden
+                size={16}
+                style={{ marginTop: 2, flexShrink: 0, opacity: 0.6 }}
+              />
               {detail.location ? (
-                <span>
+                <Typography variant="body2" color="text.secondary">
                   {detail.location.warehouseName} / Rack{" "}
                   {detail.location.rackCode} / Shelf {detail.location.shelfCode}{" "}
                   / Box {detail.location.boxCode}
-                </span>
+                </Typography>
               ) : (
-                <span>No location assigned</span>
+                <Typography variant="body2" color="text.secondary">
+                  No location assigned
+                </Typography>
               )}
-            </div>
+            </Box>
             {detail.minStock !== null ? (
-              <p className="text-sm text-muted-foreground">
+              <Typography variant="body2" color="text.secondary">
                 Low-stock threshold: {detail.minStock}
-              </p>
+              </Typography>
             ) : null}
             {detail.notes ? (
-              <p className="text-sm text-muted-foreground">{detail.notes}</p>
+              <Typography variant="body2" color="text.secondary">
+                {detail.notes}
+              </Typography>
             ) : null}
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Catalogue link</CardTitle>
-            <CardDescription>
-              {detail.catalogueLink
-                ? "Catalogue + Inventory"
-                : "Inventory only"}
-            </CardDescription>
-          </CardHeader>
+          <CardHeader
+            title="Catalogue link"
+            subheader={
+              detail.catalogueLink ? "Catalogue + Inventory" : "Inventory only"
+            }
+            slotProps={{ title: { component: "h3" } }}
+          />
           <CardContent>
             {detail.catalogueLink ? (
-              <div className="space-y-1 text-sm">
-                <p className="font-medium text-foreground">
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>
                   {detail.catalogueLink.name}
-                </p>
-                <p className="font-mono text-muted-foreground">
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontFamily: "var(--font-roboto-mono)" }}
+                >
                   {detail.catalogueLink.partNumber}
-                </p>
+                </Typography>
                 {detail.catalogueLink.brandName ? (
-                  <p className="text-muted-foreground">
+                  <Typography variant="body2" color="text.secondary">
                     Brand: {detail.catalogueLink.brandName}
-                  </p>
+                  </Typography>
                 ) : null}
                 {detail.catalogueLink.oemReference ? (
-                  <p className="text-muted-foreground">
+                  <Typography variant="body2" color="text.secondary">
                     OEM ref: {detail.catalogueLink.oemReference}
-                  </p>
+                  </Typography>
                 ) : null}
-              </div>
+              </Box>
             ) : (
-              <p className="text-sm text-muted-foreground">
+              <Typography variant="body2" color="text.secondary">
                 This part isn&apos;t linked to a catalogue entry.
-              </p>
+              </Typography>
             )}
           </CardContent>
         </Card>
-      </div>
+      </Box>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Images</CardTitle>
-        </CardHeader>
+        <CardHeader title="Images" slotProps={{ title: { component: "h3" } }} />
         <CardContent>
           <PartImagesGallery
             partId={detail.id}
@@ -184,13 +236,14 @@ export default async function InventoryPartDetailPage(
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Movement history</CardTitle>
-        </CardHeader>
+        <CardHeader
+          title="Movement history"
+          slotProps={{ title: { component: "h3" } }}
+        />
         <CardContent>
           <PartMovementHistory items={history} />
         </CardContent>
       </Card>
-    </div>
+    </Box>
   );
 }

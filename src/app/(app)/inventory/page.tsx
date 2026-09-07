@@ -1,11 +1,11 @@
-import Link from "next/link";
 import { PlusIcon } from "lucide-react";
+import Box from "@mui/material/Box";
 
 import { requireRole } from "@/lib/auth/require-role";
 import { can } from "@/lib/permissions";
 import { toErrorKind } from "@/lib/errors";
-import { Button } from "@/components/ui/button";
 import { ErrorState } from "@/components/shared/error-state";
+import { NavLinkButton } from "@/components/shared/nav-link-button";
 import {
   getInventoryList,
   type InventorySortColumn,
@@ -75,21 +75,31 @@ export default async function InventoryPage(props: PageProps<"/inventory">) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 1.5,
+        }}
+      >
         <InventoryFilters
           status={status}
           stockFilter={stockFilter}
           linked={linked}
         />
         {can(user.role, "inventory.create") ? (
-          <Button asChild variant="gradient">
-            <Link href="/inventory/new">
-              <PlusIcon /> Add part
-            </Link>
-          </Button>
+          <NavLinkButton
+            href="/inventory/new"
+            variant="contained"
+            startIcon={<PlusIcon size={16} />}
+          >
+            Add part
+          </NavLinkButton>
         ) : null}
-      </div>
+      </Box>
 
       <InventoryTable
         rows={rows}
@@ -99,6 +109,6 @@ export default async function InventoryPage(props: PageProps<"/inventory">) {
         sortBy={sortBy}
         sortDir={sortDir}
       />
-    </div>
+    </Box>
   );
 }

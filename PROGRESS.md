@@ -1711,11 +1711,42 @@ Verified: typecheck, lint, format, 251/251 vitest, production build,
 full Playwright suite (29/31, same two pre-existing/confirmed flakes
 as the catalogue and inventory batches).
 
-**Not started yet**: reports sub-pages (7), admin sub-pages (users,
-import-export) still render old shadcn/Tailwind content inside the
-new MUI shell+DataTable. Final cleanup batch (remove Tailwind/
-shadcn/radix-ui/cva, delete `src/components/ui/*`) can't happen
-until all pages are migrated.
+**Reports fully converted**: all 7 sub-pages - valuation (+ breakdown
+table), movements (+ `MovementTypeBarChart`, now themed via
+`useTheme()` like the dashboard's `StockMovementBarChart`, + summary
+table), low-stock (+ report table, reusing the dashboard's
+tabs-filter-the-table-below pattern with brand/category `Select`s
+added), movers (+ fast/slow tables), aging, occupancy, and
+catalogue-coverage. Also converted the shared `ReportHeader` (now
+`NavLinkText`-based for its "back to Reports" link, since it renders
+from Server Components) and `DateRangePicker` (shared by movements
+and movers).
+
+**A real but non-code issue investigated during verification**:
+`admin.spec.ts`'s brand create/delete test failed consistently (not
+a flake) right after this batch. Root cause: ~19 orphaned "E2E Admin
+Test Brand" rows had piled up across this session's own repeated e2e
+verification runs - each run's create step actually succeeded, but
+the new row landed past `DataTable`'s default `pageSize=20`, so the
+test's `expect(row).toBeVisible()` failed *before* ever reaching its
+own delete step, silently growing the pile on every subsequent run.
+Not a code regression from this batch - cleaned up via the app's own
+delete flow, which restored the test to passing. Worth flagging
+forward: any e2e test that creates a row in a table using
+`DataTable`'s default (non-manual) pagination is fragile to a table
+already holding ≥20 rows for unrelated reasons - not fixed here
+(out of scope for this batch), but worth remembering if a similar
+"row not visible after create" failure shows up again on some other
+table.
+
+Verified: typecheck, lint, format, 251/251 vitest, production build,
+full Playwright suite (30/31 - the one failure is the pre-existing
+`admin.spec.ts` CSV-import strict-mode flake).
+
+**Not started yet**: admin's sub-pages (users, import-export) still
+render old shadcn/Tailwind content inside the new MUI shell+DataTable.
+Final cleanup batch (remove Tailwind/shadcn/radix-ui/cva, delete
+`src/components/ui/*`) can't happen until all pages are migrated.
 
 **Do not merge `redesign/mui-rehaul` (or `redesign/maximalist`) to
 `main` without the user's explicit, informed go-ahead** — main
@@ -1725,15 +1756,15 @@ some still shadcn/Tailwind.
 
 ## Next steps
 
-The MUI rehaul above is the active thread — continue with reports'
-7 sub-pages next, then admin's sub-pages (users, import-export), per
-the user's "yes, continue in that order." Once those land, every
-page will be off shadcn/Tailwind and the final cleanup batch (remove
-Tailwind/shadcn/radix-ui/cva, delete `src/components/ui/*`) becomes
-possible. Confirm scope with the user if resuming after a long gap,
-since this overrides documented project direction and its own plan
-file may have drifted from reality — reconcile against the actual
-repo/branch state first.
+The MUI rehaul above is the active thread — continue with admin's
+sub-pages (users, import-export) next, per the user's "yes, continue
+in that order." Once those land, every page will be off shadcn/
+Tailwind and the final cleanup batch (remove Tailwind/shadcn/
+radix-ui/cva, delete `src/components/ui/*`) becomes possible.
+Confirm scope with the user if resuming after a long gap, since this
+overrides documented project direction and its own plan file may
+have drifted from reality — reconcile against the actual repo/branch
+state first.
 
 Separately, unrelated to the redesign: ForkStock V1 (the pre-redesign
 feature set) is feature-complete, reviewed, hardened, and documented.

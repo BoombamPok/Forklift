@@ -21,8 +21,8 @@ function HeroSceneDashboard({ className }: { className?: string }) {
       <ParallaxRig strength={0.35} />
       <EffectComposer>
         <Bloom
-          intensity={0.4}
-          luminanceThreshold={0.3}
+          intensity={0.75}
+          luminanceThreshold={0.2}
           luminanceSmoothing={0.9}
           mipmapBlur
         />

@@ -25,8 +25,8 @@ function HeroSceneHub({ className, leadHue = "amber" }: HeroSceneHubProps) {
       <ParallaxRig strength={0.4} />
       <EffectComposer>
         <Bloom
-          intensity={0.45}
-          luminanceThreshold={0.28}
+          intensity={0.75}
+          luminanceThreshold={0.2}
           luminanceSmoothing={0.9}
           mipmapBlur
         />

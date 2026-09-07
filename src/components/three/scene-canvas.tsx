@@ -22,7 +22,7 @@ function SceneCanvas({ children, className }: SceneCanvasProps) {
       frameloop="demand"
       dpr={[1, 1.75]}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
-      camera={{ position: [0, 0, 9], fov: 32 }}
+      camera={{ position: [0, 0, 10.5], fov: 34 }}
     >
       <AdaptiveDpr pixelated={false} />
       <AdaptiveEvents />

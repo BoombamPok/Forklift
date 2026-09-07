@@ -60,44 +60,58 @@ function FloatingCluster({
     groupRef.current.rotation.x += delta * 0.04;
   });
 
+  const scale = density === "full" ? 1 : 1.15;
+
   return (
-    <group ref={groupRef}>
-      <Float speed={1.4} rotationIntensity={0.5} floatIntensity={0.8}>
+    <group ref={groupRef} scale={scale}>
+      <Float speed={1.4} rotationIntensity={0.6} floatIntensity={1}>
         <mesh>
-          <icosahedronGeometry args={[0.95, 4]} />
+          <icosahedronGeometry args={[1.35, 4]} />
           <MeshDistortMaterial
             color={lead.base}
             emissive={lead.emissive}
-            emissiveIntensity={0.25}
-            roughness={0.15}
-            metalness={0.6}
-            distort={0.35}
-            speed={1.5}
+            emissiveIntensity={0.65}
+            roughness={0.12}
+            metalness={0.65}
+            distort={0.4}
+            speed={1.6}
           />
         </mesh>
       </Float>
-      <Float speed={1.1} rotationIntensity={0.8} floatIntensity={1.2}>
-        <mesh position={[1.3, -0.5, -1]} rotation={[0.6, 0.3, 0]}>
-          <torusGeometry args={[0.45, 0.11, 32, 100]} />
+      <Float speed={1.1} rotationIntensity={0.9} floatIntensity={1.4}>
+        <mesh position={[2.1, -0.7, -0.6]} rotation={[0.6, 0.3, 0]}>
+          <torusGeometry args={[0.75, 0.19, 32, 100]} />
           <meshStandardMaterial
             color={secondary.base}
             emissive={secondary.emissive}
-            emissiveIntensity={0.4}
-            roughness={0.25}
-            metalness={0.7}
+            emissiveIntensity={0.75}
+            roughness={0.2}
+            metalness={0.75}
+          />
+        </mesh>
+      </Float>
+      <Float speed={1.8} rotationIntensity={0.5} floatIntensity={1.2}>
+        <mesh position={[-1.9, 1, -0.3]}>
+          <octahedronGeometry args={[0.55, 0]} />
+          <meshStandardMaterial
+            color={lead.base}
+            emissive={lead.emissive}
+            emissiveIntensity={0.6}
+            roughness={0.18}
+            metalness={0.65}
           />
         </mesh>
       </Float>
       {density === "full" && (
-        <Float speed={1.8} rotationIntensity={0.4} floatIntensity={1}>
-          <mesh position={[-1.2, 0.7, -0.5]}>
-            <octahedronGeometry args={[0.32, 0]} />
+        <Float speed={1.5} rotationIntensity={0.7} floatIntensity={1.3}>
+          <mesh position={[0.6, 1.5, -1.2]}>
+            <dodecahedronGeometry args={[0.4, 0]} />
             <meshStandardMaterial
-              color={lead.base}
-              emissive={lead.emissive}
-              emissiveIntensity={0.3}
+              color={secondary.base}
+              emissive={secondary.emissive}
+              emissiveIntensity={0.55}
               roughness={0.2}
-              metalness={0.6}
+              metalness={0.7}
             />
           </mesh>
         </Float>
@@ -110,10 +124,10 @@ function FloatingCluster({
 function SceneLights() {
   return (
     <>
-      <ambientLight intensity={0.35} />
-      <pointLight position={[4, 3, 4]} intensity={40} color={AMBER.base} />
-      <pointLight position={[-4, -2, 3]} intensity={30} color={ELECTRIC.base} />
-      <directionalLight position={[0, 4, 5]} intensity={0.6} />
+      <ambientLight intensity={0.45} />
+      <pointLight position={[4, 3, 4]} intensity={70} color={AMBER.base} />
+      <pointLight position={[-4, -2, 3]} intensity={55} color={ELECTRIC.base} />
+      <directionalLight position={[0, 4, 5]} intensity={0.8} />
     </>
   );
 }

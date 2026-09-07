@@ -17,8 +17,8 @@ function HeroSceneLogin({ className }: { className?: string }) {
       <ParallaxRig strength={0.6} />
       <EffectComposer>
         <Bloom
-          intensity={0.5}
-          luminanceThreshold={0.25}
+          intensity={0.7}
+          luminanceThreshold={0.2}
           luminanceSmoothing={0.9}
           mipmapBlur
         />

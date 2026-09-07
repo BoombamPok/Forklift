@@ -186,3 +186,75 @@ The likeliest breakages are `sx` prop shapes and the MUI v9
   is a pure rename across three hub pages with no design payoff — left alone
   on purpose.
 - `hero-scene-*` compositions themselves weren't redesigned, only recoloured.
+
+---
+
+# Revision 2 — after the reference screenshot
+
+You sent a target mockup. Here's what I took from it, and the two places
+I deliberately didn't.
+
+## Adopted
+
+**Orange accent.** The brand colour moved from cobalt to orange to match.
+Two orange values, not one: `#C2410C` is text-safe (5.2:1 on white) and
+carries buttons, links and labels; `#FF6B2C` is the display orange from
+your mockup and carries icon tiles and fills only — it manages ~2.6:1 on
+white, so it can never hold a caption.
+
+That reopened the problem the cobalt was solving, so the warning colour
+moved with it: `--mui-palette-warning-main` is now a yellow `#A16207`
+rather than the old burnt orange. "Low stock" is the one colour in this
+product that must never be mistaken for furniture.
+
+**Darker rail** (`#0D1117`), matching your screenshot. The active item is
+an orange wash plus a 3px marker rather than a solid orange pill — at
+240px, a saturated fill sits in the corner of the eye all day.
+
+**Collapsible rail.** Persists to localStorage, animates to 68px, and
+every icon gets a tooltip when collapsed so the rail doesn't become a
+memory test.
+
+**Account moved to the top right**, with the role under the name. It had
+to move: the rail now collapses to 68px, where a name and a role have
+nowhere to go, and "who am I signed in as" shouldn't vanish when someone
+narrows their navigation.
+
+**Wide search bar** across the header, matching your layout. Dropdown now
+spans the input rather than sitting at a fixed 352px.
+
+**KPI cards** rebuilt to your layout — 44px solid icon tile on the left,
+label and reading on the right, movement underneath with a direction
+arrow. They're separate cards again rather than the divided panel; the
+tiles need the room to work as targets.
+
+**"Restock" action** on every low-stock row, and a "View all" on the
+section. Restock navigates to the part rather than incrementing quantity
+inline — a movement needs a type and a reason, and `stock_movements` has
+no UPDATE or DELETE policy, so a one-click increment would write an
+unattributable row into a ledger nobody can correct.
+
+## Not adopted, and why
+
+**The notification bell.** Nothing in this app produces notifications
+yet. A bell with a "3" on it is fine in a mockup and a broken promise in
+a shipped product. It goes in the moment there's something to put behind
+it.
+
+**The sidebar promo card** ("Right part. Right time.") — an internal tool
+has no one to market to, and it's 180px of the rail that a collapse
+control now uses better. Easy to add back if you want it.
+
+## Login
+
+Rebuilt on Material's own pattern, as asked: one centred card on the page
+canvas, brand mark above the heading, form filling the card, single
+primary action. The full-bleed split and the 3D scene are gone from both
+`/login` and `/accept-invite` — they read as marketing for a product you
+haven't bought yet, which is the wrong note for a screen a storekeeper
+wants to be through in four seconds. `FeatureList` is now unused; delete
+it or keep it for a future marketing page.
+
+The card carries a real shadow. It's the only object on the page, and a
+flat rectangle on a flat canvas has nothing to separate it from the
+background — the one place in the app where elevation earns its keep.

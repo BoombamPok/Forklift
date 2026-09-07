@@ -1814,9 +1814,10 @@ mechanics on the scene chain, not its rendering logic).
 **The app now has zero Tailwind/shadcn/radix-ui footprint. Every
 page runs on MUI.**
 
-**Do not merge `redesign/mui-rehaul` (or `redesign/maximalist`) to
-`main` without the user's explicit, informed go-ahead** — main
-auto-deploys via Vercel (`docs/LAUNCH_CHECKLIST.md`).
+**Update:** `redesign/mui-rehaul` (including the UI refresh below) was
+merged to `main` on the user's explicit request and pushed - main
+auto-deploys via Vercel (`docs/LAUNCH_CHECKLIST.md`). `redesign/
+maximalist` remains a separate, unmerged branch.
 
 ## UI refresh — "Instrument" visual reset
 
@@ -1848,17 +1849,59 @@ TanStack Table React Compiler warning), 251/251 vitest, production
 build, and a `next start` smoke pass over every route (public pages
 200, protected pages 307 to `/login`, no server-side errors logged).
 
+Merged to `main` and pushed on the user's explicit request (merge
+commit `86a1d5c`), after a fresh `npm install` plus a full re-run of
+typecheck/lint/vitest/build on `main` itself - all clean.
+
+## UI refresh revision 2 — after the reference mockup
+
+The user sent a target screenshot and a second refresh zip built
+against it. Integrated in 6 commits on `main` (`16aca65`..`6de1542`).
+Full rationale in `DESIGN-NOTES.md`'s "Revision 2" section. Highlights:
+brand colour moves cobalt → orange (two values: a text-safe `#C2410C`
+for buttons/links/labels, a display-only `#FF6B2C` for icon
+tiles/fills); warning colour moves to yellow so low-stock still can't
+be confused with the brand; the KPI row reverts from one divided
+StatCluster panel back to separate cards (icon tile + reading) to
+match the mockup; the sidebar rail becomes collapsible (68px,
+localStorage-persisted, tooltips when collapsed) and the account menu
+moves to the header's top-right, since a collapsed rail has nowhere
+to show a name/role; login/accept-invite drop the full-bleed 3D-hero
+split for a single centred card (Material's own pattern); low-stock
+rows get a "Restock" action that navigates to the part rather than
+incrementing quantity inline (no UPDATE/DELETE policy on
+`stock_movements` - an inline increment would be an unattributable
+ledger row).
+
+This revision's source was authored against the pre-fix zip, not the
+already-patched `main` - the exact same three bug classes from the
+first integration reappeared (`MuiAlert` `standardInfo`, `sx`
+object-spread vs. array-form, two more `useEffect`+`setState`
+hydration-unsafe reads, this time in `app-shell.tsx`'s collapsed-rail
+read) and were fixed the same way. See
+`feedback-forkstock-redesign-technical-patterns` (memory) for the
+reusable version of these fixes. Also fixed one genuinely stale test:
+`global-search.test.tsx` still asserted the old placeholder text
+after the refresh's copy change.
+
+Verified the same way as the first pass (typecheck, lint, 251/251
+vitest, production build, `next start` smoke pass over every route)
+before pushing to `main`. One process hygiene note: a `next start`
+process from an earlier session in this conversation was still bound
+to port 3100 and had to be killed by PID (confirmed via `ss -ltnp`,
+not just a port-answers check) before the smoke pass could trust it
+was hitting the new build - the exact failure mode already documented
+in `feedback-forkstock-redesign-technical-patterns`.
+
 ## Next steps
 
 No further work is pending on this thread - confirm with the user
-before starting anything new here. If/when the user gives the
-go-ahead to merge `redesign/mui-rehaul` into `main`, do a final
-sanity pass first (fresh `npm install`, full verification sequence, a
-manual walkthrough of a few pages) since main auto-deploys via
-Vercel. The still-open, non-blocking item is the login-page 3D-scene
-contrast flake (intermittent, not reliably reproducible) - worth a
-dedicated investigation sometime, but it's never blocked a batch and
-isn't launch-critical.
+before starting anything new here. The still-open, non-blocking item
+is the login-page 3D-scene contrast flake from the original MUI
+rehaul (intermittent, not reliably reproducible) - now moot for
+`/login` and `/accept-invite` specifically, since revision 2 removed
+the 3D scene from both, but worth checking whether it recurs on the
+three hub pages that still carry a scene.
 
 Separately, unrelated to the redesign: ForkStock V1 (the pre-redesign
 feature set) is feature-complete, reviewed, hardened, and documented.

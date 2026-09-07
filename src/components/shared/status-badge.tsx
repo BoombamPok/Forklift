@@ -1,14 +1,60 @@
 import * as React from "react";
+import Chip from "@mui/material/Chip";
 
-import { Badge, type badgeVariants } from "@/components/ui/badge";
-import type { VariantProps } from "class-variance-authority";
-
-type StatusTone = NonNullable<VariantProps<typeof badgeVariants>["variant"]>;
+type StatusTone =
+  | "default"
+  | "secondary"
+  | "success"
+  | "warning"
+  | "destructive"
+  | "info"
+  | "outline";
 
 type StatusBadgeProps = {
   label: string;
   tone: StatusTone;
   className?: string;
+};
+
+// Static objects (no theme-callback functions) - these get rendered from
+// Server Components too, and MUI's components are all "use client", so a
+// function-valued sx prop can't cross that boundary (fails at runtime,
+// not build time). var(--mui-palette-*) + color-mix() replace the
+// theme.palette.x/alpha() calls a client-only sx callback would use.
+const TONE_SX: Record<StatusTone, object> = {
+  default: {
+    bgcolor: "var(--mui-palette-action-selected)",
+    color: "var(--mui-palette-text-primary)",
+  },
+  secondary: {
+    bgcolor: "var(--mui-palette-action-hover)",
+    color: "var(--mui-palette-text-secondary)",
+  },
+  success: {
+    bgcolor:
+      "color-mix(in srgb, var(--mui-palette-success-main) 12%, transparent)",
+    color: "var(--mui-palette-success-dark)",
+  },
+  warning: {
+    bgcolor:
+      "color-mix(in srgb, var(--mui-palette-warning-main) 14%, transparent)",
+    color: "var(--mui-palette-warning-dark)",
+  },
+  destructive: {
+    bgcolor:
+      "color-mix(in srgb, var(--mui-palette-error-main) 12%, transparent)",
+    color: "var(--mui-palette-error-dark)",
+  },
+  info: {
+    bgcolor:
+      "color-mix(in srgb, var(--mui-palette-info-main) 12%, transparent)",
+    color: "var(--mui-palette-info-dark)",
+  },
+  outline: {
+    bgcolor: "transparent",
+    color: "var(--mui-palette-text-primary)",
+    border: "1px solid var(--mui-palette-divider)",
+  },
 };
 
 /**
@@ -18,9 +64,13 @@ type StatusBadgeProps = {
  */
 function StatusBadge({ label, tone, className }: StatusBadgeProps) {
   return (
-    <Badge variant={tone} className={className}>
-      {label}
-    </Badge>
+    <Chip
+      label={label}
+      size="small"
+      className={className}
+      data-variant={tone}
+      sx={{ fontWeight: 600, ...TONE_SX[tone] }}
+    />
   );
 }
 

@@ -343,7 +343,11 @@ function PartForm({
         </Card>
 
         <div className="flex gap-2">
-          <Button type="submit" disabled={form.formState.isSubmitting}>
+          <Button
+            type="submit"
+            variant="gradient"
+            disabled={form.formState.isSubmitting}
+          >
             {form.formState.isSubmitting
               ? "Saving…"
               : mode === "create"

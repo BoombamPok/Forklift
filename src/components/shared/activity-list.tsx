@@ -1,6 +1,7 @@
 import * as React from "react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 
-import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/shared/empty-state";
 
 type ActivityTone = "positive" | "negative" | "neutral";
@@ -18,10 +19,10 @@ type ActivityListProps = {
   emptyDescription?: string;
 };
 
-const TONE_DOT: Record<ActivityTone, string> = {
-  positive: "bg-success",
-  negative: "bg-destructive",
-  neutral: "bg-muted-foreground/40",
+const TONE_COLOR: Record<ActivityTone, string> = {
+  positive: "success.main",
+  negative: "error.main",
+  neutral: "text.disabled",
 };
 
 /**
@@ -40,28 +41,57 @@ function ActivityList({
   }
 
   return (
-    <ul className="space-y-1">
+    <Box
+      component="ul"
+      sx={{
+        listStyle: "none",
+        m: 0,
+        p: 0,
+        display: "flex",
+        flexDirection: "column",
+        gap: 0.5,
+      }}
+    >
       {items.map((item) => (
-        <li
+        <Box
+          component="li"
           key={item.id}
-          className="flex items-start gap-3 rounded-lg px-2 py-2 text-sm transition-colors hover:bg-muted/60"
+          sx={{
+            display: "flex",
+            alignItems: "flex-start",
+            gap: 1.5,
+            borderRadius: 2,
+            px: 1,
+            py: 1,
+            fontSize: "0.875rem",
+            "&:hover": { bgcolor: "action.hover" },
+          }}
         >
-          <span
+          <Box
             aria-hidden
-            className={cn(
-              "mt-1.5 size-1.5 shrink-0 rounded-full",
-              TONE_DOT[item.tone ?? "neutral"],
-            )}
+            sx={{
+              mt: 0.8,
+              width: 6,
+              height: 6,
+              flexShrink: 0,
+              borderRadius: "50%",
+              bgcolor: TONE_COLOR[item.tone ?? "neutral"],
+            }}
           />
-          <span className="min-w-0 flex-1 text-foreground">
+          <Typography variant="body2" sx={{ minWidth: 0, flex: 1 }}>
             {item.description}
-          </span>
-          <time className="shrink-0 text-xs text-muted-foreground">
+          </Typography>
+          <Typography
+            component="time"
+            variant="caption"
+            color="text.secondary"
+            sx={{ flexShrink: 0 }}
+          >
             {item.timestamp}
-          </time>
-        </li>
+          </Typography>
+        </Box>
       ))}
-    </ul>
+    </Box>
   );
 }
 

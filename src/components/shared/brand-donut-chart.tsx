@@ -6,6 +6,10 @@ import type {
   NameType,
   ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
+import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
+import Typography from "@mui/material/Typography";
+import { useTheme } from "@mui/material/styles";
 
 type BrandDonutDatum = {
   label: string;
@@ -16,15 +20,6 @@ type BrandDonutChartProps = {
   data: BrandDonutDatum[];
   totalLabel: string;
 };
-
-const SLICE_COLORS = [
-  "var(--chart-1)",
-  "var(--chart-2)",
-  "var(--chart-3)",
-  "var(--chart-4)",
-  "var(--chart-5)",
-  "var(--muted-foreground)",
-];
 
 const MAX_SLICES = 5;
 
@@ -48,36 +43,73 @@ function DonutTooltip({
   const entry = payload[0];
 
   return (
-    <div className="rounded-lg border border-border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-lg">
-      <div className="flex items-center gap-2">
-        <span
+    <Paper elevation={4} sx={{ px: 1.5, py: 1, fontSize: "0.75rem" }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <Box
           aria-hidden
-          className="size-2 rounded-[2px]"
-          style={{ backgroundColor: entry.color }}
+          sx={{
+            width: 8,
+            height: 8,
+            borderRadius: "2px",
+            bgcolor: entry.color,
+          }}
         />
-        <span className="font-medium">{entry.name}</span>
-        <span className="ml-auto font-mono font-medium tabular-nums">
+        <Typography variant="caption" sx={{ fontWeight: 600 }}>
+          {entry.name}
+        </Typography>
+        <Typography
+          variant="caption"
+          sx={{
+            ml: "auto",
+            fontFamily: "var(--font-roboto-mono)",
+            fontWeight: 600,
+          }}
+        >
           {entry.value}
-        </span>
-      </div>
-    </div>
+        </Typography>
+      </Box>
+    </Paper>
   );
 }
 
 /**
  * Donut chart with a centered total and a side legend showing each
  * bucket's share - used for the dashboard's inventory-by-brand mix.
- * Colors are drawn from the theme's generic `--chart-*` tokens (oklch,
- * globals.css) rather than hardcoded hex, same convention as
- * `stock-movement-bar-chart.tsx`.
+ * Colors are drawn from the MUI theme palette so they stay in sync with
+ * every other themed surface.
  */
 function BrandDonutChart({ data, totalLabel }: BrandDonutChartProps) {
+  const theme = useTheme();
+  const sliceColors = [
+    theme.palette.primary.main,
+    theme.palette.secondary.main,
+    theme.palette.success.main,
+    theme.palette.warning.main,
+    theme.palette.error.main,
+    theme.palette.text.disabled,
+  ];
   const chartData = toChartData(data);
   const total = data.reduce((sum, entry) => sum + entry.value, 0);
 
   return (
-    <div className="flex h-full flex-col gap-4 sm:flex-row sm:items-center">
-      <div className="relative mx-auto size-36 shrink-0">
+    <Box
+      sx={{
+        display: "flex",
+        height: "100%",
+        flexDirection: { xs: "column", sm: "row" },
+        alignItems: "center",
+        gap: 2,
+      }}
+    >
+      <Box
+        sx={{
+          position: "relative",
+          mx: "auto",
+          width: 144,
+          height: 144,
+          flexShrink: 0,
+        }}
+      >
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -93,50 +125,101 @@ function BrandDonutChart({ data, totalLabel }: BrandDonutChartProps) {
               {chartData.map((entry, index) => (
                 <Cell
                   key={entry.label}
-                  fill={SLICE_COLORS[index % SLICE_COLORS.length]}
+                  fill={sliceColors[index % sliceColors.length]}
                 />
               ))}
             </Pie>
             <Tooltip content={(props) => <DonutTooltip {...props} />} />
           </PieChart>
         </ResponsiveContainer>
-        <div
+        <Box
           aria-hidden
-          className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center"
+          sx={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            pointerEvents: "none",
+          }}
         >
-          <span className="font-mono text-xl leading-none font-semibold tabular-nums">
+          <Typography
+            sx={{
+              fontFamily: "var(--font-roboto-mono)",
+              fontSize: "1.25rem",
+              lineHeight: 1,
+              fontWeight: 600,
+            }}
+          >
             {total}
-          </span>
-          <span className="mt-1 text-[0.6875rem] tracking-wide text-muted-foreground uppercase">
+          </Typography>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{
+              mt: 0.5,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+            }}
+          >
             {totalLabel}
-          </span>
-        </div>
-      </div>
+          </Typography>
+        </Box>
+      </Box>
 
-      <ul className="min-w-0 flex-1 space-y-2">
+      <Box
+        component="ul"
+        sx={{
+          listStyle: "none",
+          m: 0,
+          p: 0,
+          minWidth: 0,
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          gap: 1,
+        }}
+      >
         {chartData.map((entry, index) => {
           const percentage =
             total > 0 ? Math.round((entry.value / total) * 100) : 0;
           return (
-            <li key={entry.label} className="flex items-center gap-2 text-sm">
-              <span
+            <Box
+              component="li"
+              key={entry.label}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                fontSize: "0.875rem",
+              }}
+            >
+              <Box
                 aria-hidden
-                className="size-2.5 shrink-0 rounded-[3px]"
-                style={{
-                  backgroundColor: SLICE_COLORS[index % SLICE_COLORS.length],
+                sx={{
+                  width: 10,
+                  height: 10,
+                  flexShrink: 0,
+                  borderRadius: "3px",
+                  bgcolor: sliceColors[index % sliceColors.length],
                 }}
               />
-              <span className="min-w-0 flex-1 truncate text-foreground">
+              <Typography variant="body2" noWrap sx={{ minWidth: 0, flex: 1 }}>
                 {entry.label}
-              </span>
-              <span className="shrink-0 font-mono text-xs tabular-nums text-muted-foreground">
+              </Typography>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ fontFamily: "var(--font-roboto-mono)", flexShrink: 0 }}
+              >
                 {percentage}%
-              </span>
-            </li>
+              </Typography>
+            </Box>
           );
         })}
-      </ul>
-    </div>
+      </Box>
+    </Box>
   );
 }
 

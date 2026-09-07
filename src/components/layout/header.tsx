@@ -1,6 +1,10 @@
+import AppBar from "@mui/material/AppBar";
+import Toolbar from "@mui/material/Toolbar";
+import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
 import { MenuIcon } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { GlobalSearch } from "@/components/layout/global-search";
 
 type HeaderProps = {
@@ -8,32 +12,47 @@ type HeaderProps = {
   onOpenMobileNav: () => void;
 };
 
-/**
- * Page title/context + global search (phase1.md #19 shell, wired up per
- * phase2c.md's "2e").
- */
+/** Page title/context + global search. */
 function Header({ title, onOpenMobileNav }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-3 border-b border-border/80 bg-background/85 px-4 backdrop-blur-md lg:px-6">
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        className="-ml-1.5 lg:hidden"
-        aria-label="Open navigation"
-        onClick={onOpenMobileNav}
-      >
-        <MenuIcon />
-      </Button>
+    <AppBar
+      position="sticky"
+      color="inherit"
+      sx={{
+        borderBottom: 1,
+        borderColor: "divider",
+        bgcolor: (theme) =>
+          theme.palette.mode === "light"
+            ? "rgba(255,255,255,0.85)"
+            : "rgba(31,30,28,0.85)",
+        backdropFilter: "blur(10px)",
+      }}
+    >
+      <Toolbar sx={{ gap: 1.5, minHeight: { xs: 56, lg: 64 } }}>
+        <IconButton
+          aria-label="Open navigation"
+          onClick={onOpenMobileNav}
+          sx={{ display: { xs: "inline-flex", lg: "none" }, ml: -1 }}
+        >
+          <MenuIcon size={20} />
+        </IconButton>
 
-      <h1 className="min-w-0 truncate font-heading text-base font-semibold tracking-tight text-foreground">
-        {title}
-      </h1>
+        <Typography
+          variant="h6"
+          component="h1"
+          noWrap
+          sx={{ minWidth: 0, fontWeight: 600 }}
+        >
+          {title}
+        </Typography>
 
-      <div className="ml-auto flex items-center gap-2">
-        <GlobalSearch className="hidden w-64 sm:block" />
-      </div>
-    </header>
+        <Box sx={{ ml: "auto", display: "flex", alignItems: "center", gap: 1 }}>
+          <GlobalSearch
+            sx={{ display: { xs: "none", sm: "block" }, width: 280 }}
+          />
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
 }
 

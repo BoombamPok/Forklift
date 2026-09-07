@@ -11,14 +11,14 @@ describe("VerificationBadge", () => {
 
   it("never lets unverified read as confirmed fact", () => {
     render(<VerificationBadge status="unverified" />);
-    const badge = screen.getByText("Unverified");
+    const badge = screen.getByText("Unverified").closest("[data-variant]");
     expect(badge).toBeInTheDocument();
-    expect(badge.dataset.variant).not.toBe("success");
+    expect(badge?.getAttribute("data-variant")).not.toBe("success");
   });
 
   it("distinguishes uncertain from both verified and unverified", () => {
     render(<VerificationBadge status="uncertain" />);
-    const badge = screen.getByText("Uncertain");
-    expect(badge.dataset.variant).toBe("warning");
+    const badge = screen.getByText("Uncertain").closest("[data-variant]");
+    expect(badge?.getAttribute("data-variant")).toBe("warning");
   });
 });

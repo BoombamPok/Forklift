@@ -1,3 +1,6 @@
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+
 type DashboardGreetingProps = {
   name: string;
 };
@@ -18,19 +21,40 @@ function DashboardGreeting({ name }: DashboardGreetingProps) {
   });
 
   return (
-    <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-      <div>
-        <h1 className="font-heading text-2xl font-semibold tracking-tight text-balance">
+    <Box
+      sx={{
+        display: "flex",
+        flexWrap: "wrap",
+        alignItems: "baseline",
+        justifyContent: "space-between",
+        columnGap: 2,
+        rowGap: 0.5,
+      }}
+    >
+      <Box>
+        <Typography
+          variant="h4"
+          sx={{ fontWeight: 600, letterSpacing: "-0.01em" }}
+        >
           Welcome back, {firstName}
-        </h1>
-        <p className="text-sm text-muted-foreground">
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
           Here&apos;s what&apos;s happening with your inventory today.
-        </p>
-      </div>
-      <p className="shrink-0 font-mono text-xs tracking-wide text-muted-foreground uppercase">
+        </Typography>
+      </Box>
+      <Typography
+        variant="caption"
+        sx={{
+          flexShrink: 0,
+          fontFamily: "var(--font-roboto-mono)",
+          letterSpacing: "0.06em",
+          textTransform: "uppercase",
+          color: "text.secondary",
+        }}
+      >
         {dateLabel}
-      </p>
-    </div>
+      </Typography>
+    </Box>
   );
 }
 

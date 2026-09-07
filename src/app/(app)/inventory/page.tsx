@@ -83,7 +83,7 @@ export default async function InventoryPage(props: PageProps<"/inventory">) {
           linked={linked}
         />
         {can(user.role, "inventory.create") ? (
-          <Button asChild>
+          <Button asChild variant="gradient">
             <Link href="/inventory/new">
               <PlusIcon /> Add part
             </Link>

@@ -1306,13 +1306,285 @@ Real invite-email delivery isn't E2E-testable in CI at all (no way to
 receive the email) - flagged as a manual step in
 `docs/LAUNCH_CHECKLIST.md` instead.
 
+## Maximalist visual redesign (2026-09-07, IN PROGRESS — not a phase)
+
+**This is a deliberate, explicit, user-directed override of CLAUDE.md
+§7 ("Design Direction" — restrained industrial SaaS, anti-decoration)
+and ADR-0003 (light-only V1, fixed sidebar chrome).** The user asked to
+set those aside and rebuild the entire application's visual identity as
+a maximalist, animated, 3D-enhanced "premium" experience, confirming via
+clarifying questions: (1) scope = the **entire application**, not one
+page, (2) 3D = a real react-three-fiber scene, not CSS tricks, (3) full
+creative freedom on brand identity. Non-design requirements (WCAG 2.1
+AA, desktop-first, auth logic, data integrity) are **not** waived and
+have been actively re-verified throughout.
+
+Work is happening on branch **`redesign/maximalist`** (pushed to
+`origin`, **not merged to `main`** — main/production are untouched so
+far). The full plan (context, token values, 3D architecture, batch
+rollout, verification gates) is at
+`/root/.claude/plans/serialized-drifting-kurzweil.md` — read it before
+continuing this work in a new session.
+
+**Done and verified** (typecheck/lint/format/251 unit tests/production
+build/full 31-test Playwright suite all green, except one CSV-import
+e2e test independently confirmed to fail identically on unmodified
+`main` — a pre-existing native-file-input/browser quirk, unrelated):
+
+- **Batch 0 (foundation)** — added `three`, `@react-three/fiber@^9`
+  (the React-19-compatible major), `@react-three/drei`,
+  `@react-three/postprocessing`. `src/app/globals.css` flipped
+  dark-first: deep graphite-navy canvas, the original warm amber kept as
+  hero accent plus a new electric-blue secondary, colored glow shadows,
+  a `glass-panel` utility, bigger radius scale. `html` forces the `dark`
+  class (no toggle — extends ADR-0003's "fixed chrome" precedent
+  app-wide rather than building toggle machinery); the old light palette
+  is kept dormant in `:root`, not deleted. Added Bricolage Grotesque as
+  `--font-display`/`--font-heading` for headlines only — IBM Plex
+  Sans/Mono untouched for body text and part numbers/SKUs.
+  `src/components/ui/card.tsx` got a `tone: "flat" | "glass"` prop
+  (default `"flat"`, so every existing usage — ~60 call sites —
+  upgrades to the new dark tokens for free with zero code changes),
+  `button.tsx` got `variant="gradient"`, `table.tsx` got a CSS-only
+  hover/header skin pass. New `src/components/premium/` (GradientText,
+  MagneticButton, ScrollReveal) and `src/lib/hooks/use-reduced-motion.ts`
+  (uses `useSyncExternalStore`, not motion/react's own hook — that one
+  reads `matchMedia` during the first client render and caused a real
+  SSR hydration mismatch, since fixed). New `src/components/three/`
+  scaffold: `scene-canvas.tsx`, `scene-primitives.tsx` (shared abstract
+  floating-cluster geometry — deliberately not a literal forklift render,
+  no such asset exists), three composed scenes (login/dashboard/hub),
+  and `scene-loader.tsx` — the **only** file allowed to call
+  `next/dynamic(ssr:false)` for a scene, gating on
+  `prefers-reduced-motion`, `lg:`-and-up viewport (desktop-first is not
+  waived), and IntersectionObserver lazy-mount, with a static CSS
+  poster-fallback otherwise. Confirmed via network trace that the
+  ~1MB three.js chunk loads only on routes that actually render a scene.
+- **Batch 1 (login + dashboard flagship)** — login page rebuilt as a
+  unified glass-panel card with the full `HeroSceneLogin` (floating
+  amber/electric metallic-glass cluster, bloom, mouse parallax) and a
+  gradient `MagneticButton` submit. Dashboard got a slim, deliberately
+  more restrained `HeroSceneDashboard` band behind the greeting — KPI
+  cards below need to stay primary, not compete with decoration. This
+  also confirmed the token flip cascades through the **whole app** for
+  free: sidebar, header, charts, KPI cards, and tables on every other
+  page already read as the new dark palette with zero additional edits
+  (verified via screenshot on the real dashboard).
+- Two real bugs found and fixed while verifying (not just eyeballed —
+  caught via pixel-sampling and axe/Playwright): a stacking-context bug
+  where `-z-10` on the 3D layer put it behind normal-flow content
+  (negative z-index always loses to static/auto content regardless of
+  DOM order — fixed with `z-0`/`z-10` instead), and the hydration
+  mismatch above. Also fixed a **pre-existing** bug unrelated to this
+  redesign, caught by finally re-running `smoke.spec.ts`: the login
+  page's "ForkStock" wordmark had been silently demoted to a `<span>` in
+  an earlier session, breaking `getByRole("heading",{name:"ForkStock"})`
+  — restored as `<h2>`.
+
+- **Batch 2 (hub pages)** — new `src/components/premium/hub-hero.tsx`
+  (extracted once `/catalogue`, `/reports`, `/admin` all needed the
+  identical glass-panel + `HeroSceneHub` header shape — this codebase's
+  usual extract-on-third-caller threshold), wired into all three with
+  alternating lead hue (amber for catalogue, electric for
+  reports/admin) so they don't look identical. Their link-grid cards
+  got `tone="glass"`; catalogue's brand cards (which carry real
+  Models/Parts counts, not pure navigation) deliberately stayed flat.
+  Verified: 0 axe violations on all three routes (including as an
+  admin user), full `catalogue`/`reports`/`admin` e2e suites green
+  (same pre-existing CSV-import flake as before, still unrelated), 251
+  unit tests, clean build.
+
+- **Batch 3 (inventory + catalogue parts, no 3D)** — dense working
+  pages get narrow, targeted refinement rather than uniform decoration:
+  `/inventory/[id]`'s single hero-stat (the quantity number) got
+  `tone="glass"` + a glow shadow; the one primary page-level CTA on
+  each of `/inventory`, `/inventory/new`+`/inventory/[id]/edit`
+  (shared `part-form.tsx`), `/catalogue/parts`, and
+  `/catalogue/parts/new`+`/catalogue/parts/[id]/edit` (shared
+  `catalogue-part-form.tsx`) got `variant="gradient"`. Every
+  dialog-internal button (brand/category/model tables, compatibility
+  editors, cross-refs, etc. — ~20 call sites surveyed) was deliberately
+  left alone: gradient-ing every button in the app is exactly the "AI
+  slop" look this redesign is trying to avoid. `/catalogue/parts/[id]`,
+  `/catalogue/brands`, `/catalogue/models`, `/catalogue/models/[id]`
+  needed no changes beyond what Batch 0's token flip already gives
+  every page for free. Confirmed the e2e-critical
+  `page.locator("p.text-3xl")` on the inventory detail page still
+  resolves. Verified: 0 axe violations, full
+  inventory/catalogue/search e2e suites green, 251 unit tests, clean
+  build (the two failures seen in a full-suite run — dashboard axe
+  sign-in timing, CSV-import strict-mode violation — are the same
+  flakes already confirmed unrelated, both pass in isolation).
+
+- **Batch 4 (warehouse hierarchy, no 3D)** — same narrow pattern as
+  Batch 3: the one primary "Add X" CTA at each of the four hierarchy
+  levels (`warehouse-table.tsx`, `rack-list.tsx`, `shelf-list.tsx`,
+  `box-list.tsx`) got `variant="gradient"`. "Edit" buttons and the
+  per-row "Transfer" action were already `variant="outline"` and were
+  left alone - secondary/contextual, not the page's one primary action.
+  No hero-stat cards exist at this level (unlike inventory's quantity
+  number), so no `tone="glass"` additions were needed - these pages
+  inherit the full dark theme from Batch 0 with nothing else changed.
+  Verified: 0 axe violations on warehouse list/detail (checked as
+  admin), full warehouse/admin e2e suites green (same pre-existing
+  CSV-import flake), 251 unit tests, clean build.
+
+**Post-Batch-4 fix (2026-09-07)**: user feedback that the result so far
+read as "just dark mode and a few gradients" was correct - the
+dashboard/hub 3D hero scenes were real but too conservative (a ~100px
+strip, tiny geometry, heavy overlay) to actually register. Fixed: hero
+containers grew to a real banner height (min-h-56/64) anchored
+bottom-up, geometry ~40% bigger, emissive/light/bloom intensity roughly
+doubled across all three scenes. This also surfaced a real (if
+intermittent) contrast bug the brightness increase exposed - the text
+scrim was a smooth 3-stop gradient, so legibility depended on
+animation phase - fixed with a hard color stop
+(`from-background from-50% to-transparent`) so the text zone is always
+fully opaque. Verified clean across 15+ repeated axe scans post-fix.
+Separately found (not fixed, out of scope): an intermittent axe
+failure on the dashboard's "Out of stock" KPI card is a timing race
+between the pre-existing `MotionStagger` entrance animation and an
+immediate axe scan (0ms wait: intermittent; 1.2s settle: consistently
+clean) - not a real defect in the settled UI, not touched by this
+redesign, and predates it.
+
+**Not started yet** — Batch 5 (7 report sub-pages), Batch 6 (admin
+sub-pages + `/accept-invite`, which still has the pre-redesign light
+full-bleed layout and will look inconsistent with `/login` until then).
+
+**MAJOR PIVOT (2026-09-07)**: the user then asked to abandon the
+shadcn/Tailwind component layer entirely and rebuild the UI on MUI
+(Material UI), resetting the visual direction to Material Design's own
+language rather than continuing the amber/electric dark-glass concept.
+Confirmed via clarifying questions: full MUI (drop Tailwind entirely,
+not a hybrid), full visual reset to Material Design's look, on a **new
+branch off `redesign/maximalist`** (not that branch directly) so it
+stays intact as a fallback/comparison point.
+
+## MUI rehaul (branch `redesign/mui-rehaul`, in progress)
+
+Same batch/verify/commit discipline as the maximalist redesign. Migration
+path: Tailwind/shadcn/radix-ui/cva stay installed until every page is off
+them (removing early would break every unmigrated page's styling), removed
+in a final cleanup batch once zero files reference them. Icons stay
+lucide-react (not @mui/icons-material) - a deliberate scope call, not an
+oversight, to avoid ~50+ low-value icon-hunting renames.
+
+**Done and verified** (typecheck/lint/format/251 unit tests/build/full
+31-test e2e suite - 30/31, same pre-existing CSV-import flake - after
+each commit):
+- **Foundation**: `src/theme/theme.ts` (Material theme, light-mode
+  default, original amber/electric hues restructured through MUI's
+  palette/typography/shape system), `src/theme/theme-registry.tsx`
+  (`AppRouterCacheProvider`+`ThemeProvider`+`CssBaseline`, the only
+  client boundary MUI needs). Roboto/Roboto Mono added via
+  `next/font/google`; old IBM Plex/Bricolage fonts stay loaded for
+  unmigrated pages. Root layout no longer forces the `dark` class -
+  reactivates the legacy light Tailwind palette (dormant in `:root`
+  since the earlier redesign) for unmigrated pages, which happens to
+  align with the new light Material direction instead of clashing.
+- **App shell**: `app-shell.tsx`/`sidebar-nav.tsx`/`header.tsx`/
+  `account-menu.tsx`/`global-search.tsx` rebuilt with MUI's standard
+  responsive-Drawer pattern, AppBar/Toolbar, List/ListItemButton nav,
+  Menu-based account dropdown. `GlobalSearch`'s logic (debounced server
+  search, keyboard nav, ARIA listbox/option roles - already e2e-tested)
+  was deliberately NOT re-derived against MUI's Autocomplete state
+  model; only its presentation moved to MUI.
+- **Login + accept-invite (flagship)**: elevated `Paper` card replacing
+  the previous glass-panel look, MUI `TextField`/`Button`/`Alert`
+  throughout, kept the react-three-fiber hero scene (library-independent,
+  its hardcoded amber/electric colors already matched the new theme).
+  Found and fixed a real contrast bug here: initial theme colors
+  `#C2703A`/`#2F7F9E` only cleared 3.7:1/4.52:1 against white (below/too
+  close to the 4.5:1 floor) - darkened to `#A05826` (5.36:1) and
+  `#1F5A72` (7.6:1), computed with the same relative-luminance method
+  WCAG/axe use rather than eyeballed. Both are now `theme.ts`'s
+  `primary.main`/`secondary.main`.
+
+Remarkable finding: despite rewriting 100% of the markup for the shell,
+search, account menu, and both auth pages, the full e2e suite needed
+zero test changes - every `getByRole`/`getByLabel` assertion resolved
+correctly against the all-new MUI DOM structure.
+
+**Dashboard (flagship, done)**: converted every widget file plus a set
+of shared components used far beyond just this page - StatusBadge
+(now MUI Chip), KpiCard, ErrorState, EmptyState, LoadingState
+(Skeleton), ChartContainer, ActivityList, MotionFadeIn/MotionStagger
+(`Box component={motion.div}` pattern so `sx` keeps working),
+BrandDonutChart/StockMovementBarChart (recharts colors now read from
+the MUI theme via `useTheme()`). New `NavLinkBox` (`src/components/
+shared/nav-link-box.tsx`) - a small "use client" wrapper for `Box
+component={Link}`. `low-stock-table.tsx` deliberately NOT converted -
+it's on the shared DataTable/Tabs primitives used by ~15+ pages,
+converting those is its own batch.
+
+**Two real RSC gotchas hit and fixed here** (the first is the same
+class of bug already documented in memory from an earlier phase -
+worth re-reading before the next batch, since it will recur):
+1. **Function-valued `sx` breaks across the Server→Client boundary.**
+   MUI components all carry `"use client"`, so `sx={(theme) => ({...})}`
+   or a nested `bgcolor: (theme) => alpha(...)` inside a static sx
+   object throws *at runtime*, not build time, whenever that JSX is
+   produced by a Server Component. Fix: never use theme-callback
+   functions in components that might render from a Server Component -
+   use static `var(--mui-palette-*)` strings + CSS `color-mix()`
+   instead of `theme.palette.x` / `alpha()`. Components that are
+   already `"use client"` (or transitively imported by one) are exempt
+   - the boundary is only crossed once, at the client entry point.
+2. **A component *reference* is also a function.** `<Box
+   component={Link}>` inside a Server Component fails the same way,
+   because `Link` itself is a function being passed as a prop value.
+   `NavLinkBox` exists specifically to contain this: it's a
+   `"use client"` module that imports and renders `Link` *itself*,
+   so only serializable props (`href`, `sx`, `children`) cross the
+   boundary, never the component reference.
+Both were caught via `npm run dev` (production build only threw a
+minified, useless "Error #441") and manual Playwright checks - `npm
+run build` succeeding is not proof these work, only dev-mode runtime
+errors and a real page load catch them.
+
+**`DataTable` converted (highest-leverage step, done)**:
+`src/components/shared/data-table.tsx` - the one generic table
+primitive inventory/catalogue/warehouse/reports/admin all render
+through - now uses MUI's Table/TableHead/TableBody/TableRow/TableCell/
+TableSortLabel/Checkbox, with the *exact same prop API* (columns,
+manual pagination/sorting, row selection, error/loading/empty states)
+so none of the ~15+ consuming pages needed any edits - only the
+table's own chrome changed. Also converted `low-stock-table.tsx` off
+the shared shadcn `Tabs` in the same pass: MUI's `Tabs`/`Tab` don't
+need Radix's aria-controls-to-a-real-tabpanel wiring, so the four empty
+hidden panels the old code needed just to satisfy axe are gone
+entirely (a genuine simplification). Verified: 251 unit tests, full
+e2e suite (29/31, same two pre-existing flakes, both pass on retry in
+isolation), clean build.
+
+**Not started yet**: hub pages (catalogue/reports/admin index),
+inventory, catalogue, warehouse, reports, admin pages themselves still
+render old shadcn/Tailwind content inside the new MUI shell+DataTable
+(functional but visually mixed - the table chrome is now MUI, but
+page headers/filters/forms around it aren't yet). Final cleanup batch
+(remove Tailwind/shadcn/radix-ui/cva, delete `src/components/ui/*`)
+can't happen until all pages are migrated.
+
+**Do not merge `redesign/maximalist` to `main` without the user's
+explicit, informed go-ahead** — main auto-deploys via Vercel
+(`docs/LAUNCH_CHECKLIST.md`), and merging now would ship a real business
+tool's login/dashboard in a completely different visual language from
+every other page mid-redesign.
+
 ## Next steps
 
-There is no Phase 8. ForkStock V1 is feature-complete, reviewed,
-hardened, and documented, and the `/admin` gap above is closed. What's
-left is entirely for a human to do, tracked in
+The maximalist redesign above is the active thread — continue with
+Batch 2 (hub pages) per the plan file, then Batches 3-6. Confirm scope
+with the user if resuming after a long gap, since this overrides
+documented project direction and its own plan file may have drifted
+from reality — reconcile against the actual repo/branch state first.
+
+Separately, unrelated to the redesign: ForkStock V1 (the pre-redesign
+feature set) is feature-complete, reviewed, hardened, and documented.
+What was left there is entirely for a human to do, tracked in
 `docs/LAUNCH_CHECKLIST.md`: add the CI `e2e` job's repository secrets,
-run (or authorize) the new admin e2e tests and a real invite-email smoke
+run (or authorize) the admin e2e tests and a real invite-email smoke
 test against the live Supabase project, and do one final manual
 walkthrough on the actual deployed URL before real warehouse staff start
 using it.

@@ -1,44 +1,40 @@
 import * as React from "react";
-
-import { cn } from "@/lib/utils";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import Card from "@mui/material/Card";
+import CardHeader from "@mui/material/CardHeader";
+import CardContent from "@mui/material/CardContent";
+import Typography from "@mui/material/Typography";
+import type { SxProps, Theme } from "@mui/material/styles";
 
 type ChartContainerProps = {
   title: string;
   description?: string;
   action?: React.ReactNode;
-  className?: string;
+  sx?: SxProps<Theme>;
   children: React.ReactNode;
 };
 
-/**
- * Layout shell for future Recharts content (Phase 6 reporting). Phase 1
- * only establishes the container per phase1.md #48/#52 - it deliberately
- * does not depend on Recharts yet, since nothing renders a chart this
- * phase.
- */
+/** Shared layout shell for Recharts content. */
 function ChartContainer({
   title,
   description,
   action,
-  className,
+  sx,
   children,
 }: ChartContainerProps) {
   return (
-    <Card className={cn(className)}>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        {description ? <CardDescription>{description}</CardDescription> : null}
-        {action ? <CardAction>{action}</CardAction> : null}
-      </CardHeader>
-      <CardContent className="h-64">{children}</CardContent>
+    <Card sx={sx}>
+      <CardHeader
+        title={<Typography variant="h6">{title}</Typography>}
+        subheader={
+          description ? (
+            <Typography variant="body2" color="text.secondary">
+              {description}
+            </Typography>
+          ) : undefined
+        }
+        action={action}
+      />
+      <CardContent sx={{ height: 256, pt: 0 }}>{children}</CardContent>
     </Card>
   );
 }

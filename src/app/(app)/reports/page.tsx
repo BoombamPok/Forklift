@@ -14,6 +14,7 @@ import {
 import { requireRole } from "@/lib/auth/require-role";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { HubHero } from "@/components/premium/hub-hero";
 
 type ReportLink = {
   href: string;
@@ -86,22 +87,18 @@ export default async function ReportsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1.5">
-        <h2 className="font-heading text-lg font-semibold tracking-tight">
-          Reports
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Inventory value, stock movement, and warehouse/catalogue coverage -
-          answering real business questions from real data.
-        </p>
-      </div>
+      <HubHero
+        title="Reports"
+        description="Inventory value, stock movement, and warehouse/catalogue coverage - answering real business questions from real data."
+        leadHue="electric"
+      />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {REPORTS.map((report) => {
           const Icon = report.icon;
           return (
             <Link key={report.href} href={report.href} className="group">
-              <Card interactive className="h-full">
+              <Card interactive tone="glass" className="h-full">
                 <CardHeader>
                   <div
                     className={cn(

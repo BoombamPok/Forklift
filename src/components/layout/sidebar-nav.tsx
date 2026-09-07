@@ -3,9 +3,17 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Box from "@mui/material/Box";
+import Divider from "@mui/material/Divider";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import Typography from "@mui/material/Typography";
+import { alpha } from "@mui/material/styles";
 import { BoxesIcon } from "lucide-react";
 
-import { cn } from "@/lib/utils";
 import {
   ADMIN_NAV,
   PRIMARY_NAV,
@@ -30,94 +38,124 @@ function NavLink({
   const Icon = item.icon;
 
   return (
-    <Link
-      href={item.href}
-      onClick={onNavigate}
-      aria-current={active ? "page" : undefined}
-      className={cn(
-        "group relative flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground/65 transition-all duration-150",
-        "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
-        active && "bg-sidebar-accent text-sidebar-accent-foreground",
-      )}
-    >
-      <span
-        aria-hidden
-        className={cn(
-          "absolute left-0 h-4 w-[3px] rounded-full bg-sidebar-primary transition-transform duration-200 ease-out",
-          active ? "scale-y-100" : "scale-y-0",
-        )}
-      />
-      <Icon
-        aria-hidden
-        className={cn(
-          "size-4 shrink-0 transition-colors duration-150",
-          active
-            ? "text-sidebar-primary"
-            : "text-sidebar-foreground/45 group-hover:text-sidebar-foreground/80",
-        )}
-      />
-      {item.label}
-    </Link>
+    <ListItem disablePadding sx={{ px: 1.5 }}>
+      <ListItemButton
+        component={Link}
+        href={item.href}
+        onClick={onNavigate}
+        aria-current={active ? "page" : undefined}
+        selected={active}
+        sx={{
+          borderRadius: 2,
+          "&.Mui-selected": {
+            bgcolor: (theme) => alpha(theme.palette.primary.main, 0.12),
+            "&:hover": {
+              bgcolor: (theme) => alpha(theme.palette.primary.main, 0.18),
+            },
+          },
+        }}
+      >
+        <ListItemIcon
+          sx={{
+            minWidth: 36,
+            color: active ? "primary.main" : "text.secondary",
+          }}
+        >
+          <Icon aria-hidden size={18} />
+        </ListItemIcon>
+        <ListItemText
+          primary={item.label}
+          slotProps={{
+            primary: {
+              sx: {
+                fontWeight: active ? 600 : 500,
+                fontSize: "0.875rem",
+                color: active ? "primary.main" : "text.primary",
+              },
+            },
+          }}
+        />
+      </ListItemButton>
+    </ListItem>
   );
 }
 
-/**
- * The nav content shared by the fixed desktop sidebar and the mobile
- * drawer (see app-shell.tsx) - one definition, two presentations.
- */
 type SidebarNavProps = {
   user?: AccountUser | null;
   onNavigate?: () => void;
 };
 
+/**
+ * The nav content shared by the permanent desktop Drawer and the
+ * temporary mobile Drawer (see app-shell.tsx) - one definition, two
+ * presentations.
+ */
 function SidebarNav({ user, onNavigate }: SidebarNavProps) {
   return (
-    <div className="relative flex h-full flex-col overflow-hidden bg-sidebar text-sidebar-foreground">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.05]"
-        style={{
-          backgroundImage:
-            "linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
+    <Box
+      sx={{
+        display: "flex",
+        height: "100%",
+        flexDirection: "column",
+        bgcolor: "background.paper",
+      }}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          height: 64,
+          alignItems: "center",
+          gap: 1.25,
+          px: 2.5,
         }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-16 -left-16 size-56 rounded-full bg-sidebar-primary/15 blur-3xl"
-      />
-
-      <div className="relative flex h-14 items-center gap-2.5 border-b border-sidebar-border px-4">
-        <div className="flex size-7 shrink-0 items-center justify-center rounded-[9px] bg-gradient-to-br from-sidebar-primary to-orange-400 shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
-          <BoxesIcon aria-hidden className="size-4 text-white" />
-        </div>
-        <span className="font-heading text-[15px] font-semibold tracking-tight">
-          ForkStock
-        </span>
-      </div>
-
-      <nav
-        aria-label="Primary"
-        className="relative flex-1 space-y-4 overflow-y-auto p-3"
       >
-        <div className="space-y-0.5">
+        <Box
+          sx={{
+            display: "flex",
+            width: 32,
+            height: 32,
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: "10px",
+            bgcolor: "primary.main",
+            color: "primary.contrastText",
+          }}
+        >
+          <BoxesIcon aria-hidden size={18} />
+        </Box>
+        <Typography
+          variant="h6"
+          sx={{ fontWeight: 700, letterSpacing: "-0.01em" }}
+        >
+          ForkStock
+        </Typography>
+      </Box>
+
+      <Divider />
+
+      <Box
+        component="nav"
+        aria-label="Primary"
+        sx={{ flex: 1, overflowY: "auto", py: 1.5 }}
+      >
+        <List disablePadding>
           {PRIMARY_NAV.map((item) => (
             <NavLink key={item.href} item={item} onNavigate={onNavigate} />
           ))}
-        </div>
+        </List>
 
-        <div className="space-y-0.5 border-t border-sidebar-border pt-3">
+        <Divider sx={{ my: 1.5, mx: 3 }} />
+
+        <List disablePadding>
           {ADMIN_NAV.map((item) => (
             <NavLink key={item.href} item={item} onNavigate={onNavigate} />
           ))}
-        </div>
-      </nav>
+        </List>
+      </Box>
 
-      <div className="relative">
-        <AccountMenu user={user} onSignOut={() => signOut()} />
-      </div>
-    </div>
+      <Divider />
+      <AccountMenu user={user} onSignOut={() => signOut()} />
+    </Box>
   );
 }
 

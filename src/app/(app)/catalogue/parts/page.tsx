@@ -95,7 +95,7 @@ export default async function CataloguePartsPage(
           </p>
         </div>
         {can(user.role, "catalogue.manage") ? (
-          <Button asChild>
+          <Button asChild variant="gradient">
             <Link href="/catalogue/parts/new">
               <PlusIcon /> Add part
             </Link>

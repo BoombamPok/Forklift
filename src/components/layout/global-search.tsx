@@ -2,12 +2,26 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Loader2Icon, PackageIcon, TagIcon, TruckIcon } from "lucide-react";
+import {
+  Loader2Icon,
+  PackageIcon,
+  SearchIcon,
+  TagIcon,
+  TruckIcon,
+  XIcon,
+} from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import Box from "@mui/material/Box";
+import type { SxProps, Theme } from "@mui/material/styles";
+import TextField from "@mui/material/TextField";
+import InputAdornment from "@mui/material/InputAdornment";
+import IconButton from "@mui/material/IconButton";
+import Paper from "@mui/material/Paper";
+import List from "@mui/material/List";
+import ListItemButton from "@mui/material/ListItemButton";
+import Typography from "@mui/material/Typography";
+import { alpha } from "@mui/material/styles";
 
-import { cn } from "@/lib/utils";
-import { SearchInput } from "@/components/shared/search-input";
 import { StatusBadge } from "@/components/shared/status-badge";
 import {
   searchGlobal,
@@ -35,25 +49,20 @@ const RESULT_ICON: Record<SearchResultKind, LucideIcon> = {
   model: TruckIcon,
 };
 
-const RESULT_ICON_STYLE: Record<SearchResultKind, string> = {
-  part: "bg-info/10 text-info",
-  brand: "bg-primary/10 text-primary",
-  model: "bg-muted text-muted-foreground",
-};
-
 type GlobalSearchProps = {
-  className?: string;
+  sx?: SxProps<Theme>;
 };
 
 /**
- * Header search (phase2c.md's "2e") - a dropdown under the input rather
- * than a dedicated results page, per the spec's own judgment call that a
- * dropdown suffices at this scope. Hand-rolled listbox (not the existing
- * Combobox, which filters a fixed local option list) since results come
- * from a debounced server call and need per-kind badges, not plain text
- * options.
+ * Header search - a dropdown under the input rather than a dedicated
+ * results page. Hand-rolled listbox (not MUI's Autocomplete, which has
+ * its own state model that would require re-deriving this component's
+ * debounced-server-call + keyboard-nav behavior, already e2e-tested)
+ * since results come from a debounced server call and need per-kind
+ * badges, not plain text options - only the presentation layer here is
+ * MUI, the logic/ARIA structure is unchanged.
  */
-function GlobalSearch({ className }: GlobalSearchProps) {
+function GlobalSearch({ sx }: GlobalSearchProps) {
   const router = useRouter();
   const [query, setQuery] = React.useState("");
   const [open, setOpen] = React.useState(false);
@@ -114,16 +123,18 @@ function GlobalSearch({ className }: GlobalSearchProps) {
   }
 
   return (
-    <div className={cn("relative", className)}>
-      <SearchInput
+    <Box sx={{ position: "relative", ...sx }}>
+      <TextField
+        fullWidth
+        size="small"
+        placeholder="Search parts, brands, models…"
+        value={query}
         role="combobox"
         aria-expanded={showPanel}
         aria-controls="global-search-listbox"
         aria-activedescendant={
           activeIndex >= 0 ? `global-search-option-${activeIndex}` : undefined
         }
-        placeholder="Search parts, brands, models…"
-        value={query}
         onChange={(event) => {
           setQuery(event.target.value);
           setOpen(true);
@@ -131,92 +142,147 @@ function GlobalSearch({ className }: GlobalSearchProps) {
         onFocus={() => setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 100)}
         onKeyDown={handleKeyDown}
-        onClear={() => {
-          setQuery("");
-          setOpen(false);
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon size={16} />
+              </InputAdornment>
+            ),
+            endAdornment: query.length > 0 && (
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="Clear search"
+                  size="small"
+                  onClick={() => {
+                    setQuery("");
+                    setOpen(false);
+                  }}
+                >
+                  <XIcon size={14} />
+                </IconButton>
+              </InputAdornment>
+            ),
+          },
         }}
       />
 
-      <AnimatePresence>
-        {showPanel ? (
-          <motion.div
-            id="global-search-listbox"
-            role="listbox"
-            aria-label="Search results"
-            initial={{ opacity: 0, y: -4, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -4, scale: 0.98 }}
-            transition={{ duration: 0.12, ease: "easeOut" }}
-            className="absolute top-full right-0 z-50 mt-2 w-88 rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg"
-          >
-            {isPending ? (
-              <div className="flex items-center gap-2 px-3 py-4 text-sm text-muted-foreground">
-                <Loader2Icon aria-hidden className="size-4 animate-spin" />
+      {showPanel ? (
+        <Paper
+          id="global-search-listbox"
+          role="listbox"
+          aria-label="Search results"
+          elevation={4}
+          sx={{
+            position: "absolute",
+            top: "100%",
+            right: 0,
+            zIndex: (theme) => theme.zIndex.appBar + 1,
+            mt: 1,
+            width: 352,
+            maxWidth: "90vw",
+            p: 0.5,
+          }}
+        >
+          {isPending ? (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                px: 2,
+                py: 2,
+              }}
+            >
+              <Loader2Icon size={16} className="animate-spin" aria-hidden />
+              <Typography variant="body2" color="text.secondary">
                 Searching…
-              </div>
-            ) : state.status === "error" ? (
-              <p className="px-3 py-4 text-sm text-muted-foreground">
-                Something went wrong. Try again.
-              </p>
-            ) : results.length === 0 ? (
-              <p className="px-3 py-4 text-sm text-muted-foreground">
-                No results for &ldquo;{debouncedQuery}&rdquo;.
-              </p>
-            ) : (
-              <ul>
-                {results.map((result, index) => {
-                  const Icon = RESULT_ICON[result.kind];
-                  return (
-                    <li key={`${result.kind}-${result.id}`}>
-                      <button
-                        id={`global-search-option-${index}`}
-                        role="option"
-                        aria-selected={index === activeIndex}
-                        type="button"
-                        className={cn(
-                          "flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm",
-                          index === activeIndex
-                            ? "bg-accent text-accent-foreground"
-                            : "hover:bg-accent hover:text-accent-foreground",
-                        )}
-                        onMouseDown={(event) => event.preventDefault()}
-                        onClick={() => navigateTo(result)}
+              </Typography>
+            </Box>
+          ) : state.status === "error" ? (
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ px: 2, py: 2 }}
+            >
+              Something went wrong. Try again.
+            </Typography>
+          ) : results.length === 0 ? (
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ px: 2, py: 2 }}
+            >
+              No results for &ldquo;{debouncedQuery}&rdquo;.
+            </Typography>
+          ) : (
+            <List disablePadding>
+              {results.map((result, index) => {
+                const Icon = RESULT_ICON[result.kind];
+                return (
+                  <ListItemButton
+                    key={`${result.kind}-${result.id}`}
+                    id={`global-search-option-${index}`}
+                    role="option"
+                    aria-selected={index === activeIndex}
+                    selected={index === activeIndex}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => navigateTo(result)}
+                    sx={{ borderRadius: 1.5, gap: 1.5 }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        width: 28,
+                        height: 28,
+                        flexShrink: 0,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        borderRadius: 1.5,
+                        bgcolor: (theme) =>
+                          alpha(theme.palette.primary.main, 0.1),
+                        color: "primary.main",
+                      }}
+                    >
+                      <Icon aria-hidden size={14} />
+                    </Box>
+                    <Box sx={{ minWidth: 0, flex: 1 }}>
+                      <Typography
+                        variant="body2"
+                        noWrap
+                        sx={{ fontWeight: 500 }}
                       >
-                        <span
-                          className={cn(
-                            "flex size-7 shrink-0 items-center justify-center rounded-md",
-                            RESULT_ICON_STYLE[result.kind],
-                          )}
+                        {result.title}
+                      </Typography>
+                      {result.subtitle ? (
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          noWrap
+                          sx={{
+                            display: "block",
+                            fontFamily: "var(--font-roboto-mono)",
+                          }}
                         >
-                          <Icon aria-hidden className="size-3.5" />
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate font-medium text-foreground">
-                            {result.title}
-                          </span>
-                          {result.subtitle ? (
-                            <span className="block truncate font-mono text-xs text-muted-foreground">
-                              {result.subtitle}
-                            </span>
-                          ) : null}
-                        </span>
-                        {result.badge ? (
-                          <StatusBadge
-                            label={result.badge.label}
-                            tone={result.badge.tone}
-                            className="shrink-0"
-                          />
-                        ) : null}
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
-    </div>
+                          {result.subtitle}
+                        </Typography>
+                      ) : null}
+                    </Box>
+                    {result.badge ? (
+                      <StatusBadge
+                        label={result.badge.label}
+                        tone={result.badge.tone}
+                        className="shrink-0"
+                      />
+                    ) : null}
+                  </ListItemButton>
+                );
+              })}
+            </List>
+          )}
+        </Paper>
+      ) : null}
+    </Box>
   );
 }
 

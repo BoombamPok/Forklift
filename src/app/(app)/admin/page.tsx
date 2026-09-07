@@ -8,6 +8,7 @@ import {
 
 import { requireRole } from "@/lib/auth/require-role";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { HubHero } from "@/components/premium/hub-hero";
 
 const ADMIN_SECTIONS = [
   {
@@ -35,21 +36,18 @@ export default async function AdminPage() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1.5">
-        <h2 className="font-heading text-lg font-semibold tracking-tight">
-          Administration
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Users, roles, warehouse configuration, and catalogue import/export.
-        </p>
-      </div>
+      <HubHero
+        title="Administration"
+        description="Users, roles, warehouse configuration, and catalogue import/export."
+        leadHue="electric"
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {ADMIN_SECTIONS.map((section) => {
           const Icon = section.icon;
           return (
             <Link key={section.href} href={section.href} className="group">
-              <Card interactive className="h-full">
+              <Card interactive tone="glass" className="h-full">
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <span className="flex items-center gap-2.5">

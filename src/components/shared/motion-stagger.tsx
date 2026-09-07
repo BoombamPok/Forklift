@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import { motion, type Variants } from "motion/react";
+import Box from "@mui/material/Box";
+import type { SxProps, Theme } from "@mui/material/styles";
 
 const containerVariants: Variants = {
   hidden: {},
@@ -19,33 +21,34 @@ const itemVariants: Variants = {
 
 type MotionStaggerProps = {
   children: React.ReactNode;
-  className?: string;
+  sx?: SxProps<Theme>;
 };
 
 /**
  * Cascades its direct `MotionStaggerItem` children in on mount instead of
  * having every item pop in at once - used for grids/lists of otherwise
  * uniform cards (KPI row, table rows) where a single fade reads as
- * static. Restrained per CLAUDE.md: marks a state change, not decoration.
+ * static.
  */
-function MotionStagger({ children, className }: MotionStaggerProps) {
+function MotionStagger({ children, sx }: MotionStaggerProps) {
   return (
-    <motion.div
-      className={className}
+    <Box
+      component={motion.div}
       initial="hidden"
       animate="visible"
       variants={containerVariants}
+      sx={sx}
     >
       {children}
-    </motion.div>
+    </Box>
   );
 }
 
-function MotionStaggerItem({ children, className }: MotionStaggerProps) {
+function MotionStaggerItem({ children, sx }: MotionStaggerProps) {
   return (
-    <motion.div className={className} variants={itemVariants}>
+    <Box component={motion.div} variants={itemVariants} sx={sx}>
       {children}
-    </motion.div>
+    </Box>
   );
 }
 

@@ -1,13 +1,13 @@
 import * as React from "react";
-
-import { cn } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
+import Box from "@mui/material/Box";
+import Skeleton from "@mui/material/Skeleton";
+import type { SxProps, Theme } from "@mui/material/styles";
 
 type LoadingStateProps = {
   variant?: "table" | "cards" | "block";
   rows?: number;
   columns?: 3 | 4;
-  className?: string;
+  sx?: SxProps<Theme>;
 };
 
 /**
@@ -18,50 +18,55 @@ function LoadingState({
   variant = "block",
   rows = 5,
   columns = 4,
-  className,
+  sx,
 }: LoadingStateProps) {
   if (variant === "table") {
     return (
-      <div
+      <Box
         role="status"
         aria-label="Loading"
-        className={cn("space-y-2", className)}
+        sx={{ display: "flex", flexDirection: "column", gap: 1, ...sx }}
       >
         {Array.from({ length: rows }).map((_, i) => (
-          <Skeleton key={i} className="h-10 w-full" />
+          <Skeleton key={i} variant="rounded" height={40} />
         ))}
-      </div>
+      </Box>
     );
   }
 
   if (variant === "cards") {
     return (
-      <div
+      <Box
         role="status"
         aria-label="Loading"
-        className={cn(
-          "grid grid-cols-1 gap-4 sm:grid-cols-2",
-          columns === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4",
-          className,
-        )}
+        sx={{
+          display: "grid",
+          gap: 2,
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "1fr 1fr",
+            lg: `repeat(${columns}, 1fr)`,
+          },
+          ...sx,
+        }}
       >
         {Array.from({ length: rows }).map((_, i) => (
-          <Skeleton key={i} className="h-24 w-full rounded-lg" />
+          <Skeleton key={i} variant="rounded" height={96} />
         ))}
-      </div>
+      </Box>
     );
   }
 
   return (
-    <div
+    <Box
       role="status"
       aria-label="Loading"
-      className={cn("space-y-2", className)}
+      sx={{ display: "flex", flexDirection: "column", gap: 1, ...sx }}
     >
-      <Skeleton className="h-4 w-1/3" />
-      <Skeleton className="h-4 w-full" />
-      <Skeleton className="h-4 w-5/6" />
-    </div>
+      <Skeleton variant="text" width="33%" />
+      <Skeleton variant="text" width="100%" />
+      <Skeleton variant="text" width="85%" />
+    </Box>
   );
 }
 

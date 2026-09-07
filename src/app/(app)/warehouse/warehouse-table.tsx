@@ -101,7 +101,11 @@ function WarehouseTable({ rows, canManage }: WarehouseTableProps) {
     <div className="space-y-4">
       {canManage ? (
         <div className="flex justify-end">
-          <Button type="button" onClick={() => setCreateOpen(true)}>
+          <Button
+            type="button"
+            variant="gradient"
+            onClick={() => setCreateOpen(true)}
+          >
             <PlusIcon /> Add warehouse
           </Button>
         </div>

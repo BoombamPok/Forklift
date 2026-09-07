@@ -101,7 +101,11 @@ function RackList({ warehouseId, racks, canManage }: RackListProps) {
       <div className="flex items-center justify-between">
         <h3 className="font-heading text-base font-semibold">Racks</h3>
         {canManage ? (
-          <Button type="button" onClick={() => setCreateOpen(true)}>
+          <Button
+            type="button"
+            variant="gradient"
+            onClick={() => setCreateOpen(true)}
+          >
             <PlusIcon /> Add rack
           </Button>
         ) : null}

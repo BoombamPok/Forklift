@@ -87,7 +87,11 @@ function BoxList({ shelfId, boxes, canManage }: BoxListProps) {
       <div className="flex items-center justify-between">
         <h3 className="font-heading text-base font-semibold">Boxes</h3>
         {canManage ? (
-          <Button type="button" onClick={() => setCreateOpen(true)}>
+          <Button
+            type="button"
+            variant="gradient"
+            onClick={() => setCreateOpen(true)}
+          >
             <PlusIcon /> Add box
           </Button>
         ) : null}

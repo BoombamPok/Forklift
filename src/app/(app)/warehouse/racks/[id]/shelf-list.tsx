@@ -88,7 +88,11 @@ function ShelfList({ rackId, shelves, canManage }: ShelfListProps) {
       <div className="flex items-center justify-between">
         <h3 className="font-heading text-base font-semibold">Shelves</h3>
         {canManage ? (
-          <Button type="button" onClick={() => setCreateOpen(true)}>
+          <Button
+            type="button"
+            variant="gradient"
+            onClick={() => setCreateOpen(true)}
+          >
             <PlusIcon /> Add shelf
           </Button>
         ) : null}

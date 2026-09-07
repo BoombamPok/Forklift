@@ -1306,13 +1306,108 @@ Real invite-email delivery isn't E2E-testable in CI at all (no way to
 receive the email) - flagged as a manual step in
 `docs/LAUNCH_CHECKLIST.md` instead.
 
+## Maximalist visual redesign (2026-09-07, IN PROGRESS — not a phase)
+
+**This is a deliberate, explicit, user-directed override of CLAUDE.md
+§7 ("Design Direction" — restrained industrial SaaS, anti-decoration)
+and ADR-0003 (light-only V1, fixed sidebar chrome).** The user asked to
+set those aside and rebuild the entire application's visual identity as
+a maximalist, animated, 3D-enhanced "premium" experience, confirming via
+clarifying questions: (1) scope = the **entire application**, not one
+page, (2) 3D = a real react-three-fiber scene, not CSS tricks, (3) full
+creative freedom on brand identity. Non-design requirements (WCAG 2.1
+AA, desktop-first, auth logic, data integrity) are **not** waived and
+have been actively re-verified throughout.
+
+Work is happening on branch **`redesign/maximalist`** (pushed to
+`origin`, **not merged to `main`** — main/production are untouched so
+far). The full plan (context, token values, 3D architecture, batch
+rollout, verification gates) is at
+`/root/.claude/plans/serialized-drifting-kurzweil.md` — read it before
+continuing this work in a new session.
+
+**Done and verified** (typecheck/lint/format/251 unit tests/production
+build/full 31-test Playwright suite all green, except one CSV-import
+e2e test independently confirmed to fail identically on unmodified
+`main` — a pre-existing native-file-input/browser quirk, unrelated):
+
+- **Batch 0 (foundation)** — added `three`, `@react-three/fiber@^9`
+  (the React-19-compatible major), `@react-three/drei`,
+  `@react-three/postprocessing`. `src/app/globals.css` flipped
+  dark-first: deep graphite-navy canvas, the original warm amber kept as
+  hero accent plus a new electric-blue secondary, colored glow shadows,
+  a `glass-panel` utility, bigger radius scale. `html` forces the `dark`
+  class (no toggle — extends ADR-0003's "fixed chrome" precedent
+  app-wide rather than building toggle machinery); the old light palette
+  is kept dormant in `:root`, not deleted. Added Bricolage Grotesque as
+  `--font-display`/`--font-heading` for headlines only — IBM Plex
+  Sans/Mono untouched for body text and part numbers/SKUs.
+  `src/components/ui/card.tsx` got a `tone: "flat" | "glass"` prop
+  (default `"flat"`, so every existing usage — ~60 call sites —
+  upgrades to the new dark tokens for free with zero code changes),
+  `button.tsx` got `variant="gradient"`, `table.tsx` got a CSS-only
+  hover/header skin pass. New `src/components/premium/` (GradientText,
+  MagneticButton, ScrollReveal) and `src/lib/hooks/use-reduced-motion.ts`
+  (uses `useSyncExternalStore`, not motion/react's own hook — that one
+  reads `matchMedia` during the first client render and caused a real
+  SSR hydration mismatch, since fixed). New `src/components/three/`
+  scaffold: `scene-canvas.tsx`, `scene-primitives.tsx` (shared abstract
+  floating-cluster geometry — deliberately not a literal forklift render,
+  no such asset exists), three composed scenes (login/dashboard/hub),
+  and `scene-loader.tsx` — the **only** file allowed to call
+  `next/dynamic(ssr:false)` for a scene, gating on
+  `prefers-reduced-motion`, `lg:`-and-up viewport (desktop-first is not
+  waived), and IntersectionObserver lazy-mount, with a static CSS
+  poster-fallback otherwise. Confirmed via network trace that the
+  ~1MB three.js chunk loads only on routes that actually render a scene.
+- **Batch 1 (login + dashboard flagship)** — login page rebuilt as a
+  unified glass-panel card with the full `HeroSceneLogin` (floating
+  amber/electric metallic-glass cluster, bloom, mouse parallax) and a
+  gradient `MagneticButton` submit. Dashboard got a slim, deliberately
+  more restrained `HeroSceneDashboard` band behind the greeting — KPI
+  cards below need to stay primary, not compete with decoration. This
+  also confirmed the token flip cascades through the **whole app** for
+  free: sidebar, header, charts, KPI cards, and tables on every other
+  page already read as the new dark palette with zero additional edits
+  (verified via screenshot on the real dashboard).
+- Two real bugs found and fixed while verifying (not just eyeballed —
+  caught via pixel-sampling and axe/Playwright): a stacking-context bug
+  where `-z-10` on the 3D layer put it behind normal-flow content
+  (negative z-index always loses to static/auto content regardless of
+  DOM order — fixed with `z-0`/`z-10` instead), and the hydration
+  mismatch above. Also fixed a **pre-existing** bug unrelated to this
+  redesign, caught by finally re-running `smoke.spec.ts`: the login
+  page's "ForkStock" wordmark had been silently demoted to a `<span>` in
+  an earlier session, breaking `getByRole("heading",{name:"ForkStock"})`
+  — restored as `<h2>`.
+
+**Not started yet** — Batch 2 (hub pages `/catalogue`, `/reports`,
+`/admin`: `HeroSceneHub` is built but not wired into any page yet),
+Batch 3 (inventory + catalogue data pages — 2D glass/gradient refinement
+only, no 3D, since these are dense working screens), Batch 4 (warehouse
+hierarchy, 4 levels), Batch 5 (7 report sub-pages), Batch 6 (admin
+sub-pages + `/accept-invite`, which still has the pre-redesign light
+full-bleed layout and will look inconsistent with `/login` until then).
+
+**Do not merge `redesign/maximalist` to `main` without the user's
+explicit, informed go-ahead** — main auto-deploys via Vercel
+(`docs/LAUNCH_CHECKLIST.md`), and merging now would ship a real business
+tool's login/dashboard in a completely different visual language from
+every other page mid-redesign.
+
 ## Next steps
 
-There is no Phase 8. ForkStock V1 is feature-complete, reviewed,
-hardened, and documented, and the `/admin` gap above is closed. What's
-left is entirely for a human to do, tracked in
+The maximalist redesign above is the active thread — continue with
+Batch 2 (hub pages) per the plan file, then Batches 3-6. Confirm scope
+with the user if resuming after a long gap, since this overrides
+documented project direction and its own plan file may have drifted
+from reality — reconcile against the actual repo/branch state first.
+
+Separately, unrelated to the redesign: ForkStock V1 (the pre-redesign
+feature set) is feature-complete, reviewed, hardened, and documented.
+What was left there is entirely for a human to do, tracked in
 `docs/LAUNCH_CHECKLIST.md`: add the CI `e2e` job's repository secrets,
-run (or authorize) the new admin e2e tests and a real invite-email smoke
+run (or authorize) the admin e2e tests and a real invite-email smoke
 test against the live Supabase project, and do one final manual
 walkthrough on the actual deployed URL before real warehouse staff start
 using it.

@@ -1543,15 +1543,28 @@ minified, useless "Error #441") and manual Playwright checks - `npm
 run build` succeeding is not proof these work, only dev-mode runtime
 errors and a real page load catch them.
 
+**`DataTable` converted (highest-leverage step, done)**:
+`src/components/shared/data-table.tsx` - the one generic table
+primitive inventory/catalogue/warehouse/reports/admin all render
+through - now uses MUI's Table/TableHead/TableBody/TableRow/TableCell/
+TableSortLabel/Checkbox, with the *exact same prop API* (columns,
+manual pagination/sorting, row selection, error/loading/empty states)
+so none of the ~15+ consuming pages needed any edits - only the
+table's own chrome changed. Also converted `low-stock-table.tsx` off
+the shared shadcn `Tabs` in the same pass: MUI's `Tabs`/`Tab` don't
+need Radix's aria-controls-to-a-real-tabpanel wiring, so the four empty
+hidden panels the old code needed just to satisfy axe are gone
+entirely (a genuine simplification). Verified: 251 unit tests, full
+e2e suite (29/31, same two pre-existing flakes, both pass on retry in
+isolation), clean build.
+
 **Not started yet**: hub pages (catalogue/reports/admin index),
-inventory, catalogue, warehouse, reports, admin - all still render old
-shadcn/Tailwind components inside the new MUI shell (functional but
-visually mixed). The shared `DataTable`/`Tabs` primitives (used by
-~15+ pages) are still shadcn/Tailwind too - converting those is
-probably worth doing as its own early step in the next batch, since so
-much downstream work depends on them. Final cleanup batch (remove
-Tailwind/shadcn/radix-ui/cva, delete `src/components/ui/*`) can't
-happen until all pages are migrated.
+inventory, catalogue, warehouse, reports, admin pages themselves still
+render old shadcn/Tailwind content inside the new MUI shell+DataTable
+(functional but visually mixed - the table chrome is now MUI, but
+page headers/filters/forms around it aren't yet). Final cleanup batch
+(remove Tailwind/shadcn/radix-ui/cva, delete `src/components/ui/*`)
+can't happen until all pages are migrated.
 
 **Do not merge `redesign/maximalist` to `main` without the user's
 explicit, informed go-ahead** — main auto-deploys via Vercel

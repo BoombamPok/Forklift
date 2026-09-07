@@ -1458,11 +1458,60 @@ shadcn/Tailwind component layer entirely and rebuild the UI on MUI
 language rather than continuing the amber/electric dark-glass concept.
 Confirmed via clarifying questions: full MUI (drop Tailwind entirely,
 not a hybrid), full visual reset to Material Design's look, on a **new
-branch off `redesign/maximalist`** (not this branch directly) so this
-checkpoint stays intact as a fallback/comparison point. See the next
-section for that work once it starts - check `git branch -a` /
-`git log` for the actual branch name, since this file may not be
-updated in perfect lockstep with which branch is checked out.
+branch off `redesign/maximalist`** (not that branch directly) so it
+stays intact as a fallback/comparison point.
+
+## MUI rehaul (branch `redesign/mui-rehaul`, in progress)
+
+Same batch/verify/commit discipline as the maximalist redesign. Migration
+path: Tailwind/shadcn/radix-ui/cva stay installed until every page is off
+them (removing early would break every unmigrated page's styling), removed
+in a final cleanup batch once zero files reference them. Icons stay
+lucide-react (not @mui/icons-material) - a deliberate scope call, not an
+oversight, to avoid ~50+ low-value icon-hunting renames.
+
+**Done and verified** (typecheck/lint/format/251 unit tests/build/full
+31-test e2e suite - 30/31, same pre-existing CSV-import flake - after
+each commit):
+- **Foundation**: `src/theme/theme.ts` (Material theme, light-mode
+  default, original amber/electric hues restructured through MUI's
+  palette/typography/shape system), `src/theme/theme-registry.tsx`
+  (`AppRouterCacheProvider`+`ThemeProvider`+`CssBaseline`, the only
+  client boundary MUI needs). Roboto/Roboto Mono added via
+  `next/font/google`; old IBM Plex/Bricolage fonts stay loaded for
+  unmigrated pages. Root layout no longer forces the `dark` class -
+  reactivates the legacy light Tailwind palette (dormant in `:root`
+  since the earlier redesign) for unmigrated pages, which happens to
+  align with the new light Material direction instead of clashing.
+- **App shell**: `app-shell.tsx`/`sidebar-nav.tsx`/`header.tsx`/
+  `account-menu.tsx`/`global-search.tsx` rebuilt with MUI's standard
+  responsive-Drawer pattern, AppBar/Toolbar, List/ListItemButton nav,
+  Menu-based account dropdown. `GlobalSearch`'s logic (debounced server
+  search, keyboard nav, ARIA listbox/option roles - already e2e-tested)
+  was deliberately NOT re-derived against MUI's Autocomplete state
+  model; only its presentation moved to MUI.
+- **Login + accept-invite (flagship)**: elevated `Paper` card replacing
+  the previous glass-panel look, MUI `TextField`/`Button`/`Alert`
+  throughout, kept the react-three-fiber hero scene (library-independent,
+  its hardcoded amber/electric colors already matched the new theme).
+  Found and fixed a real contrast bug here: initial theme colors
+  `#C2703A`/`#2F7F9E` only cleared 3.7:1/4.52:1 against white (below/too
+  close to the 4.5:1 floor) - darkened to `#A05826` (5.36:1) and
+  `#1F5A72` (7.6:1), computed with the same relative-luminance method
+  WCAG/axe use rather than eyeballed. Both are now `theme.ts`'s
+  `primary.main`/`secondary.main`.
+
+Remarkable finding: despite rewriting 100% of the markup for the shell,
+search, account menu, and both auth pages, the full e2e suite needed
+zero test changes - every `getByRole`/`getByLabel` assertion resolved
+correctly against the all-new MUI DOM structure.
+
+**Not started yet**: all 27 remaining pages (dashboard, hub pages,
+inventory, catalogue, warehouse, reports, admin) still render the old
+shadcn/Tailwind components inside the new MUI shell - functional but
+visually mixed. Final cleanup batch (remove Tailwind/shadcn/radix-ui/
+cva, delete `src/components/ui/*`) can't happen until all of those are
+migrated.
 
 **Do not merge `redesign/maximalist` to `main` without the user's
 explicit, informed go-ahead** — main auto-deploys via Vercel

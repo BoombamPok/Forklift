@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ErrorState } from "@/components/shared/error-state";
 import { EmptyState } from "@/components/shared/empty-state";
+import { HubHero } from "@/components/premium/hub-hero";
 import { getBrandList, getCategoryList } from "@/features/catalogue/queries";
 import { CategoryTable } from "./category-table";
 
@@ -34,27 +35,24 @@ export default async function CataloguePage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="space-y-1.5">
-          <h2 className="font-heading text-lg font-semibold tracking-tight">
-            Catalogue
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Brands, models, and parts - what fits what, browsed by brand.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button asChild variant="outline">
-            <Link href="/catalogue/brands">Manage brands</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/catalogue/models">Browse models</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/catalogue/parts">Browse parts</Link>
-          </Button>
-        </div>
-      </div>
+      <HubHero
+        title="Catalogue"
+        description="Brands, models, and parts - what fits what, browsed by brand."
+        leadHue="amber"
+        actions={
+          <>
+            <Button asChild variant="outline">
+              <Link href="/catalogue/brands">Manage brands</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/catalogue/models">Browse models</Link>
+            </Button>
+            <Button asChild variant="gradient">
+              <Link href="/catalogue/parts">Browse parts</Link>
+            </Button>
+          </>
+        }
+      />
 
       {brands.length === 0 ? (
         <EmptyState

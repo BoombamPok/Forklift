@@ -1,76 +1,206 @@
+"use client";
+
 import { BoxesIcon } from "lucide-react";
+import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
+import Typography from "@mui/material/Typography";
+import Chip from "@mui/material/Chip";
+import Fade from "@mui/material/Fade";
 
 import { LoginForm } from "@/features/auth/components/login-form";
 import { FeatureList } from "@/features/auth/components/feature-list";
-import { MotionFadeIn } from "@/components/shared/motion-fade-in";
 import { SceneLoader } from "@/components/three/scene-loader";
 
 export default function LoginPage() {
   return (
-    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-background px-4 py-10 sm:px-6 lg:px-10">
-      <div aria-hidden className="bg-ambient-glow" />
-      <div aria-hidden className="bg-ambient-glow-electric" />
-
-      <MotionFadeIn className="relative w-full max-w-5xl">
-        <div className="glass-panel relative flex w-full flex-col overflow-hidden rounded-2xl shadow-glow-primary lg:min-h-[600px] lg:flex-row">
-          <div className="relative hidden w-full flex-col justify-between overflow-hidden px-10 py-10 text-foreground lg:flex lg:max-w-md xl:max-w-lg">
+    <Box
+      sx={{
+        display: "flex",
+        minHeight: "100dvh",
+        alignItems: "center",
+        justifyContent: "center",
+        px: { xs: 2, sm: 3, lg: 5 },
+        py: 5,
+        bgcolor: "background.default",
+      }}
+    >
+      <Fade in timeout={400}>
+        <Paper
+          elevation={3}
+          sx={{
+            position: "relative",
+            display: "flex",
+            width: "100%",
+            maxWidth: 1024,
+            minHeight: { lg: 600 },
+            flexDirection: { xs: "column", lg: "row" },
+            overflow: "hidden",
+            borderRadius: 4,
+          }}
+        >
+          <Box
+            sx={{
+              position: "relative",
+              display: { xs: "none", lg: "flex" },
+              width: "100%",
+              maxWidth: 460,
+              flexDirection: "column",
+              justifyContent: "space-between",
+              overflow: "hidden",
+              px: 5,
+              py: 5,
+              bgcolor: "background.default",
+            }}
+          >
             <SceneLoader
               variant="login"
               posterTone="dual"
               className="absolute inset-0 z-0"
             />
-            <div
+            <Box
               aria-hidden
-              className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-t from-background via-background/40 to-background/10"
+              sx={{
+                position: "absolute",
+                inset: 0,
+                zIndex: 0,
+                pointerEvents: "none",
+                background: (theme) =>
+                  `linear-gradient(to top, ${theme.palette.background.default} 0%, ${theme.palette.background.default}66 45%, transparent 70%)`,
+              }}
             />
 
-            <div className="relative z-10 flex items-center gap-2.5">
-              <div className="flex size-8 items-center justify-center rounded-[10px] bg-gradient-to-br from-primary to-accent-electric shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
-                <BoxesIcon aria-hidden className="size-4.5 text-white" />
-              </div>
-              <h2 className="font-heading text-base font-semibold tracking-tight">
+            <Box
+              sx={{
+                position: "relative",
+                zIndex: 1,
+                display: "flex",
+                alignItems: "center",
+                gap: 1.25,
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  width: 32,
+                  height: 32,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: "10px",
+                  bgcolor: "primary.main",
+                  color: "primary.contrastText",
+                }}
+              >
+                <BoxesIcon aria-hidden size={18} />
+              </Box>
+              <Typography variant="h6" sx={{ fontWeight: 700 }}>
                 ForkStock
-              </h2>
-              <span className="ml-1 rounded-sm bg-secondary px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
-                Warehouse OS
-              </span>
-            </div>
+              </Typography>
+              <Chip
+                label="WAREHOUSE OS"
+                size="small"
+                sx={{
+                  fontFamily: "var(--font-roboto-mono)",
+                  fontSize: "0.6rem",
+                  letterSpacing: "0.08em",
+                }}
+              />
+            </Box>
 
-            <div className="relative z-10 space-y-8">
-              <p className="font-heading text-3xl leading-[1.15] font-medium tracking-tight text-balance">
+            <Box
+              sx={{
+                position: "relative",
+                zIndex: 1,
+                display: "flex",
+                flexDirection: "column",
+                gap: 4,
+              }}
+            >
+              <Typography
+                variant="h4"
+                sx={{
+                  fontWeight: 500,
+                  lineHeight: 1.2,
+                  letterSpacing: "-0.01em",
+                }}
+              >
                 Find the right part, know whether you have it, and know exactly
                 where it is.
-              </p>
-              <FeatureList className="space-y-2.5" />
-            </div>
+              </Typography>
+              <FeatureList />
+            </Box>
 
-            <p className="relative z-10 text-xs text-muted-foreground">
+            <Typography
+              variant="caption"
+              sx={{ position: "relative", zIndex: 1, color: "text.secondary" }}
+            >
               Forklift spare-parts inventory &amp; warehouse management
-            </p>
-          </div>
+            </Typography>
+          </Box>
 
-          <div className="flex flex-1 flex-col items-center justify-center px-6 py-12 sm:px-10 lg:items-start lg:border-l lg:border-border/70 lg:px-14 lg:py-10">
-            <div className="flex w-full max-w-sm flex-col items-center gap-2 pb-6 text-center lg:items-start lg:text-left">
-              <div className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent-electric shadow-sm lg:hidden">
-                <BoxesIcon aria-hidden className="size-5 text-white" />
-              </div>
-              <span className="font-mono text-[10px] font-semibold tracking-widest text-primary uppercase">
+          <Box
+            sx={{
+              display: "flex",
+              flex: 1,
+              flexDirection: "column",
+              alignItems: { xs: "center", lg: "flex-start" },
+              justifyContent: "center",
+              px: { xs: 3, sm: 5, lg: 7 },
+              py: { xs: 6, lg: 5 },
+              borderLeft: { lg: 1 },
+              borderColor: "divider",
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                width: "100%",
+                maxWidth: 380,
+                flexDirection: "column",
+                alignItems: { xs: "center", lg: "flex-start" },
+                gap: 1,
+                pb: 3,
+                textAlign: { xs: "center", lg: "left" },
+              }}
+            >
+              <Box
+                sx={{
+                  display: { xs: "flex", lg: "none" },
+                  width: 40,
+                  height: 40,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: 3,
+                  bgcolor: "primary.main",
+                  color: "primary.contrastText",
+                  mb: 1,
+                }}
+              >
+                <BoxesIcon aria-hidden size={20} />
+              </Box>
+              <Typography
+                variant="overline"
+                sx={{
+                  color: "primary.main",
+                  fontWeight: 700,
+                  letterSpacing: "0.1em",
+                }}
+              >
                 Secure sign-in
-              </span>
-              <h1 className="font-heading text-lg font-semibold tracking-tight lg:text-2xl">
+              </Typography>
+              <Typography variant="h5" component="h1" sx={{ fontWeight: 600 }}>
                 Sign in
-              </h1>
-              <p className="text-sm text-muted-foreground">
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
                 Manage inventory and warehouse operations for ForkStock.
-              </p>
-            </div>
+              </Typography>
+            </Box>
 
-            <div className="w-full max-w-sm">
+            <Box sx={{ width: "100%", maxWidth: 380 }}>
               <LoginForm />
-            </div>
-          </div>
-        </div>
-      </MotionFadeIn>
-    </div>
+            </Box>
+          </Box>
+        </Paper>
+      </Fade>
+    </Box>
   );
 }

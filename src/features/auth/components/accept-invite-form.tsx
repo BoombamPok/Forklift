@@ -4,19 +4,16 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircleIcon, LockIcon, Loader2Icon } from "lucide-react";
+import { AlertCircleIcon, LockIcon } from "lucide-react";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Alert from "@mui/material/Alert";
+import TextField from "@mui/material/TextField";
+import InputAdornment from "@mui/material/InputAdornment";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
+import Typography from "@mui/material/Typography";
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/shared/form";
 import { createClient } from "@/lib/supabase/client";
 import {
   setPasswordSchema,
@@ -37,7 +34,11 @@ function AcceptInviteForm() {
   );
   const [formError, setFormError] = React.useState<string | null>(null);
 
-  const form = useForm<SetPasswordValues>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<SetPasswordValues>({
     resolver: zodResolver(setPasswordSchema),
     defaultValues: { password: "", confirmPassword: "" },
   });
@@ -70,103 +71,85 @@ function AcceptInviteForm() {
 
   if (status === "checking") {
     return (
-      <p className="text-sm text-muted-foreground">Checking your invite…</p>
+      <Typography variant="body2" color="text.secondary">
+        Checking your invite…
+      </Typography>
     );
   }
 
   if (status === "invalid") {
     return (
-      <Alert variant="destructive">
-        <AlertCircleIcon />
-        <AlertDescription>
-          This invite link is invalid or has expired. Ask an admin to send a new
-          one.
-        </AlertDescription>
+      <Alert severity="error" icon={<AlertCircleIcon size={18} />}>
+        This invite link is invalid or has expired. Ask an admin to send a new
+        one.
       </Alert>
     );
   }
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-4"
-        noValidate
-      >
+    <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+      <Stack spacing={2.5}>
         {formError ? (
-          <Alert variant="destructive">
-            <AlertCircleIcon />
-            <AlertDescription>{formError}</AlertDescription>
+          <Alert severity="error" icon={<AlertCircleIcon size={18} />}>
+            {formError}
           </Alert>
         ) : null}
 
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>New password</FormLabel>
-              <div className="relative">
-                <LockIcon
-                  aria-hidden
-                  className="pointer-events-none absolute inset-y-0 left-2.5 my-auto size-3.5 text-muted-foreground"
-                />
-                <FormControl>
-                  <Input
-                    type="password"
-                    autoComplete="new-password"
-                    autoFocus
-                    className="pl-8"
-                    {...field}
-                  />
-                </FormControl>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
+        <TextField
+          label="New password"
+          type="password"
+          autoComplete="new-password"
+          autoFocus
+          fullWidth
+          error={!!errors.password}
+          helperText={errors.password?.message}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <LockIcon size={16} aria-hidden />
+                </InputAdornment>
+              ),
+            },
+          }}
+          {...register("password")}
         />
 
-        <FormField
-          control={form.control}
-          name="confirmPassword"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Confirm password</FormLabel>
-              <div className="relative">
-                <LockIcon
-                  aria-hidden
-                  className="pointer-events-none absolute inset-y-0 left-2.5 my-auto size-3.5 text-muted-foreground"
-                />
-                <FormControl>
-                  <Input
-                    type="password"
-                    autoComplete="new-password"
-                    className="pl-8"
-                    {...field}
-                  />
-                </FormControl>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
+        <TextField
+          label="Confirm password"
+          type="password"
+          autoComplete="new-password"
+          fullWidth
+          error={!!errors.confirmPassword}
+          helperText={errors.confirmPassword?.message}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <LockIcon size={16} aria-hidden />
+                </InputAdornment>
+              ),
+            },
+          }}
+          {...register("confirmPassword")}
         />
 
         <Button
           type="submit"
-          className="w-full"
-          disabled={form.formState.isSubmitting}
+          variant="contained"
+          size="large"
+          fullWidth
+          disabled={isSubmitting}
+          startIcon={
+            isSubmitting ? (
+              <CircularProgress size={16} color="inherit" />
+            ) : undefined
+          }
         >
-          {form.formState.isSubmitting ? (
-            <>
-              <Loader2Icon aria-hidden className="animate-spin" />
-              Setting password…
-            </>
-          ) : (
-            "Set password and sign in"
-          )}
+          {isSubmitting ? "Setting password…" : "Set password and sign in"}
         </Button>
-      </form>
-    </Form>
+      </Stack>
+    </Box>
   );
 }
 

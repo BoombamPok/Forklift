@@ -7,23 +7,18 @@ import {
   AlertCircleIcon,
   EyeIcon,
   EyeOffIcon,
-  Loader2Icon,
   LockIcon,
   MailIcon,
 } from "lucide-react";
+import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
+import Alert from "@mui/material/Alert";
+import TextField from "@mui/material/TextField";
+import InputAdornment from "@mui/material/InputAdornment";
+import IconButton from "@mui/material/IconButton";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
 
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { MagneticButton } from "@/components/premium/magnetic-button";
-import { Input } from "@/components/ui/input";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/shared/form";
 import { login } from "@/features/auth/actions";
 import { loginSchema, type LoginValues } from "@/features/auth/schema";
 
@@ -31,7 +26,11 @@ function LoginForm() {
   const [formError, setFormError] = React.useState<string | null>(null);
   const [showPassword, setShowPassword] = React.useState(false);
   const errorRef = React.useRef<HTMLDivElement>(null);
-  const form = useForm<LoginValues>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   });
@@ -49,107 +48,97 @@ function LoginForm() {
   }, [formError]);
 
   return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-4"
-        noValidate
-      >
+    <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+      <Stack spacing={2.5}>
         {formError ? (
-          <Alert variant="destructive" ref={errorRef} tabIndex={-1}>
-            <AlertCircleIcon />
-            <AlertDescription>{formError}</AlertDescription>
+          <Alert
+            severity="error"
+            ref={errorRef}
+            tabIndex={-1}
+            icon={<AlertCircleIcon size={18} />}
+          >
+            {formError}
           </Alert>
         ) : null}
 
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <div className="relative">
-                <MailIcon
-                  aria-hidden
-                  className="pointer-events-none absolute inset-y-0 left-2.5 my-auto size-3.5 text-muted-foreground"
-                />
-                <FormControl>
-                  <Input
-                    type="email"
-                    autoComplete="email"
-                    placeholder="you@company.com"
-                    autoFocus
-                    className="pl-8"
-                    {...field}
-                  />
-                </FormControl>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
+        <TextField
+          label="Email"
+          type="email"
+          autoComplete="email"
+          placeholder="you@company.com"
+          autoFocus
+          fullWidth
+          error={!!errors.email}
+          helperText={errors.email?.message}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <MailIcon size={16} aria-hidden />
+                </InputAdornment>
+              ),
+            },
+          }}
+          {...register("email")}
         />
 
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Password</FormLabel>
-              <div className="relative">
-                <LockIcon
-                  aria-hidden
-                  className="pointer-events-none absolute inset-y-0 left-2.5 my-auto size-3.5 text-muted-foreground"
-                />
-                <FormControl>
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    autoComplete="current-password"
-                    className="pr-9 pl-8"
-                    {...field}
-                  />
-                </FormControl>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-xs"
-                  className="absolute inset-y-0 right-1 my-auto text-muted-foreground hover:text-foreground"
-                  onClick={() => setShowPassword((v) => !v)}
-                  aria-label={
-                    showPassword
-                      ? "Hide typed characters"
-                      : "Show typed characters"
-                  }
-                  aria-pressed={showPassword}
-                >
-                  {showPassword ? (
-                    <EyeOffIcon aria-hidden />
-                  ) : (
-                    <EyeIcon aria-hidden />
-                  )}
-                </Button>
-              </div>
-              <FormMessage />
-            </FormItem>
-          )}
+        <TextField
+          label="Password"
+          type={showPassword ? "text" : "password"}
+          autoComplete="current-password"
+          fullWidth
+          error={!!errors.password}
+          helperText={errors.password?.message}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <LockIcon size={16} aria-hidden />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    type="button"
+                    edge="end"
+                    size="small"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={
+                      showPassword
+                        ? "Hide typed characters"
+                        : "Show typed characters"
+                    }
+                    aria-pressed={showPassword}
+                  >
+                    {showPassword ? (
+                      <EyeOffIcon size={16} aria-hidden />
+                    ) : (
+                      <EyeIcon size={16} aria-hidden />
+                    )}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            },
+          }}
+          {...register("password")}
         />
 
-        <MagneticButton
+        <Button
           type="submit"
-          variant="gradient"
-          className="w-full"
-          disabled={form.formState.isSubmitting}
+          variant="contained"
+          size="large"
+          fullWidth
+          disabled={isSubmitting}
+          startIcon={
+            isSubmitting ? (
+              <CircularProgress size={16} color="inherit" />
+            ) : undefined
+          }
         >
-          {form.formState.isSubmitting ? (
-            <>
-              <Loader2Icon aria-hidden className="animate-spin" />
-              Signing in…
-            </>
-          ) : (
-            "Sign in"
-          )}
-        </MagneticButton>
-      </form>
-    </Form>
+          {isSubmitting ? "Signing in…" : "Sign in"}
+        </Button>
+      </Stack>
+    </Box>
   );
 }
 

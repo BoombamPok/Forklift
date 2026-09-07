@@ -3,6 +3,9 @@
 import * as React from "react";
 import { motion, type Variants } from "motion/react";
 import { PackageSearchIcon, MapPinIcon, HistoryIcon } from "lucide-react";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import { alpha } from "@mui/material/styles";
 
 const containerVariants: Variants = {
   hidden: {},
@@ -27,10 +30,6 @@ const FEATURES = [
   { icon: HistoryIcon, label: "Full stock movement history, never silent" },
 ];
 
-type FeatureListProps = {
-  className?: string;
-};
-
 /**
  * Icon components can't cross the server/client boundary as props (they're
  * functions, not serializable), so the feature data lives here rather than
@@ -39,30 +38,63 @@ type FeatureListProps = {
  * valid <ul>/<li> semantics - axe-core flags a <div>-wrapped <li> as a
  * structure violation.
  */
-function FeatureList({ className }: FeatureListProps) {
+function FeatureList() {
   return (
-    <motion.ul
-      className={className}
+    <Box
+      component={motion.ul}
       initial="hidden"
       animate="visible"
       variants={containerVariants}
+      sx={{ display: "flex", flexDirection: "column", gap: 1.25, p: 0, m: 0 }}
     >
       {FEATURES.map(({ icon: Icon, label }, index) => (
-        <motion.li
+        <Box
+          component={motion.li}
           key={label}
-          className="flex items-center gap-3 rounded-lg border border-sidebar-border bg-sidebar-accent/40 px-3 py-2.5 text-sm text-sidebar-foreground/80"
           variants={itemVariants}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5,
+            borderRadius: 2,
+            border: 1,
+            borderColor: "divider",
+            bgcolor: (theme) => alpha(theme.palette.common.white, 0.6),
+            px: 1.5,
+            py: 1.25,
+          }}
         >
-          <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-sidebar-accent">
-            <Icon aria-hidden className="size-3.5 text-sidebar-primary" />
-          </span>
-          <span className="flex-1">{label}</span>
-          <span className="font-mono text-[10px] tracking-widest text-sidebar-foreground/35">
+          <Box
+            sx={{
+              display: "flex",
+              width: 28,
+              height: 28,
+              flexShrink: 0,
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: 1.5,
+              bgcolor: (theme) => alpha(theme.palette.primary.main, 0.12),
+              color: "primary.main",
+            }}
+          >
+            <Icon aria-hidden size={14} />
+          </Box>
+          <Typography variant="body2" sx={{ flex: 1 }}>
+            {label}
+          </Typography>
+          <Typography
+            variant="caption"
+            sx={{
+              fontFamily: "var(--font-roboto-mono)",
+              letterSpacing: "0.1em",
+              color: "text.disabled",
+            }}
+          >
             {String(index + 1).padStart(2, "0")}
-          </span>
-        </motion.li>
+          </Typography>
+        </Box>
       ))}
-    </motion.ul>
+    </Box>
   );
 }
 

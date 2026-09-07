@@ -28,8 +28,13 @@ async function TopModelsWidget() {
   } catch (error) {
     return (
       <Card>
-        <CardHeader title={<Typography variant="h6">Top models</Typography>} />
-        <CardContent sx={{ pt: 0 }}>
+        {/* No subheader in the error branch - "Ranked by parts
+            registered as compatible" describes a list that isn't there. */}
+        <CardHeader
+          title={<Typography variant="h6">Top models</Typography>}
+          sx={{ pb: 1.5, borderBottom: "1px solid var(--rule)" }}
+        />
+        <CardContent>
           <ErrorState kind={toErrorKind(error)} />
         </CardContent>
       </Card>
@@ -43,8 +48,16 @@ async function TopModelsWidget() {
 
   return (
     <Card>
-      <CardHeader title={<Typography variant="h6">Top models</Typography>} />
-      <CardContent sx={{ pt: 0 }}>
+      <CardHeader
+        title={<Typography variant="h6">Top models</Typography>}
+        subheader={
+          <Typography variant="caption" color="text.secondary">
+            Ranked by parts registered as compatible
+          </Typography>
+        }
+        sx={{ pb: 1.5, borderBottom: "1px solid var(--rule)" }}
+      />
+      <CardContent>
         {topModels.length === 0 ? (
           <EmptyState
             title="No compatibility data yet"
@@ -71,27 +84,28 @@ async function TopModelsWidget() {
                       display: "flex",
                       alignItems: "center",
                       gap: 1.5,
-                      borderRadius: 2,
+                      borderRadius: "var(--radius-control)",
                       px: 1,
-                      py: 1,
+                      py: 0.875,
                       textDecoration: "none",
                       color: "inherit",
-                      fontSize: "0.875rem",
+                      transition:
+                        "background-color 140ms var(--ease-standard)",
                       "&:hover": { bgcolor: "action.hover" },
                     }}
                   >
                     <Box
+                      className="numeric"
                       sx={{
                         display: "flex",
-                        width: 24,
-                        height: 24,
+                        width: 22,
+                        height: 22,
                         flexShrink: 0,
                         alignItems: "center",
                         justifyContent: "center",
-                        borderRadius: 1,
-                        bgcolor: "action.selected",
-                        fontFamily: "var(--font-roboto-mono)",
-                        fontSize: "0.75rem",
+                        borderRadius: "var(--radius-chip)",
+                        border: "1px solid var(--mui-palette-divider)",
+                        fontSize: "0.6875rem",
                         fontWeight: 600,
                         color: "text.secondary",
                       }}
@@ -117,11 +131,9 @@ async function TopModelsWidget() {
                     </Box>
                     <Typography
                       variant="caption"
+                      className="numeric"
                       color="text.secondary"
-                      sx={{
-                        flexShrink: 0,
-                        fontFamily: "var(--font-roboto-mono)",
-                      }}
+                      sx={{ flexShrink: 0, fontWeight: 500 }}
                     >
                       {model.compatiblePartCount}
                     </Typography>

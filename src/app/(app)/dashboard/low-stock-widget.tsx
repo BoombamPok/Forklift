@@ -1,10 +1,8 @@
-import Card from "@mui/material/Card";
-import CardHeader from "@mui/material/CardHeader";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
 
 import { ErrorState } from "@/components/shared/error-state";
 import { MotionFadeIn } from "@/components/shared/motion-fade-in";
+import { SectionLabel } from "@/components/shared/section-label";
 import { toErrorKind } from "@/lib/errors";
 import { getLowStockRows } from "@/features/dashboard/low-stock";
 import { LowStockTable } from "./low-stock-table";
@@ -13,9 +11,11 @@ import { LowStockTable } from "./low-stock-table";
  * Its own widget/Suspense boundary so this can't be taken down by, or
  * take down, the KPI/chart/activity widgets above it.
  *
- * NOTE: LowStockTable still renders on the shared DataTable/Tabs
- * primitives (shadcn/Tailwind) - those are used across ~15+ pages and
- * converting them is its own batch, not part of this dashboard pass.
+ * No Card wrapper any more: the section label names the block and
+ * DataTable draws its own panel. The old version put a titled card around
+ * a bordered table, which is two frames for one list. The label stays
+ * inside the widget (rather than in page.tsx) so the heading is present
+ * in every state this thing can be in - loading, loaded, and failed.
  */
 async function LowStockWidget() {
   let rows;
@@ -23,28 +23,20 @@ async function LowStockWidget() {
     rows = await getLowStockRows();
   } catch (error) {
     return (
-      <Card>
-        <CardHeader
-          title={<Typography variant="h6">Needs attention</Typography>}
-        />
-        <CardContent sx={{ pt: 0 }}>
-          <ErrorState kind={toErrorKind(error)} />
-        </CardContent>
-      </Card>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+        <SectionLabel>Needs attention</SectionLabel>
+        <ErrorState kind={toErrorKind(error)} />
+      </Box>
     );
   }
 
   return (
-    <Card>
-      <CardHeader
-        title={<Typography variant="h6">Needs attention</Typography>}
-      />
-      <CardContent sx={{ pt: 0 }}>
-        <MotionFadeIn>
-          <LowStockTable rows={rows} />
-        </MotionFadeIn>
-      </CardContent>
-    </Card>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+      <SectionLabel>Needs attention</SectionLabel>
+      <MotionFadeIn>
+        <LowStockTable rows={rows} />
+      </MotionFadeIn>
+    </Box>
   );
 }
 

@@ -12,12 +12,8 @@ import Box from "@mui/material/Box";
 import Tooltip from "@mui/material/Tooltip";
 
 import { KpiCard } from "@/components/shared/kpi-card";
+import { StatCluster } from "@/components/shared/stat-cluster";
 import { ErrorState } from "@/components/shared/error-state";
-import { MotionFadeIn } from "@/components/shared/motion-fade-in";
-import {
-  MotionStagger,
-  MotionStaggerItem,
-} from "@/components/shared/motion-stagger";
 import { formatCurrency } from "@/lib/utils";
 import { toErrorKind } from "@/lib/errors";
 import {
@@ -31,10 +27,22 @@ type DashboardKpisProps = {
   showValue: boolean;
 };
 
+/** A failed metric still has to occupy its cell, or the remaining
+ * readings slide sideways and a person reads the wrong number under the
+ * wrong label. Flattened to sit flush inside the cluster's own frame. */
+const CELL_ERROR_SX = {
+  border: "none",
+  borderRadius: 0,
+  bgcolor: "background.paper",
+  height: "100%",
+  gap: 1,
+  py: 3,
+};
+
 /**
- * Renders the four KPI cards from live data. Fetches each metric
- * independently via `Promise.allSettled` so one query failing (e.g.
- * Supabase unreachable) only takes down its own card, not the whole row.
+ * Renders the headline metrics as one divided instrument panel. Fetches
+ * each metric independently via `Promise.allSettled` so one query failing
+ * (e.g. Supabase unreachable) only takes down its own cell, not the row.
  */
 async function DashboardKpis({ showValue }: DashboardKpisProps) {
   const [itemCountResult, valueResult, lowStockResult, outOfStockResult] =
@@ -49,39 +57,28 @@ async function DashboardKpis({ showValue }: DashboardKpisProps) {
     itemCountResult.status === "fulfilled" && itemCountResult.value === 0;
 
   return (
-    <MotionFadeIn sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       {isEmpty ? (
-        <Alert severity="info" icon={<InfoIcon size={18} />}>
-          <AlertTitle>No data yet</AlertTitle>
+        <Alert severity="info" icon={<InfoIcon size={17} />}>
+          <AlertTitle sx={{ fontSize: "0.8438rem", fontWeight: 600, mb: 0.25 }}>
+            No data yet
+          </AlertTitle>
           These numbers will populate once inventory and stock movements exist.
         </Alert>
       ) : null}
 
-      <MotionStagger
-        sx={{
-          display: "grid",
-          gap: 2,
-          gridTemplateColumns: {
-            xs: "1fr",
-            sm: "1fr 1fr",
-            lg: showValue ? "repeat(4, 1fr)" : "repeat(3, 1fr)",
-          },
-        }}
-      >
-        <MotionStaggerItem>
-          {renderKpi(itemCountResult, (count) => (
-            <KpiCard
-              label="Inventory items"
-              value={count}
-              icon={PackageIcon}
-              tone="info"
-            />
-          ))}
-        </MotionStaggerItem>
+      <StatCluster columns={showValue ? 4 : 3}>
+        {renderKpi(itemCountResult, (count) => (
+          <KpiCard
+            label="Inventory items"
+            value={count}
+            icon={PackageIcon}
+            tone="info"
+          />
+        ))}
 
-        {showValue ? (
-          <MotionStaggerItem>
-            {renderKpi(valueResult, (value) =>
+        {showValue
+          ? renderKpi(valueResult, (value) =>
               value === undefined ? null : (
                 <KpiCard
                   label="Inventory value"
@@ -102,9 +99,7 @@ async function DashboardKpis({ showValue }: DashboardKpisProps) {
                           <InfoIcon
                             aria-label={`${value.excludedCount} item(s) missing cost data, not included in this total`}
                             size={14}
-                            style={{
-                              color: "var(--mui-palette-text-secondary)",
-                            }}
+                            style={{ color: "var(--mui-palette-text-secondary)" }}
                           />
                         </Tooltip>
                       ) : null}
@@ -114,33 +109,28 @@ async function DashboardKpis({ showValue }: DashboardKpisProps) {
                   tone="success"
                 />
               ),
-            )}
-          </MotionStaggerItem>
-        ) : null}
+            )
+          : null}
 
-        <MotionStaggerItem>
-          {renderKpi(lowStockResult, (count) => (
-            <KpiCard
-              label="Low stock"
-              value={count}
-              icon={AlertTriangleIcon}
-              tone="warning"
-            />
-          ))}
-        </MotionStaggerItem>
+        {renderKpi(lowStockResult, (count) => (
+          <KpiCard
+            label="Low stock"
+            value={count}
+            icon={AlertTriangleIcon}
+            tone="warning"
+          />
+        ))}
 
-        <MotionStaggerItem>
-          {renderKpi(outOfStockResult, (count) => (
-            <KpiCard
-              label="Out of stock"
-              value={count}
-              icon={XCircleIcon}
-              tone="destructive"
-            />
-          ))}
-        </MotionStaggerItem>
-      </MotionStagger>
-    </MotionFadeIn>
+        {renderKpi(outOfStockResult, (count) => (
+          <KpiCard
+            label="Out of stock"
+            value={count}
+            icon={XCircleIcon}
+            tone="destructive"
+          />
+        ))}
+      </StatCluster>
+    </Box>
   );
 }
 
@@ -149,12 +139,7 @@ function renderKpi<T>(
   render: (value: T) => React.ReactNode,
 ) {
   if (result.status === "rejected") {
-    return (
-      <ErrorState
-        kind={toErrorKind(result.reason)}
-        sx={{ height: "100%", justifyContent: "center", gap: 1, py: 3 }}
-      />
-    );
+    return <ErrorState kind={toErrorKind(result.reason)} sx={CELL_ERROR_SX} />;
   }
   return render(result.value);
 }

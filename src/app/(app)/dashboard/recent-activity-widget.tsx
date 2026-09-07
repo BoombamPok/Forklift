@@ -8,7 +8,6 @@ import {
   type ActivityTone,
 } from "@/components/shared/activity-list";
 import { ErrorState } from "@/components/shared/error-state";
-import { MotionFadeIn } from "@/components/shared/motion-fade-in";
 import { toErrorKind } from "@/lib/errors";
 import { formatRelativeTime } from "@/lib/utils";
 import {
@@ -36,7 +35,7 @@ async function RecentActivityWidget() {
         <CardHeader
           title={<Typography variant="h6">Recent activity</Typography>}
         />
-        <CardContent sx={{ pt: 0 }}>
+        <CardContent>
           <ErrorState kind={toErrorKind(error)} />
         </CardContent>
       </Card>
@@ -48,19 +47,19 @@ async function RecentActivityWidget() {
       <CardHeader
         title={<Typography variant="h6">Recent activity</Typography>}
       />
-      <CardContent sx={{ pt: 0 }}>
-        <MotionFadeIn>
-          <ActivityList
-            items={items.map((item) => ({
-              id: item.id,
-              description: item.actorName
-                ? `${item.description} · ${item.actorName}`
-                : item.description,
-              timestamp: formatRelativeTime(item.timestamp),
-              tone: DIRECTION_TONE[item.direction],
-            }))}
-          />
-        </MotionFadeIn>
+      <CardContent>
+        <ActivityList
+          items={items.map((item) => ({
+            id: item.id,
+            description: item.description,
+            // Attribution gets its own line. Joining it on with a middot
+            // produced one long unbreakable string that wrapped badly in
+            // a narrow column and buried the event itself.
+            meta: item.actorName ?? undefined,
+            timestamp: formatRelativeTime(item.timestamp),
+            tone: DIRECTION_TONE[item.direction],
+          }))}
+        />
       </CardContent>
     </Card>
   );

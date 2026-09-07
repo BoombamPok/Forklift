@@ -10,6 +10,9 @@ type DashboardGreetingProps = {
  * on whatever timezone the deployment runs in (not the viewer's), so it
  * would be confidently wrong for a good chunk of the day. A neutral
  * greeting avoids that without losing the personalization.
+ *
+ * The date is set in mono: it is a value a storekeeper cross-references
+ * against a docket or a movement timestamp, not prose.
  */
 function DashboardGreeting({ name }: DashboardGreetingProps) {
   const firstName = name.split(" ")[0];
@@ -32,23 +35,19 @@ function DashboardGreeting({ name }: DashboardGreetingProps) {
       }}
     >
       <Box>
-        <Typography
-          variant="h4"
-          sx={{ fontWeight: 600, letterSpacing: "-0.01em" }}
-        >
+        <Typography variant="h3" component="h2">
           Welcome back, {firstName}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Here&apos;s what&apos;s happening with your inventory today.
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>
+          Stock levels, movements, and anything that needs attention today.
         </Typography>
       </Box>
       <Typography
-        variant="caption"
+        component="time"
+        className="numeric"
         sx={{
           flexShrink: 0,
-          fontFamily: "var(--font-roboto-mono)",
-          letterSpacing: "0.06em",
-          textTransform: "uppercase",
+          fontSize: "0.75rem",
           color: "text.secondary",
         }}
       >

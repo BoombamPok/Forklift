@@ -1,23 +1,23 @@
-import Link from "next/link";
 import { ArrowRightIcon } from "lucide-react";
+import Box from "@mui/material/Box";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Typography from "@mui/material/Typography";
 
 import { requireRole } from "@/lib/auth/require-role";
 import { can } from "@/lib/permissions";
 import { toErrorKind } from "@/lib/errors";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ErrorState } from "@/components/shared/error-state";
 import { EmptyState } from "@/components/shared/empty-state";
 import { HubHero } from "@/components/premium/hub-hero";
+import { NavLinkButton } from "@/components/shared/nav-link-button";
 import { getBrandList, getCategoryList } from "@/features/catalogue/queries";
 import { CategoryTable } from "./category-table";
 
 /**
- * `/catalogue`'s overview (phase5.md §4 goal #1) - brand cards with real
- * model/part counts (never placeholders), plus category management
- * inline as a "simple, flat list" section rather than its own route
- * (phase5.md §4's explicit "don't over-build a separate elaborate page"
- * guidance for categories).
+ * `/catalogue`'s overview - brand cards with real model/part counts
+ * (never placeholders), plus category management inline as a simple
+ * flat list rather than its own route.
  */
 export default async function CataloguePage() {
   const user = await requireRole("catalogue.view");
@@ -34,22 +34,22 @@ export default async function CataloguePage() {
   }
 
   return (
-    <div className="space-y-8">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
       <HubHero
         title="Catalogue"
         description="Brands, models, and parts - what fits what, browsed by brand."
         leadHue="amber"
         actions={
           <>
-            <Button asChild variant="outline">
-              <Link href="/catalogue/brands">Manage brands</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href="/catalogue/models">Browse models</Link>
-            </Button>
-            <Button asChild variant="gradient">
-              <Link href="/catalogue/parts">Browse parts</Link>
-            </Button>
+            <NavLinkButton href="/catalogue/brands" variant="outlined">
+              Manage brands
+            </NavLinkButton>
+            <NavLinkButton href="/catalogue/models" variant="outlined">
+              Browse models
+            </NavLinkButton>
+            <NavLinkButton href="/catalogue/parts" variant="contained">
+              Browse parts
+            </NavLinkButton>
           </>
         }
       />
@@ -64,44 +64,76 @@ export default async function CataloguePage() {
           }
         />
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Box
+          sx={{
+            display: "grid",
+            gap: 2,
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "1fr 1fr",
+              lg: "repeat(3, 1fr)",
+            },
+          }}
+        >
           {brands.map((brand) => (
             <Card key={brand.id}>
-              <CardHeader>
-                <CardTitle>{brand.name}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <dl className="grid grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <dt className="text-muted-foreground">Models</dt>
-                    <dd className="font-mono text-lg font-semibold tabular-nums">
+              <CardContent>
+                <Typography variant="h6">{brand.name}</Typography>
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 2,
+                    mt: 1.5,
+                  }}
+                >
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Models
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontFamily: "var(--font-roboto-mono)",
+                        fontSize: "1.125rem",
+                        fontWeight: 600,
+                      }}
+                    >
                       {brand.modelCount}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-muted-foreground">Parts</dt>
-                    <dd className="font-mono text-lg font-semibold tabular-nums">
+                    </Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Parts
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontFamily: "var(--font-roboto-mono)",
+                        fontSize: "1.125rem",
+                        fontWeight: 600,
+                      }}
+                    >
                       {brand.partCount}
-                    </dd>
-                  </div>
-                </dl>
-                <Button asChild variant="ghost" size="sm" className="-ml-2">
-                  <Link href={`/catalogue/models?brandId=${brand.id}`}>
-                    View models <ArrowRightIcon />
-                  </Link>
-                </Button>
+                    </Typography>
+                  </Box>
+                </Box>
+                <NavLinkButton
+                  href={`/catalogue/models?brandId=${brand.id}`}
+                  size="small"
+                  endIcon={<ArrowRightIcon size={14} />}
+                  sx={{ mt: 1.5, ml: -1 }}
+                >
+                  View models
+                </NavLinkButton>
               </CardContent>
             </Card>
           ))}
-        </div>
+        </Box>
       )}
 
-      <div className="space-y-3">
-        <h3 className="font-heading text-base font-semibold tracking-tight">
-          Categories
-        </h3>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+        <Typography variant="h6">Categories</Typography>
         <CategoryTable rows={categories} canManage={canManage} />
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }

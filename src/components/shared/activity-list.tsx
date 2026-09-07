@@ -10,6 +10,9 @@ type ActivityItem = {
   id: string;
   description: string;
   timestamp: string;
+  /** Who did it, when that's known. Rendered on its own line rather than
+   * appended to the description with a separator. */
+  meta?: string;
   tone?: ActivityTone;
 };
 
@@ -20,21 +23,26 @@ type ActivityListProps = {
 };
 
 const TONE_COLOR: Record<ActivityTone, string> = {
-  positive: "success.main",
-  negative: "error.main",
-  neutral: "text.disabled",
+  positive: "var(--mui-palette-success-main)",
+  negative: "var(--mui-palette-error-main)",
+  neutral: "var(--mui-palette-text-disabled)",
 };
 
 /**
- * The activity-list primitive dashboard/detail screens build on. `tone`
- * is an optional small color cue (e.g. inbound vs outbound movement) -
- * purely decorative context, the description text always stands on its
- * own without it.
+ * The activity-list primitive dashboard/detail screens build on.
+ *
+ * Items are separated by a hairline and connected by a continuous rule
+ * behind the tone markers, so a run of movements reads as one ledger
+ * rather than a stack of unrelated rows - which is what stock history
+ * actually is.
+ *
+ * `tone` is a small colour cue (inbound vs outbound); the description
+ * text always stands on its own without it.
  */
 function ActivityList({
   items,
   emptyTitle = "No activity yet",
-  emptyDescription = "Actions taken across the app will show up here.",
+  emptyDescription = "Stock movements recorded against any part will appear here.",
 }: ActivityListProps) {
   if (items.length === 0) {
     return <EmptyState title={emptyTitle} description={emptyDescription} />;
@@ -47,9 +55,20 @@ function ActivityList({
         listStyle: "none",
         m: 0,
         p: 0,
+        position: "relative",
         display: "flex",
         flexDirection: "column",
-        gap: 0.5,
+        // The spine behind the markers. Inset from top and bottom so it
+        // reads as connecting the entries, not as a stray border.
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          left: "4px",
+          top: 14,
+          bottom: 14,
+          width: "1px",
+          bgcolor: "var(--rule)",
+        },
       }}
     >
       {items.map((item) => (
@@ -57,35 +76,45 @@ function ActivityList({
           component="li"
           key={item.id}
           sx={{
+            position: "relative",
             display: "flex",
             alignItems: "flex-start",
             gap: 1.5,
-            borderRadius: 2,
-            px: 1,
-            py: 1,
-            fontSize: "0.875rem",
-            "&:hover": { bgcolor: "action.hover" },
+            py: 1.25,
+            "& + &": { borderTop: "1px solid var(--rule)" },
           }}
         >
           <Box
             aria-hidden
             sx={{
-              mt: 0.8,
-              width: 6,
-              height: 6,
+              mt: "5px",
+              width: 9,
+              height: 9,
               flexShrink: 0,
               borderRadius: "50%",
+              border: "2px solid var(--mui-palette-background-paper)",
               bgcolor: TONE_COLOR[item.tone ?? "neutral"],
             }}
           />
-          <Typography variant="body2" sx={{ minWidth: 0, flex: 1 }}>
-            {item.description}
-          </Typography>
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Typography variant="body2" sx={{ lineHeight: 1.4 }}>
+              {item.description}
+            </Typography>
+            {item.meta ? (
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ display: "block", mt: 0.25 }}
+              >
+                {item.meta}
+              </Typography>
+            ) : null}
+          </Box>
           <Typography
             component="time"
             variant="caption"
             color="text.secondary"
-            sx={{ flexShrink: 0 }}
+            sx={{ flexShrink: 0, mt: "1px", whiteSpace: "nowrap" }}
           >
             {item.timestamp}
           </Typography>

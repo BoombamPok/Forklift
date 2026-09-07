@@ -2,205 +2,178 @@
 
 import { BoxesIcon } from "lucide-react";
 import Box from "@mui/material/Box";
-import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
-import Chip from "@mui/material/Chip";
-import Fade from "@mui/material/Fade";
 
 import { LoginForm } from "@/features/auth/components/login-form";
 import { FeatureList } from "@/features/auth/components/feature-list";
 import { SceneLoader } from "@/components/three/scene-loader";
 
+/**
+ * Full-bleed split rather than a floating card on a page.
+ *
+ * A centred card inside an empty background is the default sign-in
+ * layout, and it wastes the whole screen to frame a 380px form. Running
+ * the graphite panel to the edge does two things instead: it introduces
+ * the chassis a person is about to spend all day inside, and it gives the
+ * 3D scene somewhere it earns its weight - this is the one route with
+ * nothing else competing for attention, and the only one where the
+ * three.js chunk isn't taxing a working screen.
+ *
+ * The panel is hidden below lg, where the form is the entire job.
+ */
 export default function LoginPage() {
   return (
     <Box
       sx={{
-        display: "flex",
+        display: "grid",
         minHeight: "100dvh",
-        alignItems: "center",
-        justifyContent: "center",
-        px: { xs: 2, sm: 3, lg: 5 },
-        py: 5,
+        gridTemplateColumns: { xs: "1fr", lg: "minmax(0, 1fr) minmax(0, 1fr)" },
         bgcolor: "background.default",
       }}
     >
-      <Fade in timeout={400}>
-        <Paper
-          elevation={3}
+      {/* --- Left: the chassis --------------------------------------- */}
+      <Box
+        sx={{
+          position: "relative",
+          display: { xs: "none", lg: "flex" },
+          flexDirection: "column",
+          justifyContent: "space-between",
+          overflow: "hidden",
+          px: 7,
+          py: 6,
+          bgcolor: "var(--chassis)",
+        }}
+      >
+        <SceneLoader
+          variant="login"
+          posterTone="dual"
+          sx={{ position: "absolute", inset: 0, zIndex: 0 }}
+        />
+        {/* Scrim so the copy keeps its contrast whatever the scene is
+            doing behind it - the scene animates, the text must not. */}
+        <Box
+          aria-hidden
+          sx={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 0,
+            pointerEvents: "none",
+            background:
+              "linear-gradient(to top, var(--chassis) 8%, color-mix(in srgb, var(--chassis) 72%, transparent) 52%, color-mix(in srgb, var(--chassis) 30%, transparent) 100%)",
+          }}
+        />
+
+        <Box
           sx={{
             position: "relative",
+            zIndex: 1,
             display: "flex",
-            width: "100%",
-            maxWidth: 1024,
-            minHeight: { lg: 600 },
-            flexDirection: { xs: "column", lg: "row" },
-            overflow: "hidden",
-            borderRadius: 4,
+            alignItems: "center",
+            gap: 1.25,
           }}
         >
           <Box
-            sx={{
-              position: "relative",
-              display: { xs: "none", lg: "flex" },
-              width: "100%",
-              maxWidth: 460,
-              flexDirection: "column",
-              justifyContent: "space-between",
-              overflow: "hidden",
-              px: 5,
-              py: 5,
-              bgcolor: "background.default",
-            }}
-          >
-            <SceneLoader
-              variant="login"
-              posterTone="dual"
-              sx={{ position: "absolute", inset: 0, zIndex: 0 }}
-            />
-            <Box
-              aria-hidden
-              sx={{
-                position: "absolute",
-                inset: 0,
-                zIndex: 0,
-                pointerEvents: "none",
-                background: (theme) =>
-                  `linear-gradient(to top, ${theme.palette.background.default} 0%, ${theme.palette.background.default}66 45%, transparent 70%)`,
-              }}
-            />
-
-            <Box
-              sx={{
-                position: "relative",
-                zIndex: 1,
-                display: "flex",
-                alignItems: "center",
-                gap: 1.25,
-              }}
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  width: 32,
-                  height: 32,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderRadius: "10px",
-                  bgcolor: "primary.main",
-                  color: "primary.contrastText",
-                }}
-              >
-                <BoxesIcon aria-hidden size={18} />
-              </Box>
-              <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                ForkStock
-              </Typography>
-              <Chip
-                label="WAREHOUSE OS"
-                size="small"
-                sx={{
-                  fontFamily: "var(--font-roboto-mono)",
-                  fontSize: "0.6rem",
-                  letterSpacing: "0.08em",
-                }}
-              />
-            </Box>
-
-            <Box
-              sx={{
-                position: "relative",
-                zIndex: 1,
-                display: "flex",
-                flexDirection: "column",
-                gap: 4,
-              }}
-            >
-              <Typography
-                variant="h4"
-                sx={{
-                  fontWeight: 500,
-                  lineHeight: 1.2,
-                  letterSpacing: "-0.01em",
-                }}
-              >
-                Find the right part, know whether you have it, and know exactly
-                where it is.
-              </Typography>
-              <FeatureList />
-            </Box>
-
-            <Typography
-              variant="caption"
-              sx={{ position: "relative", zIndex: 1, color: "text.secondary" }}
-            >
-              Forklift spare-parts inventory &amp; warehouse management
-            </Typography>
-          </Box>
-
-          <Box
+            aria-hidden
             sx={{
               display: "flex",
-              flex: 1,
-              flexDirection: "column",
-              alignItems: { xs: "center", lg: "flex-start" },
+              width: 30,
+              height: 30,
+              alignItems: "center",
               justifyContent: "center",
-              px: { xs: 3, sm: 5, lg: 7 },
-              py: { xs: 6, lg: 5 },
-              borderLeft: { lg: 1 },
-              borderColor: "divider",
+              borderRadius: "7px",
+              bgcolor: "primary.main",
+              color: "primary.contrastText",
             }}
           >
-            <Box
-              sx={{
-                display: "flex",
-                width: "100%",
-                maxWidth: 380,
-                flexDirection: "column",
-                alignItems: { xs: "center", lg: "flex-start" },
-                gap: 1,
-                pb: 3,
-                textAlign: { xs: "center", lg: "left" },
-              }}
-            >
-              <Box
-                sx={{
-                  display: { xs: "flex", lg: "none" },
-                  width: 40,
-                  height: 40,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderRadius: 3,
-                  bgcolor: "primary.main",
-                  color: "primary.contrastText",
-                  mb: 1,
-                }}
-              >
-                <BoxesIcon aria-hidden size={20} />
-              </Box>
-              <Typography
-                variant="overline"
-                sx={{
-                  color: "primary.main",
-                  fontWeight: 700,
-                  letterSpacing: "0.1em",
-                }}
-              >
-                Secure sign-in
-              </Typography>
-              <Typography variant="h5" component="h1" sx={{ fontWeight: 600 }}>
-                Sign in
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Manage inventory and warehouse operations for ForkStock.
-              </Typography>
-            </Box>
-
-            <Box sx={{ width: "100%", maxWidth: 380 }}>
-              <LoginForm />
-            </Box>
+            <BoxesIcon size={17} strokeWidth={2.2} />
           </Box>
-        </Paper>
-      </Fade>
+          <Typography
+            component="span"
+            sx={{
+              fontSize: "1rem",
+              fontWeight: 600,
+              letterSpacing: "-0.015em",
+              color: "var(--chassis-text)",
+            }}
+          >
+            ForkStock
+          </Typography>
+        </Box>
+
+        <Box
+          sx={{
+            position: "relative",
+            zIndex: 1,
+            display: "flex",
+            flexDirection: "column",
+            gap: 4,
+            maxWidth: 460,
+          }}
+        >
+          <Typography
+            variant="h2"
+            component="p"
+            sx={{ color: "var(--chassis-text)", textWrap: "balance" }}
+          >
+            Find the right part, know whether you have it, and know exactly
+            where it is.
+          </Typography>
+          <FeatureList />
+        </Box>
+
+        <Typography
+          component="p"
+          sx={{
+            position: "relative",
+            zIndex: 1,
+            fontSize: "0.75rem",
+            color: "var(--chassis-faint)",
+          }}
+        >
+          Forklift spare-parts inventory &amp; warehouse management
+        </Typography>
+      </Box>
+
+      {/* --- Right: the form ----------------------------------------- */}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          px: { xs: 3, sm: 6 },
+          py: { xs: 6, lg: 5 },
+        }}
+      >
+        <Box sx={{ width: "100%", maxWidth: 392, mx: "auto" }}>
+          <Box
+            aria-hidden
+            sx={{
+              display: { xs: "flex", lg: "none" },
+              width: 38,
+              height: 38,
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: "var(--radius-control)",
+              bgcolor: "primary.main",
+              color: "primary.contrastText",
+              mb: 2.5,
+            }}
+          >
+            <BoxesIcon size={19} strokeWidth={2.2} />
+          </Box>
+
+          <Typography variant="h3" component="h1">
+            Sign in
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            Use the account your warehouse administrator set up for you.
+          </Typography>
+
+          <Box sx={{ mt: 3.5 }}>
+            <LoginForm />
+          </Box>
+        </Box>
+      </Box>
     </Box>
   );
 }

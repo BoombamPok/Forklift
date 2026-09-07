@@ -12,11 +12,15 @@ import { theme } from "./theme";
  * hydration), plus the theme and CssBaseline reset. This is the only
  * client boundary needed for MUI - everything under it can still be a
  * Server Component.
+ *
+ * `defaultMode="system"` (was "light"): the app now has a fully designed
+ * dark scheme, so the honest default is to follow the machine. The
+ * header toggle overrides and persists per-user.
  */
 function ThemeRegistry({ children }: { children: React.ReactNode }) {
   return (
     <AppRouterCacheProvider options={{ key: "mui" }}>
-      <ThemeProvider theme={theme} defaultMode="light">
+      <ThemeProvider theme={theme} defaultMode="system">
         <CssBaseline />
         {children}
       </ThemeProvider>

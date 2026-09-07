@@ -42,7 +42,7 @@ const columns: ColumnDef<LowStockRow, unknown>[] = [
         <Typography
           variant="caption"
           color="text.secondary"
-          sx={{ display: "block", fontFamily: "var(--font-roboto-mono)" }}
+          sx={{ display: "block", fontFamily: "var(--font-plex-mono)" }}
         >
           {row.original.partNumber}
         </Typography>
@@ -64,7 +64,7 @@ const columns: ColumnDef<LowStockRow, unknown>[] = [
     header: "Quantity",
     cell: ({ row }) => (
       <Typography
-        sx={{ fontFamily: "var(--font-roboto-mono)" }}
+        sx={{ fontFamily: "var(--font-plex-mono)" }}
         variant="body2"
       >
         {row.original.quantity}
@@ -76,7 +76,7 @@ const columns: ColumnDef<LowStockRow, unknown>[] = [
     header: "Min. stock",
     cell: ({ row }) => (
       <Typography
-        sx={{ fontFamily: "var(--font-roboto-mono)" }}
+        sx={{ fontFamily: "var(--font-plex-mono)" }}
         variant="body2"
       >
         {row.original.minStock ?? "—"}

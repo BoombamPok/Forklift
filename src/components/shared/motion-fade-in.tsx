@@ -11,18 +11,21 @@ type MotionFadeInProps = {
 };
 
 /**
- * Restrained entrance for content that just finished loading (e.g. a
- * Suspense boundary resolving) - marks the state change without
- * decorating for its own sake. Shared so every widget uses the same
- * transition instead of ad hoc CSS per component.
+ * Marks content arriving from a resolved Suspense boundary.
+ *
+ * Opacity only, and short. It used to also slide up 4px, which meant
+ * every widget on the dashboard independently slid into place on load -
+ * the single most common tell of a generated page, and it fought the one
+ * deliberate entrance the KPI cluster owns. A pure cross-fade still says
+ * "this just filled in" without staging a performance.
  */
 function MotionFadeIn({ children, sx }: MotionFadeInProps) {
   return (
     <Box
       component={motion.div}
-      initial={{ opacity: 0, y: 4 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.16, ease: "easeOut" }}
       sx={sx}
     >
       {children}

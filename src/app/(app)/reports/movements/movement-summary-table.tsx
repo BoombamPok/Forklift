@@ -27,7 +27,7 @@ const columns: ColumnDef<MovementTypeSummaryRow, unknown>[] = [
     header: "Total quantity",
     cell: ({ row }) => (
       <Typography
-        sx={{ fontFamily: "var(--font-roboto-mono)" }}
+        sx={{ fontFamily: "var(--font-plex-mono)" }}
         variant="body2"
       >
         {row.original.totalQuantity}
@@ -39,7 +39,7 @@ const columns: ColumnDef<MovementTypeSummaryRow, unknown>[] = [
     header: "Movements",
     cell: ({ row }) => (
       <Typography
-        sx={{ fontFamily: "var(--font-roboto-mono)" }}
+        sx={{ fontFamily: "var(--font-plex-mono)" }}
         variant="body2"
       >
         {row.original.movementCount}

@@ -64,59 +64,80 @@ function QuickActions({ role }: QuickActionsProps) {
   const actions = getActionsForRole(role);
 
   return (
-    <Card>
-      <CardHeader title={<Typography variant="h6">Quick actions</Typography>} />
-      <CardContent
-        sx={{
-          pt: 0,
-          "& > a:not(:last-child)": { borderBottom: 1, borderColor: "divider" },
-        }}
-      >
+    <Card sx={{ display: "flex", flexDirection: "column" }}>
+      <CardHeader
+        title={<Typography variant="h6">Quick actions</Typography>}
+        sx={{ pb: 1.5, borderBottom: "1px solid var(--rule)" }}
+      />
+      <CardContent sx={{ flex: 1, pt: 1, px: 1.25, pb: 1.25 }}>
         {actions.map((action) => {
           const Icon = action.icon;
           return (
             <NavLinkBox
               key={action.href}
               href={action.href}
-              className="group"
+              className="action"
               sx={{
                 display: "flex",
                 alignItems: "center",
                 gap: 1.5,
+                borderRadius: "var(--radius-control)",
+                px: 1.25,
                 py: 1.25,
                 textDecoration: "none",
                 color: "text.primary",
-                fontSize: "0.875rem",
+                fontSize: "0.8438rem",
                 fontWeight: 500,
-                "&:hover": { color: "primary.main" },
+                transition: "background-color 140ms var(--ease-standard)",
+                "&:hover": { bgcolor: "action.hover" },
               }}
             >
               <Box
+                aria-hidden
                 sx={{
                   display: "flex",
-                  width: 32,
-                  height: 32,
+                  width: 28,
+                  height: 28,
                   flexShrink: 0,
                   alignItems: "center",
                   justifyContent: "center",
-                  borderRadius: 1.5,
-                  bgcolor:
-                    "color-mix(in srgb, var(--mui-palette-primary-main) 10%, transparent)",
-                  color: "primary.main",
-                  transition: "transform 150ms",
-                  ".group:hover &": { transform: "scale(1.05)" },
+                  borderRadius: "var(--radius-chip)",
+                  border: "1px solid var(--mui-palette-divider)",
+                  bgcolor: "background.default",
+                  color: "text.secondary",
+                  transition:
+                    "color 140ms var(--ease-standard), border-color 140ms var(--ease-standard), background-color 140ms var(--ease-standard)",
+                  ".action:hover &": {
+                    color: "primary.main",
+                    borderColor:
+                      "color-mix(in srgb, var(--mui-palette-primary-main) 40%, transparent)",
+                    bgcolor:
+                      "color-mix(in srgb, var(--mui-palette-primary-main) 8%, transparent)",
+                  },
                 }}
               >
-                <Icon aria-hidden size={16} />
+                <Icon size={15} />
               </Box>
               <Box component="span" sx={{ flex: 1 }}>
                 {action.label}
               </Box>
-              <ChevronRightIcon
+              {/* The chevron slides a little on hover - the only thing
+                  moving is the affordance that says "this navigates". */}
+              <Box
                 aria-hidden
-                size={16}
-                style={{ flexShrink: 0, opacity: 0.5 }}
-              />
+                sx={{
+                  display: "flex",
+                  flexShrink: 0,
+                  color: "text.disabled",
+                  transition: "transform 140ms var(--ease-standard), color 140ms var(--ease-standard)",
+                  ".action:hover &": {
+                    transform: "translateX(2px)",
+                    color: "text.secondary",
+                  },
+                }}
+              >
+                <ChevronRightIcon size={15} />
+              </Box>
             </NavLinkBox>
           );
         })}

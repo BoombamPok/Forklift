@@ -116,10 +116,17 @@ export default async function ReportsPage() {
               <Card
                 sx={{
                   height: "100%",
-                  transition: "transform 150ms, box-shadow 150ms",
+                  // Cards that lift and drop a shadow on hover are the
+                  // stock "clickable card" gesture and they make a page
+                  // of links twitch. The border lighting up says
+                  // "this is the one" without moving the layout.
+                  transition:
+                    "border-color 140ms var(--ease-standard), background-color 140ms var(--ease-standard)",
                   ".group:hover &": {
-                    transform: "translateY(-3px)",
-                    boxShadow: 6,
+                    borderColor:
+                      "color-mix(in srgb, var(--mui-palette-primary-main) 45%, transparent)",
+                    bgcolor:
+                      "color-mix(in srgb, var(--mui-palette-primary-main) 4%, transparent)",
                   },
                 }}
               >

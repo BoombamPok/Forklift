@@ -139,7 +139,7 @@ function LocationDeleteAction({
                     component="span"
                     sx={{
                       color: "text.secondary",
-                      fontFamily: "var(--font-roboto-mono)",
+                      fontFamily: "var(--font-plex-mono)",
                     }}
                   >
                     ({part.partNumber})

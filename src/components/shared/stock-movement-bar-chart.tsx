@@ -1,5 +1,16 @@
 "use client";
 
+/*
+ * Chart colors are CSS custom properties, not resolved theme values.
+ *
+ * With `cssVariables` enabled, `theme.palette.x.main` read through
+ * `useTheme()` gives the *default* color scheme's literal hex, which is
+ * baked in at render and does not update when a person switches to dark
+ * mode - the charts would keep their light-mode fills on a dark panel.
+ * SVG `fill`/`stroke` accept `var()` directly, so handing Recharts the
+ * variable lets the browser re-resolve it on every scheme change.
+ */
+
 import {
   Bar,
   BarChart,
@@ -18,7 +29,6 @@ import type {
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
-import { useTheme } from "@mui/material/styles";
 
 import type { StockMovementDay } from "@/features/dashboard/activity";
 
@@ -47,7 +57,17 @@ function ChartTooltip({
   if (!active || !payload?.length) return null;
 
   return (
-    <Paper elevation={4} sx={{ px: 1.5, py: 1, fontSize: "0.75rem" }}>
+    <Paper
+      elevation={0}
+      sx={{
+        px: 1.5,
+        py: 1.125,
+        fontSize: "0.75rem",
+        borderRadius: "var(--radius-control)",
+        border: "1px solid var(--mui-palette-divider)",
+        boxShadow: "0 8px 24px rgba(11,16,26,0.18)",
+      }}
+    >
       <Typography
         variant="caption"
         sx={{ display: "block", mb: 0.5, fontWeight: 600 }}
@@ -76,7 +96,7 @@ function ChartTooltip({
               variant="caption"
               sx={{
                 ml: "auto",
-                fontFamily: "var(--font-roboto-mono)",
+                fontFamily: "var(--font-plex-mono)",
                 fontWeight: 600,
               }}
             >
@@ -90,11 +110,10 @@ function ChartTooltip({
 }
 
 function StockMovementBarChart({ data }: StockMovementBarChartProps) {
-  const theme = useTheme();
-  const successColor = theme.palette.success.main;
-  const errorColor = theme.palette.error.main;
-  const gridColor = theme.palette.divider;
-  const axisColor = theme.palette.text.secondary;
+  const successColor = "var(--mui-palette-success-main)";
+  const errorColor = "var(--mui-palette-error-main)";
+  const gridColor = "var(--mui-palette-divider)";
+  const axisColor = "var(--mui-palette-text-secondary)";
 
   return (
     <ResponsiveContainer width="100%" height="100%">
@@ -132,7 +151,7 @@ function StockMovementBarChart({ data }: StockMovementBarChartProps) {
         />
         <Tooltip
           content={(props) => <ChartTooltip {...props} />}
-          cursor={{ fill: theme.palette.action.hover }}
+          cursor={{ fill: "var(--mui-palette-action-hover)" }}
         />
         <Legend
           wrapperStyle={{ fontSize: 12 }}

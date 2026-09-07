@@ -1,11 +1,8 @@
 import * as React from "react";
 import type { LucideIcon } from "lucide-react";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import type { Theme } from "@mui/material/styles";
-import type { SxProps } from "@mui/material/styles";
+import type { SxProps, Theme } from "@mui/material/styles";
 
 type TrendDirection = "up" | "down" | "flat";
 type KpiTone = "default" | "success" | "warning" | "destructive" | "info";
@@ -23,9 +20,9 @@ type KpiCardProps = {
 };
 
 const TREND_COLOR: Record<TrendDirection, string> = {
-  up: "success.main",
-  down: "error.main",
-  flat: "text.secondary",
+  up: "var(--mui-palette-success-main)",
+  down: "var(--mui-palette-error-main)",
+  flat: "var(--mui-palette-text-secondary)",
 };
 
 // Static objects (no theme-callback functions) - KpiCard is rendered from
@@ -39,40 +36,32 @@ const TONE_CHIP_SX: Record<KpiTone, object> = {
     color: "var(--mui-palette-text-secondary)",
   },
   success: {
-    bgcolor:
-      "color-mix(in srgb, var(--mui-palette-success-main) 12%, transparent)",
-    color: "var(--mui-palette-success-dark)",
+    bgcolor: "color-mix(in srgb, var(--mui-palette-success-main) 13%, transparent)",
+    color: "var(--mui-palette-success-main)",
   },
   warning: {
-    bgcolor:
-      "color-mix(in srgb, var(--mui-palette-warning-main) 14%, transparent)",
-    color: "var(--mui-palette-warning-dark)",
+    bgcolor: "color-mix(in srgb, var(--mui-palette-warning-main) 15%, transparent)",
+    color: "var(--mui-palette-warning-main)",
   },
   destructive: {
-    bgcolor:
-      "color-mix(in srgb, var(--mui-palette-error-main) 12%, transparent)",
-    color: "var(--mui-palette-error-dark)",
+    bgcolor: "color-mix(in srgb, var(--mui-palette-error-main) 13%, transparent)",
+    color: "var(--mui-palette-error-main)",
   },
   info: {
-    bgcolor:
-      "color-mix(in srgb, var(--mui-palette-info-main) 12%, transparent)",
-    color: "var(--mui-palette-info-dark)",
+    bgcolor: "color-mix(in srgb, var(--mui-palette-info-main) 13%, transparent)",
+    color: "var(--mui-palette-info-main)",
   },
-};
-
-const TONE_ACCENT: Record<KpiTone, string> = {
-  default: "text.disabled",
-  success: "success.main",
-  warning: "warning.main",
-  destructive: "error.main",
-  info: "info.main",
 };
 
 /**
- * The KPI primitive dashboard/report screens build on. `tone` tints the
- * icon chip to match what the metric means (e.g. warning for low stock)
- * - purely a semantic color cue, not a claim the card is interactive, so
- * no hover/press affordance is added here.
+ * One reading in a `StatCluster`. It draws no border and no radius of its
+ * own - the cluster owns the frame and the rules between cells - so a
+ * KpiCard on its own outside a cluster is intentionally not a card.
+ *
+ * `tone` tints only the icon and the dot beside the label. It never tints
+ * the number: a red "0" under "Out of stock" would be saying the opposite
+ * of what is true, and tone here is a category cue, not a judgement about
+ * the current value.
  */
 function KpiCard({
   label,
@@ -83,79 +72,85 @@ function KpiCard({
   sx,
 }: KpiCardProps) {
   return (
-    <Card sx={{ position: "relative", overflow: "hidden", ...sx }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 1.25,
+        minWidth: 0,
+        px: 2.25,
+        py: 2,
+        bgcolor: "background.paper",
+        transition: "background-color 140ms var(--ease-standard)",
+        "&:hover": { bgcolor: "background.default" },
+        ...sx,
+      }}
+    >
       <Box
-        aria-hidden
         sx={{
-          position: "absolute",
-          insetInline: 0,
-          top: 0,
-          height: 3,
-          bgcolor: TONE_ACCENT[tone],
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 1.5,
         }}
-      />
-      <CardContent sx={{ pt: 2.5 }}>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "space-between",
-          }}
-        >
-          <Typography
-            variant="caption"
-            sx={{
-              fontWeight: 600,
-              letterSpacing: "0.06em",
-              textTransform: "uppercase",
-              color: "text.secondary",
-            }}
-          >
-            {label}
-          </Typography>
-          {Icon ? (
-            <Box
-              sx={{
-                display: "flex",
-                width: 32,
-                height: 32,
-                flexShrink: 0,
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: 1.5,
-                ...TONE_CHIP_SX[tone],
-              }}
-            >
-              <Icon aria-hidden size={16} />
-            </Box>
-          ) : null}
-        </Box>
+      >
         <Typography
+          component="span"
+          noWrap
           sx={{
-            mt: 1,
-            fontFamily: "var(--font-roboto-mono)",
-            fontSize: "1.75rem",
-            lineHeight: 1,
-            fontWeight: 600,
-            letterSpacing: "-0.01em",
+            minWidth: 0,
+            fontSize: "0.8125rem",
+            fontWeight: 500,
+            color: "text.secondary",
           }}
         >
-          {value}
+          {label}
         </Typography>
-        {trend ? (
-          <Typography
-            variant="caption"
+        {Icon ? (
+          <Box
+            aria-hidden
             sx={{
-              display: "block",
-              mt: 0.5,
-              color: TREND_COLOR[trend.direction],
+              display: "flex",
+              width: 26,
+              height: 26,
+              flexShrink: 0,
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: "var(--radius-chip)",
+              ...TONE_CHIP_SX[tone],
             }}
           >
-            {trend.label}
-          </Typography>
+            <Icon size={14} strokeWidth={2.1} />
+          </Box>
         ) : null}
-      </CardContent>
-    </Card>
+      </Box>
+
+      <Typography
+        component="p"
+        className="numeric"
+        sx={{
+          fontSize: { xs: "1.75rem", lg: "2rem" },
+          fontWeight: 600,
+          lineHeight: 1,
+          color: "text.primary",
+        }}
+      >
+        {value}
+      </Typography>
+
+      {trend ? (
+        <Typography
+          component="span"
+          sx={{
+            fontSize: "0.75rem",
+            lineHeight: 1.3,
+            color: TREND_COLOR[trend.direction],
+          }}
+        >
+          {trend.label}
+        </Typography>
+      ) : null}
+    </Box>
   );
 }
 

@@ -7,6 +7,7 @@ import { canViewInventoryValue } from "@/lib/permissions";
 import { toErrorKind } from "@/lib/errors";
 import { formatCurrency } from "@/lib/utils";
 import { KpiCard } from "@/components/shared/kpi-card";
+import { StatCluster } from "@/components/shared/stat-cluster";
 import { ErrorState } from "@/components/shared/error-state";
 import { EmptyState } from "@/components/shared/empty-state";
 import {
@@ -72,15 +73,10 @@ export default async function ValuationReportPage() {
         description="Cost-basis value of stock on hand, by category and brand."
       />
 
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: {
-            xs: "1fr",
-            sm: "1fr 1fr",
-            lg: "repeat(3, 1fr)",
-          },
-        }}
+      {/* One reading, so one column - the cluster still supplies the
+          frame and the entrance, it just isn't divided. */}
+      <StatCluster
+        sx={{ gridTemplateColumns: "1fr", maxWidth: { sm: 380 } }}
       >
         <KpiCard
           label="Total inventory value"
@@ -96,7 +92,7 @@ export default async function ValuationReportPage() {
               : undefined
           }
         />
-      </Box>
+      </StatCluster>
 
       {total === 0 && excludedCount === 0 ? (
         <EmptyState

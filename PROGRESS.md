@@ -1818,17 +1818,47 @@ page runs on MUI.**
 `main` without the user's explicit, informed go-ahead** — main
 auto-deploys via Vercel (`docs/LAUNCH_CHECKLIST.md`).
 
+## UI refresh — "Instrument" visual reset
+
+The user supplied a hand-authored UI refresh (`forkstock-ui-refresh.zip`,
+written against this branch's MUI baseline, never compiled) covering
+theme tokens, every shared component, the app shell/nav, both auth
+pages, and every page in dashboard/catalogue/reports/inventory/
+warehouse/admin. Integrated it in 11 commits (`96c5d54`..`cba5b00`,
+grouped by area to match this branch's existing batch granularity),
+plus this entry. See `DESIGN-NOTES.md` at the repo root for the full
+design rationale (colour, type, shape, structural decisions, motion,
+dark mode) written by whoever authored the refresh.
+
+Fixed on integration, since the source was never compiled or run:
+three real typecheck errors (`MuiAlert`'s `standardInfo` slot doesn't
+exist on this MUI version - renamed to `standard`; two `sx={{ ...a,
+...sx }}` spreads that don't type-check against an array-form `sx`,
+switched to MUI's recommended array-merge form), one real logic bug
+(a spread order in `loading-state.tsx`'s cluster skeleton silently
+overwrote `bgcolor: "divider"` with `"background.paper"`, defeating
+the divided-panel technique it was meant to preview), and two
+`react-hooks/set-state-in-effect` lint errors (`useEffect` + `setState`
+for a "mounted" flag and for a platform-sniffed shortcut label) -
+replaced with `useSyncExternalStore`, consistent with the existing
+`useReducedMotion` pattern, instead of an effect+setState.
+
+Verified: typecheck (clean), lint (clean, one pre-existing unrelated
+TanStack Table React Compiler warning), 251/251 vitest, production
+build, and a `next start` smoke pass over every route (public pages
+200, protected pages 307 to `/login`, no server-side errors logged).
+
 ## Next steps
 
-The MUI rehaul is finished. If/when the user gives the go-ahead to
-merge `redesign/mui-rehaul` into `main`, do a final sanity pass first
-(fresh `npm install`, full verification sequence, a manual walkthrough
-of a few pages) since main auto-deploys via Vercel. Until then, no
-further work is pending on this thread - confirm with the user before
-starting anything new here. The still-open, non-blocking item is the
-login-page 3D-scene contrast flake (intermittent, not reliably
-reproducible) - worth a dedicated investigation sometime, but it's
-never blocked a batch and isn't launch-critical.
+No further work is pending on this thread - confirm with the user
+before starting anything new here. If/when the user gives the
+go-ahead to merge `redesign/mui-rehaul` into `main`, do a final
+sanity pass first (fresh `npm install`, full verification sequence, a
+manual walkthrough of a few pages) since main auto-deploys via
+Vercel. The still-open, non-blocking item is the login-page 3D-scene
+contrast flake (intermittent, not reliably reproducible) - worth a
+dedicated investigation sometime, but it's never blocked a batch and
+isn't launch-critical.
 
 Separately, unrelated to the redesign: ForkStock V1 (the pre-redesign
 feature set) is feature-complete, reviewed, hardened, and documented.

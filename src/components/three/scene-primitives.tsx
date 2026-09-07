@@ -6,8 +6,21 @@ import { Float, MeshDistortMaterial } from "@react-three/drei";
 import * as THREE from "three";
 import { useIdleInvalidate } from "@/components/three/use-idle-invalidate";
 
-const AMBER = { base: "#e8a464", emissive: "#c2703a" };
-const ELECTRIC = { base: "#5fb8e0", emissive: "#2f7f9e" };
+/**
+ * The two accent hues the scenes are built from.
+ *
+ * Renamed in spirit, not in identifier: `AMBER` is now the cobalt signal
+ * and `ELECTRIC` its cooler cyan partner, matching the palette in
+ * theme/tokens.ts. The prop that selects between them (`leadHue`) is
+ * public API used by three hub pages, so the string literals stay -
+ * changing them would be a rename with no design payoff.
+ *
+ * Values are the *dark-mode* variants deliberately: every scene renders
+ * on the graphite chassis in both color schemes, so they are lit for
+ * that surface and must not follow the page's light/dark state.
+ */
+const AMBER = { base: "#7ca0ff", emissive: "#1f51e0" };
+const ELECTRIC = { base: "#4fc3e8", emissive: "#0e6c86" };
 
 /** Gentle camera parallax toward the pointer, plus the shared idle tick
  * that keeps frameloop="demand" scenes animating at low cost. */

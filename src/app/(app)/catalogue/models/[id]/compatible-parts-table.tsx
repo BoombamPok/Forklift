@@ -56,7 +56,7 @@ function CompatiblePartsTable({ parts }: CompatiblePartsTableProps) {
                   <Typography
                     variant="caption"
                     color="text.secondary"
-                    sx={{ fontFamily: "var(--font-roboto-mono)" }}
+                    sx={{ fontFamily: "var(--font-plex-mono)" }}
                   >
                     {part.partNumber}
                   </Typography>

@@ -16,7 +16,7 @@ beforeEach(() => {
 });
 
 describe("RecentActivityWidget", () => {
-  it("renders each item's description with the actor appended when known", async () => {
+  it("renders each item's description and attributes it to the actor", async () => {
     mocks.getRecentActivity.mockResolvedValue([
       {
         id: "m1",
@@ -29,11 +29,12 @@ describe("RecentActivityWidget", () => {
 
     render(await RecentActivityWidget());
 
+    // Description and actor are separate lines, not one joined string -
+    // see ActivityList. Both still have to be present and readable.
     expect(
-      screen.getByText(
-        "Received 10 × Sample Part (SAMPLE-0001) · Jane Warehouse",
-      ),
+      screen.getByText("Received 10 × Sample Part (SAMPLE-0001)"),
     ).toBeInTheDocument();
+    expect(screen.getByText("Jane Warehouse")).toBeInTheDocument();
   });
 
   it("omits the actor segment entirely when it isn't known", async () => {
@@ -52,6 +53,7 @@ describe("RecentActivityWidget", () => {
     expect(
       screen.getByText("Received 10 × Sample Part (SAMPLE-0001)"),
     ).toBeInTheDocument();
+    expect(screen.queryByText("Jane Warehouse")).not.toBeInTheDocument();
   });
 
   it("shows the genuine empty state when there's no activity yet", async () => {

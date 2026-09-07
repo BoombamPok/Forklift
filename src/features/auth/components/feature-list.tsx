@@ -5,28 +5,27 @@ import { motion, type Variants } from "motion/react";
 import { PackageSearchIcon, MapPinIcon, HistoryIcon } from "lucide-react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { alpha } from "@mui/material/styles";
 
 const containerVariants: Variants = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.06 } },
+  visible: { transition: { staggerChildren: 0.07, delayChildren: 0.12 } },
 };
 
 const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 8 },
+  hidden: { opacity: 0, y: 6 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.25, ease: "easeOut" },
+    transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] },
   },
 };
 
 const FEATURES = [
   {
     icon: PackageSearchIcon,
-    label: "Fast search across parts, brands, and models",
+    label: "Search every part, brand, and model at once",
   },
-  { icon: MapPinIcon, label: "Exact warehouse location for every part" },
+  { icon: MapPinIcon, label: "Exact rack, shelf, and box for every part" },
   { icon: HistoryIcon, label: "Full stock movement history, never silent" },
 ];
 
@@ -37,6 +36,11 @@ const FEATURES = [
  * directly (rather than wrapping <li> in a motion.div) so the list keeps
  * valid <ul>/<li> semantics - axe-core flags a <div>-wrapped <li> as a
  * structure violation.
+ *
+ * The 01/02/03 markers this list used to carry are gone: numbered markers
+ * mean "these happen in order", and these three are simultaneous
+ * capabilities, not steps. Sits on the graphite panel, so it uses the
+ * chassis tokens rather than the palette.
  */
 function FeatureList() {
   return (
@@ -45,9 +49,16 @@ function FeatureList() {
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      sx={{ display: "flex", flexDirection: "column", gap: 1.25, p: 0, m: 0 }}
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 0,
+        p: 0,
+        m: 0,
+        listStyle: "none",
+      }}
     >
-      {FEATURES.map(({ icon: Icon, label }, index) => (
+      {FEATURES.map(({ icon: Icon, label }) => (
         <Box
           component={motion.li}
           key={label}
@@ -55,42 +66,38 @@ function FeatureList() {
           sx={{
             display: "flex",
             alignItems: "center",
-            gap: 1.5,
-            borderRadius: 2,
-            border: 1,
-            borderColor: "divider",
-            bgcolor: (theme) => alpha(theme.palette.common.white, 0.6),
-            px: 1.5,
-            py: 1.25,
+            gap: 1.75,
+            py: 1.5,
+            "& + &": { borderTop: "1px solid var(--chassis-hairline)" },
           }}
         >
           <Box
+            aria-hidden
             sx={{
               display: "flex",
-              width: 28,
-              height: 28,
+              width: 30,
+              height: 30,
               flexShrink: 0,
               alignItems: "center",
               justifyContent: "center",
-              borderRadius: 1.5,
-              bgcolor: (theme) => alpha(theme.palette.primary.main, 0.12),
-              color: "primary.main",
+              borderRadius: "var(--radius-chip)",
+              border: "1px solid var(--chassis-hairline)",
+              bgcolor: "var(--chassis-raised)",
+              color: "var(--mui-palette-primary-main)",
             }}
           >
-            <Icon aria-hidden size={14} />
+            <Icon size={15} />
           </Box>
-          <Typography variant="body2" sx={{ flex: 1 }}>
-            {label}
-          </Typography>
           <Typography
-            variant="caption"
+            component="span"
             sx={{
-              fontFamily: "var(--font-roboto-mono)",
-              letterSpacing: "0.1em",
-              color: "text.disabled",
+              flex: 1,
+              fontSize: "0.875rem",
+              lineHeight: 1.45,
+              color: "var(--chassis-muted)",
             }}
           >
-            {String(index + 1).padStart(2, "0")}
+            {label}
           </Typography>
         </Box>
       ))}

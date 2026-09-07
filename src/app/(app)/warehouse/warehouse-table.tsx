@@ -61,7 +61,7 @@ function WarehouseTable({ rows, canManage }: WarehouseTableProps) {
       header: "Racks",
       cell: ({ row }) => (
         <Typography
-          sx={{ fontFamily: "var(--font-roboto-mono)" }}
+          sx={{ fontFamily: "var(--font-plex-mono)" }}
           variant="body2"
         >
           {row.original.rackCount}

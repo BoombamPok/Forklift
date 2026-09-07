@@ -6,6 +6,7 @@ import Typography from "@mui/material/Typography";
 import { requireRole } from "@/lib/auth/require-role";
 import { toErrorKind } from "@/lib/errors";
 import { KpiCard } from "@/components/shared/kpi-card";
+import { StatCluster } from "@/components/shared/stat-cluster";
 import { ErrorState } from "@/components/shared/error-state";
 import { VerificationBadge } from "@/components/shared/verification-badge";
 import { getCatalogueCoverageSummary } from "@/features/reports/catalogue-coverage";
@@ -51,13 +52,7 @@ export default async function CatalogueCoverageReportPage() {
         description="How much of the catalogue is linked and verified."
       />
 
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
-          gap: 2,
-        }}
-      >
+      <StatCluster columns={3}>
         <KpiCard
           label="Catalogue parts"
           value={summary.totalParts}
@@ -76,7 +71,7 @@ export default async function CatalogueCoverageReportPage() {
           icon={UnlinkIcon}
           tone="warning"
         />
-      </Box>
+      </StatCluster>
 
       <Box
         sx={{
@@ -105,7 +100,7 @@ export default async function CatalogueCoverageReportPage() {
                 <VerificationBadge status={status} />
                 <Typography
                   variant="body2"
-                  sx={{ fontFamily: "var(--font-roboto-mono)" }}
+                  sx={{ fontFamily: "var(--font-plex-mono)" }}
                 >
                   {summary.partVerification[status]}
                 </Typography>
@@ -134,7 +129,7 @@ export default async function CatalogueCoverageReportPage() {
                 <VerificationBadge status={status} />
                 <Typography
                   variant="body2"
-                  sx={{ fontFamily: "var(--font-roboto-mono)" }}
+                  sx={{ fontFamily: "var(--font-plex-mono)" }}
                 >
                   {summary.compatibilityVerification[status]}
                 </Typography>

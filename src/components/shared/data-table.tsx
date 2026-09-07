@@ -18,18 +18,20 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "lucide-react";
+import Paper from "@mui/material/Paper";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import TableSortLabel from "@mui/material/TableSortLabel";
+import Checkbox from "@mui/material/Checkbox";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
+import type { SxProps, Theme } from "@mui/material/styles";
 
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ErrorState } from "@/components/shared/error-state";
 import { LoadingState } from "@/components/shared/loading-state";
@@ -48,15 +50,14 @@ type DataTableProps<TData> = {
   rowSelection?: RowSelectionState;
   onRowSelectionChange?: (selection: RowSelectionState) => void;
   pageSize?: number;
-  className?: string;
+  sx?: SxProps<Theme>;
   /**
-   * Server-driven pagination/sorting (phase3.md's inventory list): when
-   * `manualPagination`/`manualSorting` is true, `data` is assumed to
-   * already be the current page in the current sort order, and
-   * `onPaginationChange`/`onSortingChange` are the only way the state
-   * changes - the table never paginates/sorts client-side. Every one of
-   * these is optional and off by default, so every existing caller
-   * (LowStockTable, etc.) is unaffected.
+   * Server-driven pagination/sorting: when `manualPagination`/
+   * `manualSorting` is true, `data` is assumed to already be the current
+   * page in the current sort order, and `onPaginationChange`/
+   * `onSortingChange` are the only way the state changes - the table
+   * never paginates/sorts client-side. Every one of these is optional
+   * and off by default, so every existing caller is unaffected.
    */
   manualPagination?: boolean;
   pageCount?: number;
@@ -73,8 +74,7 @@ type DataTableProps<TData> = {
 /**
  * The one reusable table pattern the app builds on (sorting, pagination,
  * row selection, loading/empty/error states, horizontal scroll on small
- * screens). Establishes the architecture per phase1.md #23 - actual
- * inventory/catalogue tables are wired up starting Phase 3.
+ * screens).
  */
 function DataTable<TData>({
   columns,
@@ -87,7 +87,7 @@ function DataTable<TData>({
   rowSelection,
   onRowSelectionChange,
   pageSize = 20,
-  className,
+  sx,
   manualPagination = false,
   pageCount: manualPageCount,
   pagination: controlledPagination,
@@ -146,19 +146,22 @@ function DataTable<TData>({
       id: SELECTION_COLUMN_ID,
       header: ({ table }) => (
         <Checkbox
-          aria-label="Select all rows"
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
+          size="small"
+          slotProps={{ input: { "aria-label": "Select all rows" } }}
+          checked={table.getIsAllPageRowsSelected()}
+          indeterminate={
+            !table.getIsAllPageRowsSelected() &&
+            table.getIsSomePageRowsSelected()
           }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          onChange={(_, checked) => table.toggleAllPageRowsSelected(checked)}
         />
       ),
       cell: ({ row }) => (
         <Checkbox
-          aria-label="Select row"
+          size="small"
+          slotProps={{ input: { "aria-label": "Select row" } }}
           checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          onChange={(_, checked) => row.toggleSelected(checked)}
         />
       ),
       enableSorting: false,
@@ -191,21 +194,19 @@ function DataTable<TData>({
         kind={error.kind}
         description={error.message}
         onRetry={error.onRetry}
-        className={cn("rounded-xl shadow-sm", className)}
+        sx={{ borderRadius: 3, boxShadow: 1, ...sx }}
       />
     );
   }
 
   if (isLoading) {
     return (
-      <div
-        className={cn(
-          "overflow-hidden rounded-xl border border-border/70 bg-card p-4 shadow-sm",
-          className,
-        )}
+      <Paper
+        variant="outlined"
+        sx={{ overflow: "hidden", borderRadius: 3, p: 2, ...sx }}
       >
         <LoadingState variant="table" rows={pageSize > 8 ? 8 : pageSize} />
-      </div>
+      </Paper>
     );
   }
 
@@ -214,7 +215,7 @@ function DataTable<TData>({
       <EmptyState
         title={emptyState.title}
         description={emptyState.description}
-        className={className}
+        sx={sx}
       />
     );
   }
@@ -224,101 +225,133 @@ function DataTable<TData>({
     : table.getPageCount();
 
   return (
-    <div
-      className={cn(
-        "overflow-hidden rounded-xl border border-border/70 bg-card shadow-sm",
-        className,
-      )}
+    <Paper
+      variant="outlined"
+      sx={{ overflow: "hidden", borderRadius: 3, ...sx }}
     >
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="hover:bg-transparent">
-              {headerGroup.headers.map((header) => {
-                const canSort = header.column.getCanSort();
-                const sortDirection = header.column.getIsSorted();
-                return (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder ? null : canSort ? (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="-ml-2.5 h-7 gap-1 px-2.5 text-[0.6875rem] font-semibold tracking-wide text-muted-foreground uppercase hover:text-foreground"
-                        onClick={header.column.getToggleSortingHandler()}
-                      >
-                        {flexRender(
+      <TableContainer>
+        <Table size="small">
+          <TableHead>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  const canSort = header.column.getCanSort();
+                  const sortDirection = header.column.getIsSorted();
+                  return (
+                    <TableCell
+                      key={header.id}
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: "0.6875rem",
+                        letterSpacing: "0.06em",
+                        textTransform: "uppercase",
+                        color: "text.secondary",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {header.isPlaceholder ? null : canSort ? (
+                        <TableSortLabel
+                          active={!!sortDirection}
+                          direction={sortDirection || "asc"}
+                          onClick={header.column.getToggleSortingHandler()}
+                          IconComponent={() =>
+                            sortDirection === "asc" ? (
+                              <ArrowUpIcon
+                                size={14}
+                                style={{ marginLeft: 4 }}
+                              />
+                            ) : sortDirection === "desc" ? (
+                              <ArrowDownIcon
+                                size={14}
+                                style={{ marginLeft: 4 }}
+                              />
+                            ) : (
+                              <ArrowUpDownIcon
+                                size={14}
+                                style={{ marginLeft: 4, opacity: 0.4 }}
+                              />
+                            )
+                          }
+                        >
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                        </TableSortLabel>
+                      ) : (
+                        flexRender(
                           header.column.columnDef.header,
                           header.getContext(),
-                        )}
-                        {sortDirection === "asc" ? (
-                          <ArrowUpIcon className="size-3.5" />
-                        ) : sortDirection === "desc" ? (
-                          <ArrowDownIcon className="size-3.5" />
-                        ) : (
-                          <ArrowUpDownIcon className="size-3.5 opacity-40" />
-                        )}
-                      </Button>
-                    ) : (
-                      flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )
-                    )}
-                  </TableHead>
-                );
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows.map((row) => (
-            <TableRow
-              key={row.id}
-              data-state={row.getIsSelected() && "selected"}
-            >
-              {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                        )
+                      )}
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableHead>
+          <TableBody>
+            {table.getRowModel().rows.map((row) => (
+              <TableRow key={row.id} selected={row.getIsSelected()} hover>
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
       {pageCount > 1 ? (
-        <div className="flex items-center justify-between border-t border-border/70 bg-muted/20 px-4 py-2.5">
-          <p className="text-xs text-muted-foreground">
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            borderTop: 1,
+            borderColor: "divider",
+            bgcolor: "action.hover",
+            px: 2,
+            py: 1,
+          }}
+        >
+          <Typography variant="caption" color="text.secondary">
             Page{" "}
-            <span className="font-medium text-foreground">
+            <Box
+              component="span"
+              sx={{ fontWeight: 600, color: "text.primary" }}
+            >
               {table.getState().pagination.pageIndex + 1}
-            </span>{" "}
+            </Box>{" "}
             of {pageCount}
-          </p>
-          <div className="flex gap-1">
+          </Typography>
+          <Box sx={{ display: "flex", gap: 1 }}>
             <Button
               type="button"
-              variant="outline"
-              size="sm"
+              variant="outlined"
+              size="small"
+              startIcon={<ChevronLeftIcon size={16} />}
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
-              <ChevronLeftIcon /> Previous
+              Previous
             </Button>
             <Button
               type="button"
-              variant="outline"
-              size="sm"
+              variant="outlined"
+              size="small"
+              endIcon={<ChevronRightIcon size={16} />}
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >
-              Next <ChevronRightIcon />
+              Next
             </Button>
-          </div>
-        </div>
+          </Box>
+        </Box>
       ) : null}
-    </div>
+    </Paper>
   );
 }
 

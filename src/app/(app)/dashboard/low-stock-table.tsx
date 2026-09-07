@@ -2,10 +2,13 @@
 
 import * as React from "react";
 import type { ColumnDef } from "@tanstack/react-table";
+import Box from "@mui/material/Box";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import Typography from "@mui/material/Typography";
 
 import { DataTable } from "@/components/shared/data-table";
 import { StatusBadge, type StatusTone } from "@/components/shared/status-badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type {
   LowStockRow,
   LowStockStatus,
@@ -30,12 +33,18 @@ const columns: ColumnDef<LowStockRow, unknown>[] = [
     accessorKey: "name",
     header: "Part",
     cell: ({ row }) => (
-      <div>
-        <p className="font-medium text-foreground">{row.original.name}</p>
-        <p className="font-mono text-xs text-muted-foreground">
+      <Box>
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          {row.original.name}
+        </Typography>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: "block", fontFamily: "var(--font-roboto-mono)" }}
+        >
           {row.original.partNumber}
-        </p>
-      </div>
+        </Typography>
+      </Box>
     ),
   },
   {
@@ -47,16 +56,18 @@ const columns: ColumnDef<LowStockRow, unknown>[] = [
     accessorKey: "quantity",
     header: "Quantity",
     cell: ({ row }) => (
-      <span className="font-mono tabular-nums">{row.original.quantity}</span>
+      <Box component="span" sx={{ fontFamily: "var(--font-roboto-mono)" }}>
+        {row.original.quantity}
+      </Box>
     ),
   },
   {
     accessorKey: "minStock",
     header: "Min. stock",
     cell: ({ row }) => (
-      <span className="font-mono tabular-nums">
+      <Box component="span" sx={{ fontFamily: "var(--font-roboto-mono)" }}>
         {row.original.minStock ?? "—"}
-      </span>
+      </Box>
     ),
   },
   {
@@ -76,11 +87,16 @@ type LowStockTableProps = {
 };
 
 /**
- * Read-only summary, not the full inventory table (phase2c.md's "2d" -
- * that's Phase 3): no editing, no "Restock" action. The status filter is
- * a simple client-side narrow of the already-fetched row set, not a
- * separate query per status - deliberately basic per the spec's "don't
- * over-build filtering here."
+ * Read-only summary, not the full inventory table: no editing, no
+ * "Restock" action. The status filter is a simple client-side narrow of
+ * the already-fetched row set, not a separate query per status.
+ *
+ * The tabs filter the table below rather than switching between
+ * separate panels - deliberately not wired with aria-controls pointing
+ * at a tabpanel (MUI doesn't require it, unlike Radix, which forced an
+ * earlier version of this component to render 4 empty hidden panels
+ * just to satisfy "aria-valid-attr-value"), since there's no per-tab
+ * panel content to point at.
  */
 function LowStockTable({ rows }: LowStockTableProps) {
   const [filter, setFilter] = React.useState<StatusFilter>("all");
@@ -104,31 +120,21 @@ function LowStockTable({ rows }: LowStockTableProps) {
     rows.filter((row) => row.status === status).length;
 
   return (
-    <div className="space-y-3">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
       <Tabs
         value={filter}
-        onValueChange={(value) => setFilter(value as StatusFilter)}
+        onChange={(_, value: StatusFilter) => setFilter(value)}
+        variant="scrollable"
+        scrollButtons="auto"
+        sx={{ minHeight: 36, "& .MuiTab-root": { minHeight: 36, py: 0.5 } }}
       >
-        <TabsList>
-          <TabsTrigger value="all">All ({rows.length})</TabsTrigger>
-          <TabsTrigger value="out_of_stock">
-            Out of Stock ({countFor("out_of_stock")})
-          </TabsTrigger>
-          <TabsTrigger value="critical">
-            Critical ({countFor("critical")})
-          </TabsTrigger>
-          <TabsTrigger value="low">Low ({countFor("low")})</TabsTrigger>
-        </TabsList>
-        {/* These tabs filter the table below rather than switching between
-            separate panels, but Radix still points each trigger's
-            aria-controls at a same-value TabsContent - without one, that
-            id resolves to nothing (an "aria-valid-attr-value" WCAG
-            failure, caught by Phase 7's axe-core audit). Empty panels
-            satisfy the contract without duplicating the table four times. */}
-        <TabsContent value="all" forceMount className="hidden" />
-        <TabsContent value="out_of_stock" forceMount className="hidden" />
-        <TabsContent value="critical" forceMount className="hidden" />
-        <TabsContent value="low" forceMount className="hidden" />
+        <Tab value="all" label={`All (${rows.length})`} />
+        <Tab
+          value="out_of_stock"
+          label={`Out of Stock (${countFor("out_of_stock")})`}
+        />
+        <Tab value="critical" label={`Critical (${countFor("critical")})`} />
+        <Tab value="low" label={`Low (${countFor("low")})`} />
       </Tabs>
 
       <DataTable
@@ -140,7 +146,7 @@ function LowStockTable({ rows }: LowStockTableProps) {
           description: "Try a different status above.",
         }}
       />
-    </div>
+    </Box>
   );
 }
 

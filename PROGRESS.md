@@ -1506,12 +1506,52 @@ search, account menu, and both auth pages, the full e2e suite needed
 zero test changes - every `getByRole`/`getByLabel` assertion resolved
 correctly against the all-new MUI DOM structure.
 
-**Not started yet**: all 27 remaining pages (dashboard, hub pages,
-inventory, catalogue, warehouse, reports, admin) still render the old
-shadcn/Tailwind components inside the new MUI shell - functional but
-visually mixed. Final cleanup batch (remove Tailwind/shadcn/radix-ui/
-cva, delete `src/components/ui/*`) can't happen until all of those are
-migrated.
+**Dashboard (flagship, done)**: converted every widget file plus a set
+of shared components used far beyond just this page - StatusBadge
+(now MUI Chip), KpiCard, ErrorState, EmptyState, LoadingState
+(Skeleton), ChartContainer, ActivityList, MotionFadeIn/MotionStagger
+(`Box component={motion.div}` pattern so `sx` keeps working),
+BrandDonutChart/StockMovementBarChart (recharts colors now read from
+the MUI theme via `useTheme()`). New `NavLinkBox` (`src/components/
+shared/nav-link-box.tsx`) - a small "use client" wrapper for `Box
+component={Link}`. `low-stock-table.tsx` deliberately NOT converted -
+it's on the shared DataTable/Tabs primitives used by ~15+ pages,
+converting those is its own batch.
+
+**Two real RSC gotchas hit and fixed here** (the first is the same
+class of bug already documented in memory from an earlier phase -
+worth re-reading before the next batch, since it will recur):
+1. **Function-valued `sx` breaks across the Server→Client boundary.**
+   MUI components all carry `"use client"`, so `sx={(theme) => ({...})}`
+   or a nested `bgcolor: (theme) => alpha(...)` inside a static sx
+   object throws *at runtime*, not build time, whenever that JSX is
+   produced by a Server Component. Fix: never use theme-callback
+   functions in components that might render from a Server Component -
+   use static `var(--mui-palette-*)` strings + CSS `color-mix()`
+   instead of `theme.palette.x` / `alpha()`. Components that are
+   already `"use client"` (or transitively imported by one) are exempt
+   - the boundary is only crossed once, at the client entry point.
+2. **A component *reference* is also a function.** `<Box
+   component={Link}>` inside a Server Component fails the same way,
+   because `Link` itself is a function being passed as a prop value.
+   `NavLinkBox` exists specifically to contain this: it's a
+   `"use client"` module that imports and renders `Link` *itself*,
+   so only serializable props (`href`, `sx`, `children`) cross the
+   boundary, never the component reference.
+Both were caught via `npm run dev` (production build only threw a
+minified, useless "Error #441") and manual Playwright checks - `npm
+run build` succeeding is not proof these work, only dev-mode runtime
+errors and a real page load catch them.
+
+**Not started yet**: hub pages (catalogue/reports/admin index),
+inventory, catalogue, warehouse, reports, admin - all still render old
+shadcn/Tailwind components inside the new MUI shell (functional but
+visually mixed). The shared `DataTable`/`Tabs` primitives (used by
+~15+ pages) are still shadcn/Tailwind too - converting those is
+probably worth doing as its own early step in the next batch, since so
+much downstream work depends on them. Final cleanup batch (remove
+Tailwind/shadcn/radix-ui/cva, delete `src/components/ui/*`) can't
+happen until all pages are migrated.
 
 **Do not merge `redesign/maximalist` to `main` without the user's
 explicit, informed go-ahead** — main auto-deploys via Vercel

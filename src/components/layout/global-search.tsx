@@ -3,7 +3,6 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import {
-  Loader2Icon,
   PackageIcon,
   SearchIcon,
   TagIcon,
@@ -13,6 +12,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import Box from "@mui/material/Box";
 import type { SxProps, Theme } from "@mui/material/styles";
+import CircularProgress from "@mui/material/CircularProgress";
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
@@ -194,7 +194,7 @@ function GlobalSearch({ sx }: GlobalSearchProps) {
                 py: 2,
               }}
             >
-              <Loader2Icon size={16} className="animate-spin" aria-hidden />
+              <CircularProgress size={16} aria-hidden />
               <Typography variant="body2" color="text.secondary">
                 Searching…
               </Typography>
@@ -269,11 +269,12 @@ function GlobalSearch({ sx }: GlobalSearchProps) {
                       ) : null}
                     </Box>
                     {result.badge ? (
-                      <StatusBadge
-                        label={result.badge.label}
-                        tone={result.badge.tone}
-                        className="shrink-0"
-                      />
+                      <Box sx={{ flexShrink: 0 }}>
+                        <StatusBadge
+                          label={result.badge.label}
+                          tone={result.badge.tone}
+                        />
+                      </Box>
                     ) : null}
                   </ListItemButton>
                 );

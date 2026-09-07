@@ -1,8 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { TooltipProvider } from "@/components/ui/tooltip";
-
 const mocks = vi.hoisted(() => ({
   getInventoryItemCount: vi.fn(),
   getInventoryValue: vi.fn(),
@@ -31,12 +29,8 @@ beforeEach(() => {
   vi.spyOn(console, "warn").mockImplementation(() => {});
 });
 
-/** DashboardKpis' value card renders a Tooltip, which requires the
- * TooltipProvider that app/layout.tsx normally mounts at the root. */
 async function renderKpis(showValue: boolean) {
-  return render(
-    <TooltipProvider>{await DashboardKpis({ showValue })}</TooltipProvider>,
-  );
+  return render(await DashboardKpis({ showValue }));
 }
 
 describe("DashboardKpis", () => {

@@ -44,7 +44,7 @@ function HubHero({
         variant="hub"
         leadHue={leadHue}
         posterTone={leadHue === "amber" ? "primary" : "electric"}
-        className="absolute inset-0 z-0"
+        sx={{ position: "absolute", inset: 0, zIndex: 0 }}
       />
       <Box
         aria-hidden

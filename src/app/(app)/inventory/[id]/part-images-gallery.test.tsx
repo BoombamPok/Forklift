@@ -27,15 +27,10 @@ vi.mock("sonner", () => ({
 }));
 
 import { PartImagesGallery } from "@/app/(app)/inventory/[id]/part-images-gallery";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import type { PartImage } from "@/features/inventory/queries";
 
 function renderGallery(props: React.ComponentProps<typeof PartImagesGallery>) {
-  return render(
-    <TooltipProvider>
-      <PartImagesGallery {...props} />
-    </TooltipProvider>,
-  );
+  return render(<PartImagesGallery {...props} />);
 }
 
 const images: PartImage[] = [

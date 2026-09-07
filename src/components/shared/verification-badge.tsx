@@ -15,7 +15,6 @@ const VERIFICATION_TONE: Record<VerificationStatus, StatusTone> = {
 
 type VerificationBadgeProps = {
   status: VerificationStatus;
-  className?: string;
 };
 
 /**
@@ -24,12 +23,11 @@ type VerificationBadgeProps = {
  * so `unverified`/`uncertain` never reads as visually indistinguishable
  * from confirmed fact.
  */
-function VerificationBadge({ status, className }: VerificationBadgeProps) {
+function VerificationBadge({ status }: VerificationBadgeProps) {
   return (
     <StatusBadge
       label={VERIFICATION_LABEL[status]}
       tone={VERIFICATION_TONE[status]}
-      className={className}
     />
   );
 }

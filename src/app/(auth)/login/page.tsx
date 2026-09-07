@@ -55,7 +55,7 @@ export default function LoginPage() {
             <SceneLoader
               variant="login"
               posterTone="dual"
-              className="absolute inset-0 z-0"
+              sx={{ position: "absolute", inset: 0, zIndex: 0 }}
             />
             <Box
               aria-hidden

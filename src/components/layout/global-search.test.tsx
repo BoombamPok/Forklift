@@ -16,7 +16,6 @@ vi.mock("@/features/search/actions", async (importOriginal) => {
 });
 
 import { GlobalSearch } from "@/components/layout/global-search";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import type { SearchResult } from "@/features/search/actions";
 
 const DEBOUNCE_MS = 250;
@@ -58,11 +57,7 @@ afterEach(() => {
 });
 
 function setup() {
-  render(
-    <TooltipProvider>
-      <GlobalSearch />
-    </TooltipProvider>,
-  );
+  render(<GlobalSearch />);
   const input = screen.getByPlaceholderText("Search parts, brands, models…");
   return { input };
 }

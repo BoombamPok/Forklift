@@ -6,7 +6,6 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), refresh: mockRefresh }),
 }));
 
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { WarehouseTable } from "@/app/(app)/warehouse/warehouse-table";
 import type { WarehouseListRow } from "@/features/warehouse/queries";
 
@@ -22,11 +21,7 @@ const rows: WarehouseListRow[] = [
 ];
 
 function renderTable(canManage: boolean) {
-  render(
-    <TooltipProvider>
-      <WarehouseTable rows={rows} canManage={canManage} />
-    </TooltipProvider>,
-  );
+  render(<WarehouseTable rows={rows} canManage={canManage} />);
 }
 
 describe("WarehouseTable", () => {

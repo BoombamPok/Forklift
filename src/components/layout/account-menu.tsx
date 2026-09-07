@@ -9,17 +9,18 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import Divider from "@mui/material/Divider";
-import { ChevronsUpDownIcon, LogOutIcon, SettingsIcon } from "lucide-react";
+import { ChevronDownIcon, LogOutIcon, SettingsIcon } from "lucide-react";
 
-type AccountUser = { name: string; email: string };
+import { signOut } from "@/features/auth/actions";
+
+type AccountUser = { name: string; email: string; roleLabel?: string };
 
 type AccountMenuProps = {
   user?: AccountUser | null;
-  onSignOut?: () => void;
 };
 
-/** Two-letter monogram, or a single dash when there is no user yet -
- * never a fabricated name or a generic person glyph. */
+/** Two-letter monogram, or a dash when there is no user yet - never a
+ * fabricated name or a generic person glyph. */
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "–";
@@ -28,68 +29,76 @@ function initials(name: string): string {
 }
 
 /**
- * Sidebar footer account area. Sits on the graphite rail, so it uses the
- * chassis tokens rather than the palette - but the menu it opens is a
- * floating layer over the work surface and uses the normal theme.
+ * Account control, top right. Moved out of the sidebar footer: the rail
+ * can now collapse to 68px, where a name and a role have nowhere to go,
+ * and "who am I signed in as" is the one piece of chrome that should not
+ * disappear when a person narrows the navigation.
+ *
+ * The role sits under the name because permissions in this app are not
+ * cosmetic - whether you can see inventory value or record a movement
+ * depends on it, so it is worth being able to check at a glance.
  */
-function AccountMenu({ user, onSignOut }: AccountMenuProps) {
+function AccountMenu({ user }: AccountMenuProps) {
   const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
   const open = Boolean(anchorEl);
 
   return (
-    <Box sx={{ p: 1.25 }}>
+    <>
       <ButtonBase
         onClick={(event) => setAnchorEl(event.currentTarget)}
         aria-haspopup="menu"
         aria-expanded={open}
+        aria-label={user ? `Account: ${user.name}` : "Account"}
         sx={{
-          width: "100%",
           display: "flex",
           alignItems: "center",
           gap: 1.25,
           borderRadius: "var(--radius-control)",
-          px: 1,
-          py: 1,
-          textAlign: "left",
+          pl: 0.75,
+          pr: { xs: 0.75, md: 1 },
+          py: 0.75,
           transition: "background-color 140ms var(--ease-standard)",
-          "&:hover": { bgcolor: "var(--chassis-raised)" },
-          "&:focus-visible": { outlineOffset: -2 },
+          "&:hover": { bgcolor: "action.hover" },
         }}
       >
         <Box
           aria-hidden
           sx={{
             display: "flex",
-            width: 28,
-            height: 28,
+            width: 32,
+            height: 32,
             flexShrink: 0,
             alignItems: "center",
             justifyContent: "center",
-            borderRadius: "7px",
-            bgcolor: "var(--chassis-raised)",
-            border: "1px solid var(--chassis-hairline)",
-            fontSize: "0.6875rem",
+            borderRadius: "50%",
+            bgcolor: "action.selected",
+            fontSize: "0.75rem",
             fontWeight: 600,
-            color: "var(--chassis-text)",
+            color: "text.secondary",
           }}
         >
           {initials(user?.name ?? "")}
         </Box>
-        <Box sx={{ minWidth: 0, flex: 1 }}>
+        <Box
+          sx={{
+            minWidth: 0,
+            display: { xs: "none", md: "block" },
+            textAlign: "left",
+          }}
+        >
           <Typography
             component="span"
             noWrap
             sx={{
               display: "block",
               fontSize: "0.8125rem",
-              fontWeight: 500,
+              fontWeight: 600,
               lineHeight: 1.3,
-              color: "var(--chassis-text)",
             }}
           >
             {user?.name ?? "Account"}
           </Typography>
-          {user?.email ? (
+          {user?.roleLabel ? (
             <Typography
               component="span"
               noWrap
@@ -97,17 +106,22 @@ function AccountMenu({ user, onSignOut }: AccountMenuProps) {
                 display: "block",
                 fontSize: "0.6875rem",
                 lineHeight: 1.3,
-                color: "var(--chassis-faint)",
+                color: "text.secondary",
               }}
             >
-              {user.email}
+              {user.roleLabel}
             </Typography>
           ) : null}
         </Box>
-        <ChevronsUpDownIcon
-          size={15}
+        <ChevronDownIcon
           aria-hidden
-          style={{ flexShrink: 0, color: "var(--chassis-faint)" }}
+          size={15}
+          style={{
+            flexShrink: 0,
+            opacity: 0.5,
+            transform: open ? "rotate(180deg)" : "none",
+            transition: "transform 180ms var(--ease-out)",
+          }}
         />
       </ButtonBase>
 
@@ -115,10 +129,21 @@ function AccountMenu({ user, onSignOut }: AccountMenuProps) {
         anchorEl={anchorEl}
         open={open}
         onClose={() => setAnchorEl(null)}
-        anchorOrigin={{ vertical: "top", horizontal: "left" }}
-        transformOrigin={{ vertical: "bottom", horizontal: "left" }}
-        slotProps={{ paper: { sx: { minWidth: 232 } } }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
+        slotProps={{ paper: { sx: { minWidth: 236 } } }}
       >
+        {user ? (
+          <Box sx={{ px: 1.5, pt: 0.75, pb: 1 }}>
+            <Typography variant="body2" sx={{ fontWeight: 600 }} noWrap>
+              {user.name}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" noWrap>
+              {user.email}
+            </Typography>
+          </Box>
+        ) : null}
+        {user ? <Divider sx={{ mb: 0.5 }} /> : null}
         <MenuItem
           component={Link}
           href="/admin"
@@ -133,7 +158,7 @@ function AccountMenu({ user, onSignOut }: AccountMenuProps) {
         <MenuItem
           onClick={() => {
             setAnchorEl(null);
-            onSignOut?.();
+            signOut();
           }}
           sx={{ color: "error.main" }}
         >
@@ -143,7 +168,7 @@ function AccountMenu({ user, onSignOut }: AccountMenuProps) {
           Sign out
         </MenuItem>
       </Menu>
-    </Box>
+    </>
   );
 }
 

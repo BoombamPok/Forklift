@@ -127,7 +127,7 @@ function GlobalSearch({ sx }: GlobalSearchProps) {
       <TextField
         fullWidth
         size="small"
-        placeholder="Search parts, brands, models…"
+        placeholder="Search by part name, part number, brand, or model…"
         value={query}
         role="combobox"
         aria-expanded={showPanel}
@@ -176,11 +176,14 @@ function GlobalSearch({ sx }: GlobalSearchProps) {
           sx={{
             position: "absolute",
             top: "100%",
+            left: 0,
             right: 0,
             zIndex: (theme) => theme.zIndex.appBar + 1,
             mt: 1,
-            width: 352,
-            maxWidth: "90vw",
+            // Spans the input rather than a fixed 352px: the search box is
+            // full-width in the header now, and a narrow panel pinned to
+            // its right edge read as a detached popup.
+            minWidth: 320,
             p: 0.5,
           }}
         >

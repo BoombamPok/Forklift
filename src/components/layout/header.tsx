@@ -6,23 +6,29 @@ import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import Divider from "@mui/material/Divider";
 import { MenuIcon } from "lucide-react";
 
 import { GlobalSearch } from "@/components/layout/global-search";
 import { ColorModeToggle } from "@/components/shared/color-mode-toggle";
+import {
+  AccountMenu,
+  type AccountUser,
+} from "@/components/layout/account-menu";
 
 type HeaderProps = {
   title: string;
+  user?: AccountUser | null;
   onOpenMobileNav: () => void;
 };
 
-function subscribe() {
+function subscribeNoop() {
   return () => {};
 }
 
 function useShortcutKey(): string | null {
   return React.useSyncExternalStore(
-    subscribe,
+    subscribeNoop,
     () => (/Mac|iPhone|iPad/.test(navigator.platform) ? "⌘K" : "Ctrl K"),
     () => null,
   );
@@ -64,14 +70,23 @@ function ShortcutHint() {
 }
 
 /**
- * Page context on the left, search and display controls on the right.
+ * Search across the width, account on the right.
  *
- * The search box owns a global ⌘K / Ctrl+K shortcut. It is wired here by
- * focusing the input inside the wrapper rather than inside GlobalSearch
- * itself - that component owns tested debounce/keyboard-nav behaviour
- * and there was no reason to reopen it for a focus call.
+ * The page title is present as an h1 but visually hidden. Search is the
+ * primary job of this bar - the whole product is "find the part" - and
+ * every screen already states its own name in its page header, so a
+ * visible title here would repeat it twice within 60px. The h1 stays in
+ * the accessibility tree so the document keeps a real top-level heading.
+ *
+ * No notification bell: nothing in this app produces notifications yet,
+ * and a bell that never rings is a promise the product doesn't keep.
+ *
+ * The search box owns a global ⌘K / Ctrl+K shortcut, wired here by
+ * focusing the input inside the wrapper rather than inside GlobalSearch -
+ * that component owns tested debounce and keyboard-nav behaviour and
+ * there was no reason to reopen it for a focus call.
  */
-function Header({ title, onOpenMobileNav }: HeaderProps) {
+function Header({ title, user, onOpenMobileNav }: HeaderProps) {
   const searchSlot = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
@@ -92,7 +107,8 @@ function Header({ title, onOpenMobileNav }: HeaderProps) {
       position="sticky"
       sx={{
         borderBottom: "1px solid var(--mui-palette-divider)",
-        bgcolor: "color-mix(in srgb, var(--mui-palette-background-paper) 82%, transparent)",
+        bgcolor:
+          "color-mix(in srgb, var(--mui-palette-background-paper) 84%, transparent)",
         backdropFilter: "blur(12px) saturate(140%)",
         WebkitBackdropFilter: "blur(12px) saturate(140%)",
       }}
@@ -100,9 +116,9 @@ function Header({ title, onOpenMobileNav }: HeaderProps) {
       <Toolbar
         disableGutters
         sx={{
-          gap: 1,
-          px: { xs: 1.5, lg: 3 },
-          minHeight: { xs: 56, lg: 60 },
+          gap: { xs: 1, lg: 2 },
+          px: { xs: 1.5, lg: 2.5 },
+          minHeight: { xs: 58, lg: 64 },
         }}
       >
         <IconButton
@@ -116,22 +132,37 @@ function Header({ title, onOpenMobileNav }: HeaderProps) {
         <Typography
           variant="h6"
           component="h1"
-          noWrap
-          sx={{ minWidth: 0, letterSpacing: "-0.012em" }}
+          sx={{
+            position: "absolute",
+            width: "1px",
+            height: "1px",
+            overflow: "hidden",
+            clip: "rect(0 0 0 0)",
+            whiteSpace: "nowrap",
+          }}
         >
           {title}
         </Typography>
 
-        <Box sx={{ ml: "auto", display: "flex", alignItems: "center", gap: 1 }}>
-          <Box
-            ref={searchSlot}
-            className="search-slot"
-            sx={{ position: "relative", display: { xs: "none", sm: "block" } }}
-          >
-            <GlobalSearch sx={{ width: { sm: 240, lg: 300 } }} />
-            <ShortcutHint />
-          </Box>
+        <Box
+          ref={searchSlot}
+          className="search-slot"
+          sx={{ position: "relative", flex: 1, minWidth: 0, maxWidth: 620 }}
+        >
+          <GlobalSearch sx={{ width: "100%" }} />
+          <ShortcutHint />
+        </Box>
+
+        <Box
+          sx={{ ml: "auto", display: "flex", alignItems: "center", gap: 0.5 }}
+        >
           <ColorModeToggle />
+          <Divider
+            orientation="vertical"
+            flexItem
+            sx={{ my: 1.5, mx: 0.5, display: { xs: "none", md: "block" } }}
+          />
+          <AccountMenu user={user} />
         </Box>
       </Toolbar>
     </AppBar>

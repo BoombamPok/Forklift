@@ -10,7 +10,53 @@ import type { AccountUser } from "@/components/layout/account-menu";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { Header } from "@/components/layout/header";
 
-const RAIL_WIDTH = 244;
+const RAIL_WIDTH = 240;
+const RAIL_WIDTH_COLLAPSED = 68;
+const COLLAPSE_KEY = "forkstock:rail-collapsed";
+const COLLAPSE_EVENT = "forkstock:rail-collapsed-change";
+
+function getCollapsedSnapshot(): boolean {
+  try {
+    return window.localStorage.getItem(COLLAPSE_KEY) === "1";
+  } catch {
+    // Private browsing / storage disabled. The default expanded rail is a
+    // perfectly good answer, so this is not worth surfacing.
+    return false;
+  }
+}
+
+function subscribeToCollapsed(onChange: () => void) {
+  window.addEventListener(COLLAPSE_EVENT, onChange);
+  return () => window.removeEventListener(COLLAPSE_EVENT, onChange);
+}
+
+/**
+ * The collapsed rail state lives in localStorage, remembered per browser.
+ * Read via useSyncExternalStore (server snapshot: expanded) rather than a
+ * useEffect+setState, so the server has a safe default without hydrating
+ * one width and then snapping to another - and a same-tab write can push a
+ * re-render (localStorage's own "storage" event only fires in *other*
+ * tabs) via a small custom event dispatched alongside the write.
+ */
+function useCollapsedRail(): [boolean, () => void] {
+  const collapsed = React.useSyncExternalStore(
+    subscribeToCollapsed,
+    getCollapsedSnapshot,
+    () => false,
+  );
+
+  const toggle = React.useCallback(() => {
+    const next = !getCollapsedSnapshot();
+    try {
+      window.localStorage.setItem(COLLAPSE_KEY, next ? "1" : "0");
+    } catch {
+      /* see above */
+    }
+    window.dispatchEvent(new Event(COLLAPSE_EVENT));
+  }, []);
+
+  return [collapsed, toggle];
+}
 
 type AppShellProps = {
   user?: AccountUser | null;
@@ -19,16 +65,14 @@ type AppShellProps = {
 
 /**
  * The structural shell every protected route renders inside: a permanent
- * graphite rail on desktop, a temporary overlay drawer on mobile.
- *
- * The work surface is inset by 8px on desktop and given its own rounded
- * top-left corner, so the rail reads as a chassis the page sits inside
- * rather than two panes butted together. It is one of the cheapest ways
- * to make an app stop looking like a default admin template.
+ * rail on desktop, a temporary overlay drawer on mobile.
  */
 function AppShell({ user, children }: AppShellProps) {
   const pathname = usePathname();
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
+  const [collapsed, toggleCollapsed] = useCollapsedRail();
+
+  const railWidth = collapsed ? RAIL_WIDTH_COLLAPSED : RAIL_WIDTH;
 
   return (
     <Box
@@ -41,7 +85,11 @@ function AppShell({ user, children }: AppShellProps) {
     >
       <Box
         component="nav"
-        sx={{ width: { lg: RAIL_WIDTH }, flexShrink: { lg: 0 } }}
+        sx={{
+          width: { lg: railWidth },
+          flexShrink: { lg: 0 },
+          transition: "width 220ms var(--ease-out)",
+        }}
       >
         <Drawer
           variant="temporary"
@@ -57,7 +105,10 @@ function AppShell({ user, children }: AppShellProps) {
             },
           }}
         >
-          <SidebarNav user={user} onNavigate={() => setMobileNavOpen(false)} />
+          {/* No collapse control on mobile - the drawer is already an
+              overlay that dismisses, so a second width mode would be a
+              setting with nothing to do. */}
+          <SidebarNav onNavigate={() => setMobileNavOpen(false)} />
         </Drawer>
 
         <Drawer
@@ -66,13 +117,15 @@ function AppShell({ user, children }: AppShellProps) {
           sx={{
             display: { xs: "none", lg: "block" },
             "& .MuiDrawer-paper": {
-              width: RAIL_WIDTH,
+              width: railWidth,
               boxSizing: "border-box",
               bgcolor: "var(--chassis)",
+              overflowX: "hidden",
+              transition: "width 220ms var(--ease-out)",
             },
           }}
         >
-          <SidebarNav user={user} />
+          <SidebarNav collapsed={collapsed} onToggleCollapse={toggleCollapsed} />
         </Drawer>
       </Box>
 
@@ -84,16 +137,11 @@ function AppShell({ user, children }: AppShellProps) {
           flexDirection: "column",
           overflow: "hidden",
           bgcolor: "background.default",
-          borderLeft: { lg: "1px solid var(--chassis-hairline)" },
-          borderTopLeftRadius: { lg: "var(--radius-sheet)" },
-          my: { lg: 1 },
-          mr: { lg: 1 },
-          borderRadius: { lg: "var(--radius-sheet)" },
-          boxShadow: { lg: "0 1px 3px rgba(0,0,0,0.32)" },
         }}
       >
         <Header
           title={getPageTitle(pathname)}
+          user={user}
           onOpenMobileNav={() => setMobileNavOpen(true)}
         />
         <Box

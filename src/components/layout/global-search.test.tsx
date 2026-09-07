@@ -58,7 +58,9 @@ afterEach(() => {
 
 function setup() {
   render(<GlobalSearch />);
-  const input = screen.getByPlaceholderText("Search parts, brands, models…");
+  const input = screen.getByPlaceholderText(
+    "Search by part name, part number, brand, or model…",
+  );
   return { input };
 }
 

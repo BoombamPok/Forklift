@@ -28,7 +28,7 @@ const theme = createTheme({
         primary: {
           main: LIGHT.signal,
           dark: LIGHT.signalHover,
-          light: "#5B7FEA",
+          light: LIGHT.signalDisplay,
           contrastText: "#FFFFFF",
         },
         secondary: {
@@ -37,8 +37,8 @@ const theme = createTheme({
           light: "#3E97B2",
           contrastText: "#FFFFFF",
         },
-        error: { main: LIGHT.danger, dark: "#8E1A12", light: "#E4574B" },
-        warning: { main: LIGHT.warning, dark: "#6E4100", light: "#C4841F" },
+        error: { main: LIGHT.danger, dark: "#941C10", light: "#E4574B" },
+        warning: { main: LIGHT.warning, dark: "#7A4A05", light: "#D4A017" },
         info: { main: LIGHT.info, dark: "#0A5468", light: "#3E97B2" },
         success: { main: LIGHT.success, dark: "#0A5C41", light: "#3AA37D" },
         background: {
@@ -54,7 +54,7 @@ const theme = createTheme({
         action: {
           hover: "rgba(17,23,33,0.035)",
           selected: "rgba(17,23,33,0.06)",
-          focus: "rgba(31,81,224,0.14)",
+          focus: "rgba(194,65,12,0.16)",
         },
       },
     },
@@ -63,7 +63,7 @@ const theme = createTheme({
         mode: "dark",
         primary: {
           main: DARK.signal,
-          dark: "#5C86F5",
+          dark: DARK.signalDisplay,
           light: DARK.signalHover,
           contrastText: "#0B1020",
         },
@@ -74,7 +74,7 @@ const theme = createTheme({
           contrastText: "#0B1020",
         },
         error: { main: DARK.danger, dark: "#E0604F", light: "#FFB0A4" },
-        warning: { main: DARK.warning, dark: "#CE9440", light: "#F7CB8A" },
+        warning: { main: DARK.warning, dark: "#C9A24A", light: "#F2D68F" },
         info: { main: DARK.info, dark: "#2E9CBF", light: "#7FD8F2" },
         success: { main: DARK.success, dark: "#22A97A", light: "#77E3B8" },
         background: {
@@ -90,7 +90,7 @@ const theme = createTheme({
         action: {
           hover: "rgba(233,236,242,0.05)",
           selected: "rgba(233,236,242,0.09)",
-          focus: "rgba(124,160,255,0.2)",
+          focus: "rgba(255,138,76,0.22)",
         },
       },
     },

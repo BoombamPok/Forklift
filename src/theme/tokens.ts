@@ -27,14 +27,18 @@
 /** The dark rail. Constant across light and dark mode - it is the frame,
  * not part of the work surface, so it does not invert. */
 export const CHASSIS = {
-  base: "#131820",
-  raised: "#1B222D",
-  hairline: "#28303D",
-  text: "#E7EAF0",
-  // 5.9:1 on #131820 - readable for inactive nav labels without
+  base: "#0D1117",
+  raised: "#171E27",
+  hairline: "#222A35",
+  text: "#F2F5F9",
+  // 6.4:1 on #0D1117 - readable for inactive nav labels without
   // competing with the active item.
   muted: "#98A2B3",
   faint: "#6B7687",
+  /** Active nav item: an orange wash, not a solid fill. A solid orange
+   * pill at 240px wide is a lot of saturated colour sitting in the
+   * corner of the eye all day. */
+  activeBg: "#2A1710",
 } as const;
 
 export const LIGHT = {
@@ -47,29 +51,37 @@ export const LIGHT = {
   ink: "#111721", // 16.4:1 on panel
   inkMuted: "#5A6577", // 6.1:1 on panel
   inkFaint: "#8A94A3", // 3.2:1 - decorative/disabled only
-  signal: "#1F51E0", // 6.3:1 on panel
-  signalHover: "#1A44BE",
-  signalWash: "#EEF2FE",
+  // Text-safe orange. The display orange below (#FF6B2C) only manages
+  // ~2.6:1 on white, so it can carry an icon or a fill but never a label
+  // or a button caption.
+  signal: "#C2410C", // 5.2:1 on panel
+  signalHover: "#9C3308",
+  signalDisplay: "#FF6B2C",
+  signalWash: "#FEF1EA",
   success: "#0F7A57", // 4.9:1
-  warning: "#8F5400", // 5.4:1
-  danger: "#B42318", // 6.6:1
+  // Pushed yellow, away from the brand orange. When the accent moved to
+  // orange these two became near-identical, and "low stock" is the one
+  // colour in the app that must never be confused with furniture.
+  warning: "#A16207", // 5.0:1
+  danger: "#BE2617", // 6.2:1
   info: "#0E6C86", // 5.1:1
 } as const;
 
 export const DARK = {
-  canvas: "#0C1017",
-  panel: "#151A23",
-  panelSunken: "#11161E",
+  canvas: "#0A0E13",
+  panel: "#131920",
+  panelSunken: "#0F141A",
   hairline: "#242B37",
   hairlineStrong: "#333C4C",
   ink: "#E9ECF2", // 14.8:1 on panel
   inkMuted: "#9AA5B6", // 6.4:1 on panel
   inkFaint: "#6B7687",
-  signal: "#7CA0FF", // 7.1:1 on panel
-  signalHover: "#9AB5FF",
-  signalWash: "#18203A",
+  signal: "#FF8A4C", // 7.4:1 on panel
+  signalHover: "#FFA672",
+  signalDisplay: "#FF6B2C",
+  signalWash: "#2A1710",
   success: "#3ECF97",
-  warning: "#EFB157",
+  warning: "#E8C15A",
   danger: "#FF8A7A",
   info: "#4FC3E8",
 } as const;
@@ -101,10 +113,10 @@ export const MOTION = {
  * assigned. Deliberately avoids the status hues so a brand slice can
  * never be misread as "this brand is in trouble". */
 export const SERIES = [
-  "#1F51E0",
+  "#FF6B2C",
+  "#2D6BE0",
   "#0E6C86",
   "#6B4FD8",
   "#0F7A57",
-  "#B0621A",
   "#8A94A3",
 ] as const;

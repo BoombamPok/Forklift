@@ -10,12 +10,16 @@
 :root {
   /* The dark rail. Constant in both modes - it is the frame around the
      work surface, not part of it. */
-  --chassis: #131820;
-  --chassis-raised: #1b222d;
-  --chassis-hairline: #28303d;
-  --chassis-text: #e7eaf0;
+  --chassis: #0d1117;
+  --chassis-raised: #171e27;
+  --chassis-hairline: #222a35;
+  --chassis-text: #f2f5f9;
   --chassis-muted: #98a2b3;
   --chassis-faint: #6b7687;
+  /* Active nav item wash + the display orange that carries icons and
+     fills but is never allowed to carry a text label. */
+  --chassis-active: #2a1710;
+  --signal-display: #ff6b2c;
 
   /* Grid unit. Every gap/padding in bespoke components is a multiple. */
   --unit: 4px;
@@ -37,11 +41,11 @@
      brand slice tinted amber or red reads as "this brand is in trouble",
      which is a claim the chart is not making. Ordered for distinguishable
      neighbours, and checked against deuteranopia. */
-  --series-1: #1f51e0;
-  --series-2: #0e6c86;
-  --series-3: #6b4fd8;
-  --series-4: #0f7a57;
-  --series-5: #b0621a;
+  --series-1: #ff6b2c;
+  --series-2: #2d6be0;
+  --series-3: #0e6c86;
+  --series-4: #6b4fd8;
+  --series-5: #0f7a57;
   --series-6: #8a94a3;
 
   color-scheme: light;
@@ -51,11 +55,11 @@
 [data-mui-color-scheme="dark"] {
   /* Lifted for the darker panel - same hue order, higher luminance, so a
      legend learned in one mode still reads in the other. */
-  --series-1: #7ca0ff;
-  --series-2: #4fc3e8;
-  --series-3: #a893ff;
-  --series-4: #3ecf97;
-  --series-5: #e3a05a;
+  --series-1: #ff8a4c;
+  --series-2: #6f9dff;
+  --series-3: #4fc3e8;
+  --series-4: #a893ff;
+  --series-5: #3ecf97;
   --series-6: #8a94a3;
 
   color-scheme: dark;

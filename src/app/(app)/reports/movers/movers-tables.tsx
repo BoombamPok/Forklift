@@ -21,7 +21,7 @@ const fastColumns: ColumnDef<MoverRow, unknown>[] = [
         <Typography
           variant="caption"
           color="text.secondary"
-          sx={{ display: "block", fontFamily: "var(--font-roboto-mono)" }}
+          sx={{ display: "block", fontFamily: "var(--font-plex-mono)" }}
         >
           {row.original.partNumber}
         </Typography>
@@ -38,7 +38,7 @@ const fastColumns: ColumnDef<MoverRow, unknown>[] = [
     header: "Quantity moved",
     cell: ({ row }) => (
       <Typography
-        sx={{ fontFamily: "var(--font-roboto-mono)" }}
+        sx={{ fontFamily: "var(--font-plex-mono)" }}
         variant="body2"
       >
         {row.original.quantityMoved}
@@ -50,7 +50,7 @@ const fastColumns: ColumnDef<MoverRow, unknown>[] = [
     header: "Movements",
     cell: ({ row }) => (
       <Typography
-        sx={{ fontFamily: "var(--font-roboto-mono)" }}
+        sx={{ fontFamily: "var(--font-plex-mono)" }}
         variant="body2"
       >
         {row.original.movementCount}
@@ -71,7 +71,7 @@ const slowColumns: ColumnDef<SlowMoverRow, unknown>[] = [
         <Typography
           variant="caption"
           color="text.secondary"
-          sx={{ display: "block", fontFamily: "var(--font-roboto-mono)" }}
+          sx={{ display: "block", fontFamily: "var(--font-plex-mono)" }}
         >
           {row.original.partNumber}
         </Typography>

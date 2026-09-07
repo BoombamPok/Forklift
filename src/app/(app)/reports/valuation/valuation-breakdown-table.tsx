@@ -15,7 +15,7 @@ const columns: ColumnDef<ValuationBreakdownRow, unknown>[] = [
     header: "Items",
     cell: ({ row }) => (
       <Typography
-        sx={{ fontFamily: "var(--font-roboto-mono)" }}
+        sx={{ fontFamily: "var(--font-plex-mono)" }}
         variant="body2"
       >
         {row.original.itemCount}
@@ -28,7 +28,7 @@ const columns: ColumnDef<ValuationBreakdownRow, unknown>[] = [
     cell: ({ row }) => (
       <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
         <Typography
-          sx={{ fontFamily: "var(--font-roboto-mono)" }}
+          sx={{ fontFamily: "var(--font-plex-mono)" }}
           variant="body2"
         >
           {formatCurrency(row.original.value)}

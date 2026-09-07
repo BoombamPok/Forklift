@@ -96,7 +96,7 @@ export default async function InventoryPartDetailPage(
           <Typography
             variant="body2"
             color="text.secondary"
-            sx={{ fontFamily: "var(--font-roboto-mono)" }}
+            sx={{ fontFamily: "var(--font-plex-mono)" }}
           >
             {detail.partNumber}
           </Typography>
@@ -144,7 +144,7 @@ export default async function InventoryPartDetailPage(
             <Typography
               data-testid="part-quantity"
               sx={{
-                fontFamily: "var(--font-roboto-mono)",
+                fontFamily: "var(--font-plex-mono)",
                 fontSize: "1.875rem",
                 lineHeight: 1,
                 fontWeight: 600,
@@ -200,7 +200,7 @@ export default async function InventoryPartDetailPage(
                 <Typography
                   variant="body2"
                   color="text.secondary"
-                  sx={{ fontFamily: "var(--font-roboto-mono)" }}
+                  sx={{ fontFamily: "var(--font-plex-mono)" }}
                 >
                   {detail.catalogueLink.partNumber}
                 </Typography>

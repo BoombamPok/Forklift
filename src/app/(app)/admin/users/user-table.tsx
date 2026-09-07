@@ -5,17 +5,14 @@ import { useRouter } from "next/navigation";
 import type { ColumnDef } from "@tanstack/react-table";
 import { PlusIcon, PowerIcon, PowerOffIcon } from "lucide-react";
 import { toast } from "sonner";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import MenuItem from "@mui/material/MenuItem";
+import Select, { type SelectChangeEvent } from "@mui/material/Select";
+import Typography from "@mui/material/Typography";
 
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { DataTable } from "@/components/shared/data-table";
+import { StatusBadge, type StatusTone } from "@/components/shared/status-badge";
 import { IconButton } from "@/components/shared/icon-button";
 import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 import { setUserActive, updateUserRole } from "@/features/admin/actions";
@@ -29,10 +26,7 @@ type UserTableProps = {
   currentUserId: string;
 };
 
-const STATUS_VARIANT: Record<
-  UserListRow["status"],
-  "success" | "warning" | "destructive"
-> = {
+const STATUS_TONE: Record<UserListRow["status"], StatusTone> = {
   active: "success",
   invited: "warning",
   deactivated: "destructive",
@@ -85,9 +79,9 @@ function UserTable({ rows, currentUserId }: UserTableProps) {
       accessorKey: "fullName",
       header: "Name",
       cell: ({ row }) => (
-        <span className="font-medium text-foreground">
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
           {row.original.fullName ?? "—"}
-        </span>
+        </Typography>
       ),
     },
     {
@@ -95,7 +89,9 @@ function UserTable({ rows, currentUserId }: UserTableProps) {
       accessorKey: "email",
       header: "Email",
       cell: ({ row }) => (
-        <span className="text-muted-foreground">{row.original.email}</span>
+        <Typography variant="body2" color="text.secondary">
+          {row.original.email}
+        </Typography>
       ),
     },
     {
@@ -106,20 +102,19 @@ function UserTable({ rows, currentUserId }: UserTableProps) {
         const isSelf = row.original.id === currentUserId;
         return (
           <Select
+            size="small"
             value={row.original.role}
             disabled={isSelf}
-            onValueChange={(value) => handleRoleChange(row.original, value)}
+            onChange={(event: SelectChangeEvent) =>
+              handleRoleChange(row.original, event.target.value)
+            }
+            sx={{ width: 144 }}
           >
-            <SelectTrigger size="sm" className="w-36">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {ROLES.map((role) => (
-                <SelectItem key={role} value={role}>
-                  {ROLE_LABELS[role]}
-                </SelectItem>
-              ))}
-            </SelectContent>
+            {ROLES.map((role) => (
+              <MenuItem key={role} value={role}>
+                {ROLE_LABELS[role]}
+              </MenuItem>
+            ))}
           </Select>
         );
       },
@@ -129,9 +124,10 @@ function UserTable({ rows, currentUserId }: UserTableProps) {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => (
-        <Badge variant={STATUS_VARIANT[row.original.status]}>
-          {STATUS_LABEL[row.original.status]}
-        </Badge>
+        <StatusBadge
+          label={STATUS_LABEL[row.original.status]}
+          tone={STATUS_TONE[row.original.status]}
+        />
       ),
     },
     {
@@ -139,11 +135,11 @@ function UserTable({ rows, currentUserId }: UserTableProps) {
       accessorKey: "lastSignInAt",
       header: "Last sign-in",
       cell: ({ row }) => (
-        <span className="text-muted-foreground">
+        <Typography variant="body2" color="text.secondary">
           {row.original.lastSignInAt
             ? new Date(row.original.lastSignInAt).toLocaleDateString()
             : "Never"}
-        </span>
+        </Typography>
       ),
     },
     {
@@ -154,27 +150,36 @@ function UserTable({ rows, currentUserId }: UserTableProps) {
         const isSelf = row.original.id === currentUserId;
         const isDeactivated = row.original.status === "deactivated";
         return (
-          <div className="flex justify-end">
+          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
             <IconButton
               label={isDeactivated ? "Reactivate user" : "Deactivate user"}
               disabled={isSelf}
               onClick={() => setTogglingActive(row.original)}
             >
-              {isDeactivated ? <PowerIcon /> : <PowerOffIcon />}
+              {isDeactivated ? (
+                <PowerIcon size={16} />
+              ) : (
+                <PowerOffIcon size={16} />
+              )}
             </IconButton>
-          </div>
+          </Box>
         );
       },
     },
   ];
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button type="button" onClick={() => setInviteOpen(true)}>
-          <PlusIcon /> Invite user
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+        <Button
+          type="button"
+          variant="contained"
+          startIcon={<PlusIcon size={16} />}
+          onClick={() => setInviteOpen(true)}
+        >
+          Invite user
         </Button>
-      </div>
+      </Box>
 
       <DataTable
         columns={columns}
@@ -207,7 +212,7 @@ function UserTable({ rows, currentUserId }: UserTableProps) {
         loading={toggleLoading}
         onConfirm={handleConfirmToggle}
       />
-    </div>
+    </Box>
   );
 }
 
